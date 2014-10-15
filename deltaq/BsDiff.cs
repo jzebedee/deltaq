@@ -5,7 +5,11 @@ using System.Text;
 
 namespace deltaq
 {
-    public class Class1
+    public static class BsDiff
     {
+        public static void Create()
+        {
+            
+        }
     }
 }

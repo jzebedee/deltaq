@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace deltaq_tests
 {
     [TestFixture]
-    public class UnitTest1
+    public class DiffTests
     {
         [Test]
         public void TestMethod1()
