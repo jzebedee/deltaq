@@ -346,8 +346,8 @@ namespace deltaq
         {
             IList<int> c;
             IList<int> B;
-            IList<int> RA;
-            int i, j, b, m, p, q, name, newfs;
+            int i, j, b, m;
+            int name;
             int c0, c1;
             uint flags;
 
@@ -458,7 +458,7 @@ namespace deltaq
                 {
                     B = null;
                 }
-                newfs = (n + fs) - (m * 2);
+                int newfs = (n + fs) - (m * 2);
                 if ((flags & (1 | 4 | 8)) == 0)
                 {
                     if ((k + name) <= newfs)
@@ -478,8 +478,8 @@ namespace deltaq
                     }
                 }
 
-                RA = new ArraySegment<int>(sa, m + newfs, sa.Length - (m + newfs));
-                sais_main(RA, sa, newfs, m, name);
+                var ra = new ArraySegment<int>(sa, m + newfs, sa.Length - (m + newfs));
+                sais_main(ra, sa, newfs, m, name);
 
                 i = n - 1;
                 j = m * 2 - 1;
@@ -531,11 +531,11 @@ namespace deltaq
                 GetBuckets(c, B, k, true); /* find ends of buckets */
                 i = m - 1;
                 j = n;
-                p = sa[m - 1];
+                int p = sa[m - 1];
                 c1 = T[p];
                 do
                 {
-                    q = B[c0 = c1];
+                    int q = B[c0 = c1];
                     while (q < j)
                     {
                         sa[--j] = 0;
