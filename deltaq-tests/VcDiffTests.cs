@@ -3,7 +3,7 @@
 namespace deltaq_tests
 {
     [TestFixture]
-    public class PatchTests
+    public class VcDiffTests
     {
         [Test]
         public void TestMethod1()
