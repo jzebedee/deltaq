@@ -5,13 +5,12 @@ namespace deltaq
 {
     public static class BsPatch
     {
-        public delegate Stream OpenDiffStream(long offset, long length);
+        public delegate Stream OpenPatchStream(long offset, long length);
 
         public static void Apply(byte[] input, byte[] diff, Stream output)
         {
-            OpenDiffStream openDiffStream = (uOffset, uLength) =>
+            OpenPatchStream openPatchStream = (uOffset, uLength) =>
             {
-                //shaving down to int because we assume we're using 32bit indices
                 var offset = (int)uOffset;
                 var length = (int)uLength;
                 return new MemoryStream(diff, offset,
@@ -21,35 +20,35 @@ namespace deltaq
             };
 
             Stream controlStream, diffStream, extraStream;
-            var newSize = CreatePatchStreams(openDiffStream, out controlStream, out diffStream, out extraStream);
+            var newSize = CreatePatchStreams(openPatchStream, out controlStream, out diffStream, out extraStream);
 
             // prepare to read three parts of the patch in parallel
             ApplyInternal(newSize, new MemoryStream(input), controlStream, diffStream, extraStream, output);
         }
 
-        public static void Apply(Stream input, OpenDiffStream openDiffStream, Stream output)
+        public static void Apply(Stream input, OpenPatchStream openPatchStream, Stream output)
         {
             Stream controlStream, diffStream, extraStream;
-            var newSize = CreatePatchStreams(openDiffStream, out controlStream, out diffStream, out extraStream);
+            var newSize = CreatePatchStreams(openPatchStream, out controlStream, out diffStream, out extraStream);
 
             // prepare to read three parts of the patch in parallel
             ApplyInternal(newSize, input, controlStream, diffStream, extraStream, output);
         }
 
-        private static long CreatePatchStreams(OpenDiffStream openDiffStream, out Stream ctrl, out Stream diff, out Stream extra)
+        private static long CreatePatchStreams(OpenPatchStream openPatchStream, out Stream ctrl, out Stream diff, out Stream extra)
         {
             // read header
             long controlLength, diffLength, newSize;
-            using (var diffStream = openDiffStream(0, BsDiff.HeaderSize))
+            using (var patchStream = openPatchStream(0, BsDiff.HeaderSize))
             {
                 // check patch stream capabilities
-                if (!diffStream.CanRead)
-                    throw new ArgumentException("Patch stream must be readable", "openDiffStream");
-                if (!diffStream.CanSeek)
-                    throw new ArgumentException("Patch stream must be seekable", "openDiffStream");
+                if (!patchStream.CanRead)
+                    throw new ArgumentException("Patch stream must be readable", "openPatchStream");
+                if (!patchStream.CanSeek)
+                    throw new ArgumentException("Patch stream must be seekable", "openPatchStream");
 
                 var header = new byte[BsDiff.HeaderSize];
-                diffStream.Read(header, 0, BsDiff.HeaderSize);
+                patchStream.Read(header, 0, BsDiff.HeaderSize);
 
                 // check for appropriate magic
                 var signature = header.ReadLong();
@@ -67,9 +66,9 @@ namespace deltaq
 
             // prepare to read three parts of the patch in parallel
             Stream
-                compressedControlStream = openDiffStream(BsDiff.HeaderSize, controlLength),
-                compressedDiffStream = openDiffStream(BsDiff.HeaderSize + controlLength, diffLength),
-                compressedExtraStream = openDiffStream(BsDiff.HeaderSize + controlLength + diffLength, -1);
+                compressedControlStream = openPatchStream(BsDiff.HeaderSize, controlLength),
+                compressedDiffStream = openPatchStream(BsDiff.HeaderSize + controlLength, diffLength),
+                compressedExtraStream = openPatchStream(BsDiff.HeaderSize + controlLength + diffLength, -1);
 
             // decompress each part (to read it)
             ctrl = BsDiff.GetEncodingStream(compressedControlStream, false);

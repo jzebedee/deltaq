@@ -155,7 +155,7 @@ namespace deltaq
         }
 
         /* sort all type LMS suffixes */
-        private static void LMSsort(IList<int> T, int[] sa, IList<int> c, IList<int> B, int n, int k)
+        private static void LMS_sort(IList<int> T, int[] sa, IList<int> c, IList<int> B, int n, int k)
         {
             int b, i, j;
             int c0, c1;
@@ -207,7 +207,7 @@ namespace deltaq
             }
         }
 
-        private static int LMSpostproc(IList<int> T, int[] sa, int n, int m)
+        private static int LMS_post_proc(IList<int> T, int[] sa, int n, int m)
         {
             int i, j, p, q, plen, qlen, name;
             int c0, c1;
@@ -432,8 +432,8 @@ namespace deltaq
             }
             if (1 < m)
             {
-                LMSsort(T, sa, c, B, n, k);
-                name = LMSpostproc(T, sa, n, m);
+                LMS_sort(T, sa, c, B, n, k);
+                name = LMS_post_proc(T, sa, n, m);
             }
             else if (m == 1)
             {
@@ -480,7 +480,6 @@ namespace deltaq
 
                 RA = new ArraySegment<int>(sa, m + newfs, sa.Length - (m + newfs));
                 sais_main(RA, sa, newfs, m, name);
-                RA = null;
 
                 i = n - 1;
                 j = m * 2 - 1;
