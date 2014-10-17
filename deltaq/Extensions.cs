@@ -2,24 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace deltaq
 {
     internal static class Extensions
     {
+        #region ArraySegment Slice
         public static ArraySegment<T> Slice<T>(this T[] buf, int offset, int count = -1)
         {
+            //substitute everything remaining after the offset, if count is subzero
             return new ArraySegment<T>(buf, offset, count < 0 ? buf.Length - offset : count);
         }
 
-        public static ArraySegment<T> Slice<T>(this IList<T> list, int offset, int count = -1)
+        public static ArraySegment<T> Slice<T>(this ArraySegment<T> segment, int offset, int count = -1)
         {
-            var arraySegment = (ArraySegment<T>)list;
-            var baseArray = arraySegment.Array;
-            //substitute everything remaining after the offset, if count is subzero
-            return new ArraySegment<T>(arraySegment.Array, offset, count < 0 ? baseArray.Length - offset : count);
+            return segment.Array.Slice(offset, count);
         }
+        #endregion
 
+        #region Long Read/Write
         public static void WriteLongAt(this byte[] pb, int offset, long y)
         {
             pb.Slice(offset, sizeof(long)).WriteLong(y);
@@ -82,5 +85,22 @@ namespace deltaq
 
             return (b[7] & 0x80) != 0 ? -y : y;
         }
+        #endregion
+
+        #region Stream reading
+
+        public static IEnumerable<byte[]> BufferedRead(this Stream stream, long count, int bufferSize = 0x1000)
+        {
+            if (count <= 0) yield break;
+
+            using (var reader = new BinaryReader(stream))
+            {
+                for (; count > 0; count -= bufferSize)
+                {
+                    yield return reader.ReadBytes(Math.Min((int)count, bufferSize));
+                }
+            }
+        }
+        #endregion
     }
 }
