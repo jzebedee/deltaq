@@ -68,7 +68,7 @@ namespace deltaq
             Stream
                 compressedControlStream = openPatchStream(BsDiff.HeaderSize, controlLength),
                 compressedDiffStream = openPatchStream(BsDiff.HeaderSize + controlLength, diffLength),
-                compressedExtraStream = openPatchStream(BsDiff.HeaderSize + controlLength + diffLength, -1);
+                compressedExtraStream = openPatchStream(BsDiff.HeaderSize + controlLength + diffLength, 0);
 
             // decompress each part (to read it)
             ctrl = BsDiff.GetEncodingStream(compressedControlStream, false);
@@ -83,45 +83,43 @@ namespace deltaq
             using (ctrl)
             using (diff)
             using (extra)
-            using (BinaryReader
-                diffReader = new BinaryReader(diff),
-                extraReader = new BinaryReader(extra))
+            using (var inputReader = new BinaryReader(input))
                 while (output.Position < newSize)
                 {
-                    //read control data
-                    //set of triples (x,y,z) meaning
+                    //read control data:
+                    // set of triples (x,y,z) meaning
+
                     // add x bytes from oldfile to x bytes from the diff block;
-                    // copy y bytes from the extra block;
-                    // seek forwards in oldfile by z bytes;
                     var addSize = ctrl.ReadLong();
+                    // copy y bytes from the extra block;
                     var copySize = ctrl.ReadLong();
+                    // seek forwards in oldfile by z bytes;
                     var seekAmount = ctrl.ReadLong();
 
                     // sanity-check
                     if (output.Position + addSize > newSize)
                         throw new InvalidOperationException("Corrupt patch.");
 
+                    // read diff string in chunks
+                    foreach (var newData in diff.BufferedRead(addSize))
                     {
-                        // read diff string
-                        var newData = diffReader.ReadBytes((int)addSize);
+                        var inputData = inputReader.ReadBytes(newData.Length);
 
                         // add old data to diff string
-                        var availableInputBytes = (int)Math.Min(addSize, input.Length - input.Position);
-                        for (var i = 0; i < availableInputBytes; i++)
-                            newData[i] += (byte)input.ReadByte();
+                        for (var i = 0; i < newData.Length; i++)
+                            newData[i] += inputData[i];
 
-                        output.Write(newData, 0, (int)addSize);
-                        //input.Seek(addSize, SeekOrigin.Current);
+                        output.Write(newData, 0, newData.Length);
                     }
 
                     // sanity-check
                     if (output.Position + copySize > newSize)
                         throw new InvalidOperationException("Corrupt patch.");
 
-                    // read extra string
+                    // read extra string in chunks
+                    foreach (var extraData in extra.BufferedRead(copySize))
                     {
-                        var newData = extraReader.ReadBytes((int)copySize);
-                        output.Write(newData, 0, (int)copySize);
+                        output.Write(extraData, 0, extraData.Length);
                     }
 
                     // adjust position
