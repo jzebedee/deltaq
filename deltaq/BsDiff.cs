@@ -225,25 +225,32 @@ namespace deltaq
 
         private static int Search(IList<int> I, byte[] oldData, IList<byte> newData, int start, int end, out int pos)
         {
-            if (end - start < 2)
+            while (true)
             {
-                var startLength = MatchLength(oldData.Slice(I[start]), newData);
-                var endLength = MatchLength(oldData.Slice(I[end]), newData);
-
-                if (startLength > endLength)
+                if (end - start < 2)
                 {
-                    pos = I[start];
-                    return startLength;
+                    var startLength = MatchLength(oldData.Slice(I[start]), newData);
+                    var endLength = MatchLength(oldData.Slice(I[end]), newData);
+
+                    if (startLength > endLength)
+                    {
+                        pos = I[start];
+                        return startLength;
+                    }
+
+                    pos = I[end];
+                    return endLength;
                 }
 
-                pos = I[end];
-                return endLength;
-            }
+                var midPoint = start + (end - start) / 2;
+                if (CompareBytes(oldData.Slice(I[midPoint]), newData) < 0)
+                {
+                    start = midPoint;
+                    continue;
+                }
 
-            var midPoint = start + (end - start) / 2;
-            return CompareBytes(oldData.Slice(I[midPoint]), newData) < 0 ?
-                Search(I, oldData, newData, midPoint, end, out pos) :
-                Search(I, oldData, newData, start, midPoint, out pos);
+                end = midPoint;
+            }
         }
     }
 }
