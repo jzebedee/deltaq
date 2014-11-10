@@ -1,10 +1,10 @@
-﻿deltaq contains source code reproductions or derivatives from
+﻿## Notes
+
+deltaq contains source code reproductions or derivatives from
 Colin Percival's bsdiff and bspatch, and
 Logos Bible Software's bsdiff.net
 
----
-
-deltaq is licensed as follows:
+## deltaq license
 
 The MIT License (MIT)
 
@@ -28,9 +28,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----
-
-bsdiff and bspatch is licensed as follows:
+## bsdiff and bspatch license
 
 Copyright 2003-2005 Colin Percival
 All rights reserved
@@ -56,9 +54,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
----
-
-bsdiff.net is licensed as follows:
+## bsdiff.net license
 
 Copyright 2010 Logos Bible Software
 
