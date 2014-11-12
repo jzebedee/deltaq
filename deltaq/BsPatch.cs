@@ -146,7 +146,7 @@ namespace deltaq
 
                     // sanity-check
                     if (output.Position + addSize > newSize)
-                        throw new InvalidOperationException("Corrupt patch.");
+                        throw new InvalidOperationException("Corrupt patch");
 
                     // read diff string in chunks
                     foreach (var newData in diff.BufferedRead(addSize))
@@ -162,7 +162,7 @@ namespace deltaq
 
                     // sanity-check
                     if (output.Position + copySize > newSize)
-                        throw new InvalidOperationException("Corrupt patch.");
+                        throw new InvalidOperationException("Corrupt patch");
 
                     // read extra string in chunks
                     foreach (var extraData in extra.BufferedRead(copySize))
