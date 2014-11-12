@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace deltaq
 {
@@ -91,13 +89,14 @@ namespace deltaq
 
         public static IEnumerable<byte[]> BufferedRead(this Stream stream, long count, int bufferSize = 0x1000)
         {
-            if (count <= 0) yield break;
+            var readLength = (int) count;
+            if (readLength <= 0) yield break;
 
             using (var reader = new BinaryReader(stream))
             {
-                for (; count > 0; count -= bufferSize)
+                for (; readLength > 0; readLength -= bufferSize)
                 {
-                    yield return reader.ReadBytes(Math.Min((int)count, bufferSize));
+                    yield return reader.ReadBytes(Math.Min(readLength, bufferSize));
                 }
             }
         }
