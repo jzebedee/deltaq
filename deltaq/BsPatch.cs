@@ -146,6 +146,13 @@ namespace deltaq
 
         private static void ApplyInternal(long newSize, Stream input, Stream ctrl, Stream diff, Stream extra, Stream output)
         {
+            if (!input.CanRead)
+                throw new ArgumentException("Input stream must be readable", "input");
+            if (!input.CanSeek)
+                throw new ArgumentException("Input stream must be seekable", "input");
+            if (!output.CanWrite)
+                throw new ArgumentException("Output stream must be writable", "output");
+
             using (ctrl)
             using (diff)
             using (extra)
