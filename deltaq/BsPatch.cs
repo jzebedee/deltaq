@@ -53,8 +53,20 @@ namespace deltaq
 {
     public static class BsPatch
     {
+        /// <summary>
+        /// Opens a BSDIFF-format patch at a specific position
+        /// </summary>
+        /// <param name="offset">Zero-based offset into the patch</param>
+        /// <param name="length">Length of the Stream from offset, or 0 for the rest of the patch</param>
+        /// <returns>Readable, seekable stream with specified offset and length</returns>
         public delegate Stream OpenPatchStream(long offset, long length);
 
+        /// <summary>
+        /// Applies a BSDIFF-format patch to an original and produces the updated version
+        /// </summary>
+        /// <param name="input">Byte array of the original (older) data</param>
+        /// <param name="diff">Byte array of the BSDIFF-format patch data</param>
+        /// <param name="output">Writable stream where the updated data will be written</param>
         public static void Apply(byte[] input, byte[] diff, Stream output)
         {
             OpenPatchStream openPatchStream = (uOffset, uLength) =>
@@ -74,6 +86,12 @@ namespace deltaq
             ApplyInternal(newSize, new MemoryStream(input), controlStream, diffStream, extraStream, output);
         }
 
+        /// <summary>
+        /// Applies a BSDIFF-format patch to an original and produces the updated version
+        /// </summary>
+        /// <param name="input">Readable, seekable stream of the original (older) data</param>
+        /// <param name="openPatchStream"><see cref="OpenPatchStream"/></param>
+        /// <param name="output">Writable stream where the updated data will be written</param>
         public static void Apply(Stream input, OpenPatchStream openPatchStream, Stream output)
         {
             Stream controlStream, diffStream, extraStream;

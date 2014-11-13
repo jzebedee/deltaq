@@ -65,6 +65,12 @@ namespace deltaq
             return new BZip2InputStream(stream);
         }
 
+        /// <summary>
+        /// Creates a BSDIFF-format patch from two byte arrays
+        /// </summary>
+        /// <param name="oldData">Byte array of the original (older) data</param>
+        /// <param name="newData">Byte array of the changed (newer) data</param>
+        /// <param name="output">Seekable, writable stream where the patch will be written</param>
         public static void Create(byte[] oldData, byte[] newData, Stream output)
         {
             // check arguments
