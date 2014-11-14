@@ -77,6 +77,22 @@ namespace deltaq_tests
         }
 
         [Test]
+        public void BsDiffCreateFromBuffers_Identical()
+        {
+            foreach (var oldBuffer in GetBuffers(Sizes))
+            {
+                var newBuffer = new byte[oldBuffer.Length];
+                Buffer.BlockCopy(oldBuffer, 0, newBuffer, 0, oldBuffer.Length);
+                
+                var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
+                var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
+
+                Assert.AreEqual(oldBuffer, finishedBuf);
+                Assert.AreEqual(newBuffer, finishedBuf);
+            }
+        }
+
+        [Test]
         public void BsDiffCreateFromStreams()
         {
             const int outputSize = 0x2A000;
