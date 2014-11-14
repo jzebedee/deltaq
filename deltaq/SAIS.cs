@@ -51,7 +51,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace deltaq
@@ -156,7 +155,7 @@ namespace deltaq
 
             if (i < m)
             {
-                for (j = i, ++i;; ++i)
+                for (j = i, ++i; ; ++i)
                 {
                     if ((p = sa[i]) < 0)
                     {
@@ -178,7 +177,7 @@ namespace deltaq
             {
                 c1 = c0;
             } while ((0 <= --i) && ((c0 = T[i]) >= c1));
-            for (; 0 <= i;)
+            for (; 0 <= i; )
             {
                 do
                 {
@@ -306,10 +305,10 @@ namespace deltaq
                 c = sa.Slice(n + fs - k, sa.Length - (n + fs - k));
                 if (k <= (fs - k))
                 {
-                    b = sa.Slice(n + fs - k*2, sa.Length - (n + fs - k*2));
+                    b = sa.Slice(n + fs - k * 2, sa.Length - (n + fs - k * 2));
                     flags = 0;
                 }
-                else if (k <= (MinBucketSize*4))
+                else if (k <= (MinBucketSize * 4))
                 {
                     b = new int[k];
                     flags = 2;
@@ -345,7 +344,7 @@ namespace deltaq
                 c1 = c0;
             } while ((0 <= --i) && ((c0 = T[i]) >= c1));
 
-            for (; 0 <= i;)
+            for (; 0 <= i; )
             {
                 do
                 {
@@ -394,7 +393,7 @@ namespace deltaq
                 {
                     b = null;
                 }
-                int newfs = (n + fs) - (m*2);
+                int newfs = (n + fs) - (m * 2);
                 if ((flags & (1 | 4 | 8)) == 0)
                 {
                     if ((k + name) <= newfs)
@@ -408,7 +407,7 @@ namespace deltaq
                 }
 
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
-                for (i = m + (n >> 1) - 1, j = m*2 + newfs - 1; m <= i; --i)
+                for (i = m + (n >> 1) - 1, j = m * 2 + newfs - 1; m <= i; --i)
                 {
                     if (sa[i] != 0)
                     {
@@ -419,14 +418,14 @@ namespace deltaq
                 sais_main(sa.Slice(m + newfs, sa.Length - (m + newfs)), sa, newfs, m, name);
 
                 i = n - 1;
-                j = m*2 - 1;
+                j = m * 2 - 1;
                 c0 = T[n - 1];
                 do
                 {
                     c1 = c0;
                 } while ((0 <= --i) && ((c0 = T[i]) >= c1));
 
-                for (; 0 <= i;)
+                for (; 0 <= i; )
                 {
                     do
                     {
@@ -472,7 +471,7 @@ namespace deltaq
                 c1 = T[p];
                 do
                 {
-                    Debug.Assert(b != null, "b != null");
+                    // ReSharper disable once PossibleNullReferenceException
                     int q = b[c0 = c1];
 
                     // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
@@ -556,7 +555,7 @@ namespace deltaq
             public int this[int index]
             {
                 get { return _buffer[index]; }
-                set { _buffer[index] = (byte) value; }
+                set { _buffer[index] = (byte)value; }
             }
 
             public void Add(int item)
