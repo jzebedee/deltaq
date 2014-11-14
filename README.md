@@ -4,7 +4,7 @@ Fast and portable delta encoding library for .NET
 
 deltaq is a Portable Class Library (PCL) that targets .NET Framework version 4.5
 
-deltaq currently depends on [ICSharpCode.SharpZipLib.Portable](https://github.com/ygrenier/SharpZipLib.Portable) to support bzip2 compression
+deltaq currently depends on [bz2portable](https://github.com/jzebedee/bz2portable) to support bzip2 compression
 
 ### Supported formats
 |Format|Create patches|Apply patches|
