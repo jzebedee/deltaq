@@ -25,7 +25,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
@@ -58,7 +57,7 @@ namespace deltaq_tests
         private static Randomizer SetupRandomizer()
         {
             var seed = Randomizer.RandomSeed;
-            Debug.WriteLine("Randomizer seed: {0}", seed);
+            Console.WriteLine("Randomizer seed: {0}", seed);
 
             return new Randomizer(seed);
         }
