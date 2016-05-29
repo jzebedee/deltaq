@@ -511,7 +511,7 @@ namespace deltaq.SuffixSort
         public int[] Sort(byte[] T)
         {
             if (T == null)
-                throw new ArgumentNullException("T");
+                throw new ArgumentNullException(nameof(T));
 
             var sa = new int[T.Length + 1];
 

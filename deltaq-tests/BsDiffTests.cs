@@ -119,7 +119,7 @@ namespace deltaq_tests
                 }
         }
 
-        [TestCaseSource(typeof(BsDiffTests), "BsDiffCreateNullArguments_TestData")]
+        [TestCaseSource(typeof(BsDiffTests), nameof(BsDiffCreateNullArguments_TestData))]
         [ExpectedException(typeof(ArgumentNullException))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
@@ -135,7 +135,7 @@ namespace deltaq_tests
             yield return new object[] { emptybuf, emptybuf, null };
         }
 
-        [TestCaseSource(typeof(BsDiffTests), "BsDiffCreateBadStreams_TestData")]
+        [TestCaseSource(typeof(BsDiffTests), nameof(BsDiffCreateBadStreams_TestData))]
         [ExpectedException(typeof(ArgumentException))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {

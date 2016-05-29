@@ -63,17 +63,17 @@ namespace deltaq.BsDiff
         {
             // check arguments
             if (oldData == null)
-                throw new ArgumentNullException("oldData");
+                throw new ArgumentNullException(nameof(oldData));
             if (newData == null)
-                throw new ArgumentNullException("newData");
+                throw new ArgumentNullException(nameof(newData));
             if (output == null)
-                throw new ArgumentNullException("output");
+                throw new ArgumentNullException(nameof(output));
             if (suffixSort == null)
                 throw new ArgumentNullException(nameof(suffixSort));
             if (!output.CanSeek)
-                throw new ArgumentException("Output stream must be seekable.", "output");
+                throw new ArgumentException("Output stream must be seekable.", nameof(output));
             if (!output.CanWrite)
-                throw new ArgumentException("Output stream must be writable.", "output");
+                throw new ArgumentException("Output stream must be writable.", nameof(output));
 
             /* Header is
                 0	8	 "BSDIFF40"
