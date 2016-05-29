@@ -156,3 +156,5 @@ $RECYCLE.BIN/
 .DS_Store
 *.snk
 /.vs
+
+*.lock.json
