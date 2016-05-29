@@ -44,7 +44,8 @@
     <Compile Include="BsPatch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SAIS.cs" />
+    <Compile Include="SuffixSort\ISuffixSort.cs" />
+    <Compile Include="SuffixSort\SAIS.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deltaq.snk" />
