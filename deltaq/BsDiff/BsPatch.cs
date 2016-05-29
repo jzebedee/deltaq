@@ -30,7 +30,7 @@ using System.IO;
 
 namespace deltaq.BsDiff
 {
-    public class BsPatch
+    public static class BsPatch
     {
         /// <summary>
         /// Opens a BSDIFF-format patch at a specific position

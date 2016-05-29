@@ -33,7 +33,7 @@ using deltaq.SuffixSort;
 
 namespace deltaq.BsDiff
 {
-    public class BsDiff
+    public static class BsDiff
     {
         internal const int HeaderSize = 32;
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
