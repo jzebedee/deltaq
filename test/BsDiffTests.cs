@@ -31,6 +31,7 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using deltaq.BsDiff;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace deltaq_tests
 {
@@ -56,7 +57,7 @@ namespace deltaq_tests
 
         private static Randomizer SetupRandomizer()
         {
-            var seed = Randomizer.RandomSeed;
+            var seed = Randomizer.InitialSeed;
             Console.WriteLine("Randomizer seed: {0}", seed);
 
             return new Randomizer(seed);
@@ -120,10 +121,9 @@ namespace deltaq_tests
         }
 
         [TestCaseSource(typeof(BsDiffTests), nameof(BsDiffCreateNullArguments_TestData))]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
-            BsDiff.Create(oldData, newData, outStream);
+            Assert.Throws<ArgumentNullException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
         private static IEnumerable BsDiffCreateNullArguments_TestData()
@@ -136,10 +136,9 @@ namespace deltaq_tests
         }
 
         [TestCaseSource(typeof(BsDiffTests), nameof(BsDiffCreateBadStreams_TestData))]
-        [ExpectedException(typeof(ArgumentException))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {
-            BsDiff.Create(oldData, newData, outStream);
+            Assert.Throws<ArgumentException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
         private static IEnumerable BsDiffCreateBadStreams_TestData()
