@@ -28,7 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using bz2portable.BZip2;
+using bz2core;
 using deltaq.SuffixSort;
 
 namespace deltaq.BsDiff
