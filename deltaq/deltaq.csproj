@@ -40,8 +40,8 @@
     <AssemblyOriginatorKeyFile>..\deltaq.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BsDiff.cs" />
-    <Compile Include="BsPatch.cs" />
+    <Compile Include="BsDiff\BsDiff.cs" />
+    <Compile Include="BsDiff\BsPatch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SuffixSort\ISuffixSort.cs" />

@@ -24,12 +24,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+
 using System;
 using System.IO;
 
-namespace deltaq
+namespace deltaq.BsDiff
 {
-    public static class BsPatch
+    public class BsPatch
     {
         /// <summary>
         /// Opens a BSDIFF-format patch at a specific position
