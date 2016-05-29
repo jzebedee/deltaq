@@ -49,12 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deltaq.snk" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="bz2portable">
-      <HintPath>..\packages\bz2portable.1.0.1\lib\bz2portable.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
