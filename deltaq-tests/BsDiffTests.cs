@@ -29,7 +29,7 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
-using deltaq;
+using deltaq.BsDiff;
 using NUnit.Framework;
 
 namespace deltaq_tests
