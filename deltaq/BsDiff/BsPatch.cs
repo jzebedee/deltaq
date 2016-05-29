@@ -24,10 +24,11 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+
 using System;
 using System.IO;
 
-namespace deltaq
+namespace deltaq.BsDiff
 {
     public static class BsPatch
     {
@@ -87,9 +88,9 @@ namespace deltaq
             {
                 // check patch stream capabilities
                 if (!patchStream.CanRead)
-                    throw new ArgumentException("Patch stream must be readable", "openPatchStream");
+                    throw new ArgumentException("Patch stream must be readable", nameof(openPatchStream));
                 if (!patchStream.CanSeek)
-                    throw new ArgumentException("Patch stream must be seekable", "openPatchStream");
+                    throw new ArgumentException("Patch stream must be seekable", nameof(openPatchStream));
 
                 var header = new byte[BsDiff.HeaderSize];
                 patchStream.Read(header, 0, BsDiff.HeaderSize);
@@ -125,11 +126,11 @@ namespace deltaq
         private static void ApplyInternal(long newSize, Stream input, Stream ctrl, Stream diff, Stream extra, Stream output)
         {
             if (!input.CanRead)
-                throw new ArgumentException("Input stream must be readable", "input");
+                throw new ArgumentException("Input stream must be readable", nameof(input));
             if (!input.CanSeek)
-                throw new ArgumentException("Input stream must be seekable", "input");
+                throw new ArgumentException("Input stream must be seekable", nameof(input));
             if (!output.CanWrite)
-                throw new ArgumentException("Output stream must be writable", "output");
+                throw new ArgumentException("Output stream must be writable", nameof(output));
 
             using (ctrl)
             using (diff)

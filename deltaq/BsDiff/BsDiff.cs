@@ -24,17 +24,21 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using bz2portable.BZip2;
+using bz2core;
+using deltaq.SuffixSort;
 
-namespace deltaq
+namespace deltaq.BsDiff
 {
     public static class BsDiff
     {
         internal const int HeaderSize = 32;
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
+
+        private static ISuffixSort DefaultSuffixSort => new SAIS();
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
         {
@@ -49,19 +53,27 @@ namespace deltaq
         /// <param name="oldData">Byte array of the original (older) data</param>
         /// <param name="newData">Byte array of the changed (newer) data</param>
         /// <param name="output">Seekable, writable stream where the patch will be written</param>
-        public static void Create(byte[] oldData, byte[] newData, Stream output)
+        /// <param name="suffixSort">Suffix sort implementation to use for comparison, or null to use a default sorter</param>
+        public static void Create(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort = null)
+        {
+            CreateInternal(oldData, newData, output, suffixSort ?? DefaultSuffixSort);
+        }
+
+        private static void CreateInternal(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort)
         {
             // check arguments
             if (oldData == null)
-                throw new ArgumentNullException("oldData");
+                throw new ArgumentNullException(nameof(oldData));
             if (newData == null)
-                throw new ArgumentNullException("newData");
+                throw new ArgumentNullException(nameof(newData));
             if (output == null)
-                throw new ArgumentNullException("output");
+                throw new ArgumentNullException(nameof(output));
+            if (suffixSort == null)
+                throw new ArgumentNullException(nameof(suffixSort));
             if (!output.CanSeek)
-                throw new ArgumentException("Output stream must be seekable.", "output");
+                throw new ArgumentException("Output stream must be seekable.", nameof(output));
             if (!output.CanWrite)
-                throw new ArgumentException("Output stream must be writable.", "output");
+                throw new ArgumentException("Output stream must be writable.", nameof(output));
 
             /* Header is
                 0	8	 "BSDIFF40"
@@ -80,7 +92,7 @@ namespace deltaq
             var startPosition = output.Position;
             output.Write(header, 0, header.Length);
 
-            var I = SAIS.Sufsort(oldData);
+            var I = suffixSort.Sort(oldData);
 
             using (var msControl = new MemoryStream())
             using (var msDiff = new MemoryStream())

@@ -29,19 +29,18 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
-using deltaq;
-using NUnit.Framework;
+using deltaq.BsDiff;
+using Xunit;
 
 namespace deltaq_tests
 {
-    [TestFixture]
     public class BsDiffTests
     {
         private static readonly int[] Sizes = { 0, 1, 512, 999, 1024, 0x10000 };
 
         private static byte[] GetBuffer(int size)
         {
-            var rand = SetupRandomizer();
+            var rand = new Random(63*13*63*13);
 
             var buf = new byte[size];
             rand.NextBytes(buf);
@@ -54,15 +53,7 @@ namespace deltaq_tests
             return sizes.Select(GetBuffer);
         }
 
-        private static Randomizer SetupRandomizer()
-        {
-            var seed = Randomizer.RandomSeed;
-            Console.WriteLine("Randomizer seed: {0}", seed);
-
-            return new Randomizer(seed);
-        }
-
-        [Test]
+        [Fact]
         public void BsDiffCreateFromBuffers()
         {
             foreach (var oldBuffer in GetBuffers(Sizes))
@@ -71,11 +62,11 @@ namespace deltaq_tests
                     var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
                     var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
 
-                    Assert.AreEqual(newBuffer, finishedBuf);
+                    Assert.Equal(newBuffer, finishedBuf);
                 }
         }
 
-        [Test]
+        [Fact]
         public void BsDiffCreateFromBuffers_Identical()
         {
             foreach (var oldBuffer in GetBuffers(Sizes))
@@ -86,12 +77,12 @@ namespace deltaq_tests
                 var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
                 var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
 
-                Assert.AreEqual(oldBuffer, finishedBuf);
-                Assert.AreEqual(newBuffer, finishedBuf);
+                Assert.Equal(oldBuffer, finishedBuf);
+                Assert.Equal(newBuffer, finishedBuf);
             }
         }
 
-        [Test]
+        [Fact]
         public void BsDiffCreateFromStreams()
         {
             const int outputSize = 0x2A000;
@@ -115,15 +106,15 @@ namespace deltaq_tests
                         }
                     }
 
-                    Assert.AreEqual(newBuffer, bytesOut);
+                    Assert.Equal(newBuffer, bytesOut);
                 }
         }
 
-        [TestCaseSource(typeof(BsDiffTests), "BsDiffCreateNullArguments_TestData")]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Theory]
+        [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
-            BsDiff.Create(oldData, newData, outStream);
+            Assert.Throws<ArgumentNullException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
         private static IEnumerable BsDiffCreateNullArguments_TestData()
@@ -135,11 +126,11 @@ namespace deltaq_tests
             yield return new object[] { emptybuf, emptybuf, null };
         }
 
-        [TestCaseSource(typeof(BsDiffTests), "BsDiffCreateBadStreams_TestData")]
-        [ExpectedException(typeof(ArgumentException))]
+        [Theory]
+        [MemberData(nameof(BsDiffCreateBadStreams_TestData))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {
-            BsDiff.Create(oldData, newData, outStream);
+            Assert.Throws<ArgumentException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
         private static IEnumerable BsDiffCreateBadStreams_TestData()
