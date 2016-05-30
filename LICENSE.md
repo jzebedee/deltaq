@@ -8,7 +8,7 @@ Logos Bible Software's bsdiff.net, and Yuta Mori's implementation of Suffix Arra
 
 The MIT License (MIT)
 
-Copyright (c) 2014 scorpion
+Copyright (c) 2014 J. Zebedee
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
