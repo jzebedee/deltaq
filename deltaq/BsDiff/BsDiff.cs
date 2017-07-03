@@ -38,7 +38,7 @@ namespace deltaq.BsDiff
         internal const int HeaderSize = 32;
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
 
-        private static ISuffixSort DefaultSuffixSort => new SAIS();
+        private static readonly Lazy<ISuffixSort> DefaultSuffixSort = new Lazy<ISuffixSort>(() => new SAIS());
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
         {
@@ -56,7 +56,7 @@ namespace deltaq.BsDiff
         /// <param name="suffixSort">Suffix sort implementation to use for comparison, or null to use a default sorter</param>
         public static void Create(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort = null)
         {
-            CreateInternal(oldData, newData, output, suffixSort ?? DefaultSuffixSort);
+            CreateInternal(oldData, newData, output, suffixSort ?? DefaultSuffixSort.Value);
         }
 
         private static void CreateInternal(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort)
