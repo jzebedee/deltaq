@@ -117,7 +117,7 @@ namespace deltaq_tests
             Assert.Throws<ArgumentNullException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
-        private static IEnumerable BsDiffCreateNullArguments_TestData()
+        public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
         {
             var emptybuf = new byte[0];
             var ms = new MemoryStream();
@@ -133,7 +133,7 @@ namespace deltaq_tests
             Assert.Throws<ArgumentException>(() => BsDiff.Create(oldData, newData, outStream));
         }
 
-        private static IEnumerable BsDiffCreateBadStreams_TestData()
+        public static IEnumerable<object[]> BsDiffCreateBadStreams_TestData()
         {
             var emptybuf = new byte[0];
             yield return new object[] { emptybuf, emptybuf, new MemoryStream(emptybuf, false) };
