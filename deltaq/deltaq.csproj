@@ -18,6 +18,8 @@ Supports creating and applying patches in BSDIFF format</Description>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Version>1.2.0</Version>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
 </Project>
