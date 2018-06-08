@@ -14,7 +14,6 @@ Supports creating and applying patches in BSDIFF format</Description>
     <PackageProjectUrl>https://github.com/jzebedee/deltaq</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/jzebedee/deltaq/blob/master/LICENSE.md</PackageLicenseUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
