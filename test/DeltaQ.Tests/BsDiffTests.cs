@@ -22,6 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+using DeltaQ.BsDiff;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,10 +30,9 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
-using deltaq.BsDiff;
 using Xunit;
 
-namespace deltaq_tests
+namespace DeltaQ.Tests
 {
     public class BsDiffTests
     {
@@ -95,7 +95,7 @@ namespace deltaq_tests
                     {
                         using (var mmfStream = mmf.CreateViewStream())
                         {
-                            BsDiff.Create(oldBuffer, newBuffer, mmfStream);
+                            BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream);
                         }
 
                         using (var msA = new MemoryStream(oldBuffer))
@@ -114,7 +114,7 @@ namespace deltaq_tests
         [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentNullException>(() => BsDiff.Create(oldData, newData, outStream));
+            Assert.Throws<ArgumentNullException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream));
         }
 
         public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
@@ -130,7 +130,7 @@ namespace deltaq_tests
         [MemberData(nameof(BsDiffCreateBadStreams_TestData))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentException>(() => BsDiff.Create(oldData, newData, outStream));
+            Assert.Throws<ArgumentException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream));
         }
 
         public static IEnumerable<object[]> BsDiffCreateBadStreams_TestData()
@@ -144,7 +144,7 @@ namespace deltaq_tests
         {
             using (var outputStream = new MemoryStream())
             {
-                BsDiff.Create(oldBuf, newBuf, outputStream);
+                BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream);
                 return outputStream.ToArray();
             }
         }
