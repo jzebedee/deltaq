@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Product>DeltaQ</Product>
+    <Authors>jzebedee</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>
