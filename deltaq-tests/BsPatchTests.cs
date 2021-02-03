@@ -29,13 +29,15 @@ namespace deltaq_tests
             var wrappedPatchMs = new BufferedStream(patchMs);
             BsDiff.Create(oldBuffer, newBuffer, wrappedPatchMs);
 
-            var patchBuffer = patchMs.GetBuffer();
+            var patchBuffer = patchMs.ToArray();
 
             var reconstructMs = new MemoryStream();
             var wrappedReconstructMs = new BufferedStream(reconstructMs);
             BsPatch.Apply(oldBuffer, patchBuffer, wrappedReconstructMs);
 
-            Assert.Equal(newBuffer, reconstructMs.GetBuffer());
+            var reconstructedBuffer = reconstructMs.ToArray();
+
+            Assert.Equal(newBuffer, reconstructedBuffer);
         }
     }
 }
