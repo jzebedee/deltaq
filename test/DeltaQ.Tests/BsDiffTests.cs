@@ -1,5 +1,5 @@
 ﻿/*
- * BsDiffTests.cs for deltaq
+ * BsDiffTests.cs for DeltaQ
  * Copyright (c) 2014 J. Zebedee
  * 
  * Permission is hereby granted, free of charge, to any person

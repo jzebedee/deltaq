@@ -1,5 +1,5 @@
 ﻿/*
- * BsPatch.cs for deltaq
+ * BsPatch.cs for DeltaQ
  * Copyright (c) 2014 J. Zebedee
  * 
  * BsDiff.net is Copyright 2010 Logos Bible Software
@@ -28,7 +28,7 @@
 using System;
 using System.IO;
 
-namespace deltaq.BsDiff
+namespace DeltaQ.BsDiff
 {
     public static class BsPatch
     {

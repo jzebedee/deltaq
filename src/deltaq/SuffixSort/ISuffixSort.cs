@@ -1,4 +1,4 @@
-﻿namespace deltaq.SuffixSort
+﻿namespace DeltaQ.SuffixSort
 {
     public interface ISuffixSort
     {

@@ -1,5 +1,5 @@
 ﻿/*
- * Extensions.cs for deltaq
+ * Extensions.cs for DeltaQ
  * Copyright (c) 2014 J. Zebedee
  * 
  * Permission is hereby granted, free of charge, to any person
@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace deltaq
+namespace DeltaQ
 {
     internal static class Extensions
     {

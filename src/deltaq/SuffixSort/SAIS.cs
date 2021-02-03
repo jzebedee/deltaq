@@ -1,5 +1,5 @@
 ﻿/*
- * SAIS.cs for deltaq
+ * SAIS.cs for DeltaQ
  * Copyright (c) 2014 J. Zebedee
  * 
  * Permission is hereby granted, free of charge, to any person
@@ -53,7 +53,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace deltaq.SuffixSort
+namespace DeltaQ.SuffixSort
 {
     /// <summary>
     ///     An implementation of the induced sorting based suffix array construction algorithm.
