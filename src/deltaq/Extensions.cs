@@ -37,11 +37,6 @@ namespace DeltaQ
             //substitute everything remaining after the offset, if count is subzero
             return new ArraySegment<T>(buf, offset, count < 0 ? buf.Length - offset : count);
         }
-
-        public static ArraySegment<T> Slice<T>(this ArraySegment<T> segment, int offset, int count = -1)
-        {
-            return segment.Array.Slice(offset, count);
-        }
         #endregion
 
         #region Long Read/Write
@@ -109,21 +104,6 @@ namespace DeltaQ
         }
         #endregion
 
-        #region Stream reading
-
-        public static IEnumerable<byte[]> BufferedRead(this Stream stream, long count, int bufferSize = 0x1000)
-        {
-            var readLength = (int) count;
-            if (readLength <= 0) yield break;
-
-            using (var reader = new BinaryReader(stream))
-            {
-                for (; readLength > 0; readLength -= bufferSize)
-                {
-                    yield return reader.ReadBytes(Math.Min(readLength, bufferSize));
-                }
-            }
-        }
-        #endregion
+        public static Span<T> SliceUpTo<T>(this Span<T> span, int max) => span.Slice(0, Math.Min(span.Length, max));
     }
 }

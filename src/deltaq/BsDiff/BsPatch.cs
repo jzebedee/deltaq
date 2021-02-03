@@ -48,18 +48,20 @@ namespace DeltaQ.BsDiff
         /// <param name="output">Writable stream where the updated data will be written</param>
         public static void Apply(byte[] input, byte[] diff, Stream output)
         {
-            OpenPatchStream openPatchStream = (uOffset, uLength) =>
+            Stream openPatchStream(long uOffset, long uLength)
             {
-                var offset = (int)uOffset;
-                var length = (int)uLength;
-                return new MemoryStream(diff, offset,
-                    uLength > 0
-                        ? length
-                        : diff.Length - offset);
-            };
+                checked
+                {
+                    var offset = (int)uOffset;
+                    var length = (int)uLength;
+                    return new MemoryStream(diff, offset,
+                        uLength > 0
+                            ? length
+                            : diff.Length - offset);
+                }
+            }
 
-            Stream controlStream, diffStream, extraStream;
-            var newSize = CreatePatchStreams(openPatchStream, out controlStream, out diffStream, out extraStream);
+            var newSize = CreatePatchStreams(openPatchStream, out Stream controlStream, out Stream diffStream, out Stream extraStream);
 
             // prepare to read three parts of the patch in parallel
             ApplyInternal(newSize, new MemoryStream(input), controlStream, diffStream, extraStream, output);
@@ -73,8 +75,7 @@ namespace DeltaQ.BsDiff
         /// <param name="output">Writable stream where the updated data will be written</param>
         public static void Apply(Stream input, OpenPatchStream openPatchStream, Stream output)
         {
-            Stream controlStream, diffStream, extraStream;
-            var newSize = CreatePatchStreams(openPatchStream, out controlStream, out diffStream, out extraStream);
+            var newSize = CreatePatchStreams(openPatchStream, out Stream controlStream, out Stream diffStream, out Stream extraStream);
 
             // prepare to read three parts of the patch in parallel
             ApplyInternal(newSize, input, controlStream, diffStream, extraStream, output);
@@ -136,7 +137,10 @@ namespace DeltaQ.BsDiff
             using (ctrl)
             using (diff)
             using (extra)
-            using (var inputReader = new BinaryReader(input))
+            using (output)
+            {
+                Span<byte> readBuffer = stackalloc byte[0x1000];
+
                 while (output.Position < newSize)
                 {
                     //read control data:
@@ -154,15 +158,18 @@ namespace DeltaQ.BsDiff
                         throw new InvalidOperationException("Corrupt patch");
 
                     // read diff string in chunks
-                    foreach (var newData in diff.BufferedRead(addSize))
+
+                    while (addSize > 0)
                     {
-                        var inputData = inputReader.ReadBytes(newData.Length);
+                        var bytesRead = diff.Read(readBuffer.SliceUpTo((int)addSize));
+                        var inputData = inputReader.ReadBytes(bytesRead);
 
                         // add old data to diff string
-                        for (var i = 0; i < newData.Length; i++)
-                            newData[i] += inputData[i];
+                        for (var i = 0; i < bytesRead; i++)
+                            readBuffer[i] += inputData[i];
 
-                        output.Write(newData, 0, newData.Length);
+                        output.Write(readBuffer[..bytesRead]);
+                        addSize -= bytesRead;
                     }
 
                     // sanity-check
@@ -170,14 +177,17 @@ namespace DeltaQ.BsDiff
                         throw new InvalidOperationException("Corrupt patch");
 
                     // read extra string in chunks
-                    foreach (var extraData in extra.BufferedRead(copySize))
+                    while (copySize > 0)
                     {
-                        output.Write(extraData, 0, extraData.Length);
+                        var bytesRead = extra.Read(readBuffer.SliceUpTo((int)copySize));
+                        output.Write(readBuffer[..bytesRead]);
+                        copySize -= bytesRead;
                     }
 
                     // adjust position
                     input.Seek(seekAmount, SeekOrigin.Current);
                 }
+            }
         }
     }
 }
