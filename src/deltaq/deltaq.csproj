@@ -1,24 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>deltaq is a .NET Core class library for fast delta encoding in .NET
-
-Supports creating and applying patches in BSDIFF format</Description>
-    <AssemblyTitle>deltaq</AssemblyTitle>
-    <VersionPrefix>1.1.0</VersionPrefix>
-    <Authors>J. Zebedee</Authors>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>deltaq</AssemblyName>
-    <PackageId>deltaq</PackageId>
-    <PackageTags>diff difference patch compare delta deltaq sync bsdiff vcdiff</PackageTags>
-    <PackageProjectUrl>https://github.com/jzebedee/deltaq</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/jzebedee/deltaq/blob/master/LICENSE.md</PackageLicenseUrl>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>1.2.0</Version>
-    <SignAssembly>false</SignAssembly>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>
