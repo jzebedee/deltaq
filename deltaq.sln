@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deltaq", "deltaq\deltaq.csproj", "{CE1513B6-2F66-4E62-BDD1-0C41D4433A51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deltaq", "src\deltaq\deltaq.csproj", "{CE1513B6-2F66-4E62-BDD1-0C41D4433A51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deltaq-tests", "deltaq-tests\deltaq-tests.csproj", "{0FCB4753-5989-452D-A341-2A807BF4320C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deltaq-tests", "test\deltaq-tests\deltaq-tests.csproj", "{0FCB4753-5989-452D-A341-2A807BF4320C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
