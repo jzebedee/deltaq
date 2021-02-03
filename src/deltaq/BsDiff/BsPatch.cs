@@ -137,7 +137,7 @@ namespace DeltaQ.BsDiff
             using (ctrl)
             using (diff)
             using (extra)
-            using (output)
+            using (var inputReader = new BinaryReader(input))
             {
                 Span<byte> readBuffer = stackalloc byte[0x1000];
 
