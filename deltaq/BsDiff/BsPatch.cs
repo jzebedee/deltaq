@@ -132,6 +132,7 @@ namespace deltaq.BsDiff
             if (!output.CanWrite)
                 throw new ArgumentException("Output stream must be writable", nameof(output));
 
+            using (output)
             using (ctrl)
             using (diff)
             using (extra)
