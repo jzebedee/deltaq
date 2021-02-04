@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DeltaQ.SuffixSorting.SAIS\DeltaQ.SuffixSorting.SAIS.csproj" />
     <ProjectReference Include="..\..\src\DeltaQ\DeltaQ.csproj" />
   </ItemGroup>
 

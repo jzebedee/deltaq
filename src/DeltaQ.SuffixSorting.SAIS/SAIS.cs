@@ -48,12 +48,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using DeltaQ.SuffixSort;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace DeltaQ.SuffixSort
+namespace DeltaQ.SuffixSorting.SAIS
 {
     /// <summary>
     ///     An implementation of the induced sorting based suffix array construction algorithm.
@@ -99,7 +100,7 @@ namespace DeltaQ.SuffixSort
             j = n - 1;
             bb = b[c1 = T[j]];
             --j;
-            sa[bb++] = (T[j] < c1) ? ~j : j;
+            sa[bb++] = T[j] < c1 ? ~j : j;
             for (i = 0; i < n; ++i)
             {
                 if (0 < (j = sa[i]))
@@ -110,7 +111,7 @@ namespace DeltaQ.SuffixSort
                         bb = b[c1 = c0];
                     }
                     --j;
-                    sa[bb++] = (T[j] < c1) ? ~j : j;
+                    sa[bb++] = T[j] < c1 ? ~j : j;
                     sa[i] = 0;
                 }
                 else if (j < 0)
@@ -134,7 +135,7 @@ namespace DeltaQ.SuffixSort
                         bb = b[c1 = c0];
                     }
                     --j;
-                    sa[--bb] = (T[j] > c1) ? ~(j + 1) : j;
+                    sa[--bb] = T[j] > c1 ? ~(j + 1) : j;
                     sa[i] = 0;
                 }
             }
@@ -176,21 +177,21 @@ namespace DeltaQ.SuffixSort
             do
             {
                 c1 = c0;
-            } while ((0 <= --i) && ((c0 = T[i]) >= c1));
-            for (; 0 <= i; )
+            } while (0 <= --i && (c0 = T[i]) >= c1);
+            for (; 0 <= i;)
             {
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                } while (0 <= --i && (c0 = T[i]) <= c1);
                 if (0 <= i)
                 {
-                    sa[m + ((i + 1) >> 1)] = j - i;
+                    sa[m + (i + 1 >> 1)] = j - i;
                     j = i + 1;
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                    } while (0 <= --i && (c0 = T[i]) >= c1);
                 }
             }
 
@@ -200,10 +201,10 @@ namespace DeltaQ.SuffixSort
                 p = sa[i];
                 int plen = sa[m + (p >> 1)];
                 bool diff = true;
-                if ((plen == qlen) && ((q + plen) < n))
+                if (plen == qlen && q + plen < n)
                 {
                     for (j = 0;
-                        (j < plen) && (T[p + j] == T[q + j]);
+                        j < plen && T[p + j] == T[q + j];
                         ++j)
                     {
                     }
@@ -236,7 +237,7 @@ namespace DeltaQ.SuffixSort
 
             j = n - 1;
             bb = b[c1 = T[j]];
-            sa[bb++] = ((0 < j) && (T[j - 1] < c1)) ? ~j : j;
+            sa[bb++] = 0 < j && T[j - 1] < c1 ? ~j : j;
             for (i = 0; i < n; ++i)
             {
                 j = sa[i];
@@ -248,7 +249,7 @@ namespace DeltaQ.SuffixSort
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
-                    sa[bb++] = ((0 < j) && (T[j - 1] < c1)) ? ~j : j;
+                    sa[bb++] = 0 < j && T[j - 1] < c1 ? ~j : j;
                 }
             }
 
@@ -266,7 +267,7 @@ namespace DeltaQ.SuffixSort
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
-                    sa[--bb] = ((j == 0) || (T[j - 1] > c1)) ? ~j : j;
+                    sa[--bb] = j == 0 || T[j - 1] > c1 ? ~j : j;
                 }
                 else
                 {
@@ -303,12 +304,12 @@ namespace DeltaQ.SuffixSort
             else if (k <= fs)
             {
                 c = sa.Slice(n + fs - k, sa.Length - (n + fs - k));
-                if (k <= (fs - k))
+                if (k <= fs - k)
                 {
                     b = sa.Slice(n + fs - k * 2, sa.Length - (n + fs - k * 2));
                     flags = 0;
                 }
-                else if (k <= (MinBucketSize * 4))
+                else if (k <= MinBucketSize * 4)
                 {
                     b = new int[k];
                     flags = 2;
@@ -342,14 +343,14 @@ namespace DeltaQ.SuffixSort
             do
             {
                 c1 = c0;
-            } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+            } while (0 <= --i && (c0 = T[i]) >= c1);
 
-            for (; 0 <= i; )
+            for (; 0 <= i;)
             {
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                } while (0 <= --i && (c0 = T[i]) <= c1);
                 if (0 <= i)
                 {
                     if (0 <= bb)
@@ -362,7 +363,7 @@ namespace DeltaQ.SuffixSort
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                    } while (0 <= --i && (c0 = T[i]) >= c1);
                 }
             }
             if (1 < m)
@@ -393,10 +394,10 @@ namespace DeltaQ.SuffixSort
                 {
                     b = null;
                 }
-                int newfs = (n + fs) - (m * 2);
+                int newfs = n + fs - m * 2;
                 if ((flags & (1 | 4 | 8)) == 0)
                 {
-                    if ((k + name) <= newfs)
+                    if (k + name <= newfs)
                     {
                         newfs -= k;
                     }
@@ -423,14 +424,14 @@ namespace DeltaQ.SuffixSort
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                } while (0 <= --i && (c0 = T[i]) >= c1);
 
-                for (; 0 <= i; )
+                for (; 0 <= i;)
                 {
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                    } while (0 <= --i && (c0 = T[i]) <= c1);
 
                     if (0 <= i)
                     {
@@ -438,7 +439,7 @@ namespace DeltaQ.SuffixSort
                         do
                         {
                             c1 = c0;
-                        } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                        } while (0 <= --i && (c0 = T[i]) >= c1);
                     }
                 }
 

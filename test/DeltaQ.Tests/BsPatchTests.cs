@@ -23,7 +23,7 @@ namespace DeltaQ.Tests
             //can't use MemoryStream directly as Flush has no effect
             var patchMs = new MemoryStream();
             var wrappedPatchMs = new BufferedStream(patchMs);
-            BsDiff.BsDiff.Create(oldBuffer, newBuffer, wrappedPatchMs);
+            BsDiff.BsDiff.Create(oldBuffer, newBuffer, wrappedPatchMs, new SuffixSorting.SAIS.SAIS());
 
             var patchBuffer = patchMs.ToArray();
 

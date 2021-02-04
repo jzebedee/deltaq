@@ -39,11 +39,7 @@ namespace DeltaQ.BsDiff
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
-        {
-            if (output)
-                return new BZip2OutputStream(stream) { IsStreamOwner = false };
-            return new BZip2InputStream(stream);
-        }
+            => output ? new BZip2OutputStream(stream) { IsStreamOwner = false } : new BZip2InputStream(stream);
 
         /// <summary>
         /// Creates a BSDIFF-format patch from two byte arrays

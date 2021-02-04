@@ -27,18 +27,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace DeltaQ
+namespace DeltaQ.BsDiff
 {
     internal static class Extensions
     {
-        #region ArraySegment Slice
-        public static ArraySegment<T> Slice<T>(this T[] buf, int offset, int count = -1)
-        {
-            //substitute everything remaining after the offset, if count is subzero
-            return new ArraySegment<T>(buf, offset, count < 0 ? buf.Length - offset : count);
-        }
-        #endregion
-
         #region Long Read/Write
         public static void WriteLongAt(this byte[] pb, int offset, long y)
         {
@@ -59,7 +51,7 @@ namespace DeltaQ
                 b[4] = (byte)(y >>= 8);
                 b[5] = (byte)(y >>= 8);
                 b[6] = (byte)(y >>= 8);
-                b[7] = (byte)((y >> 8) | 0x80);
+                b[7] = (byte)(y >> 8 | 0x80);
             }
             else
             {
