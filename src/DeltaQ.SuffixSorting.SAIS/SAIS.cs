@@ -49,8 +49,6 @@
  */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.SAIS
@@ -63,7 +61,7 @@ namespace DeltaQ.SuffixSorting.SAIS
         private const int MinBucketSize = 256;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void GetCounts(IList<int> T, IList<int> c, int n, int k)
+        private static void GetCounts(IntAccessor T, Span<int> c, int n, int k)
         {
             int i;
             for (i = 0; i < k; ++i)
@@ -74,7 +72,7 @@ namespace DeltaQ.SuffixSorting.SAIS
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void GetBuckets(IList<int> c, IList<int> b, int k, bool end)
+        private static void GetBuckets(Span<int> c, Span<int> b, int k, bool end)
         {
             int i, sum = 0;
             for (i = 0; i < k; ++i)
@@ -86,13 +84,13 @@ namespace DeltaQ.SuffixSorting.SAIS
 
         /* sort all type LMS suffixes */
 
-        private void LMS_sort(IList<int> T, IList<int> sa, IList<int> c, IList<int> b, int n, int k)
+        private static void LMS_sort(IntAccessor T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
         {
             int bb, i, j;
             int c0, c1;
 
             /* compute SAl */
-            if (Equals(c, b))
+            if (c == b)
                 GetCounts(T, c, n, k);
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
@@ -120,7 +118,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
 
             /* compute SAs */
-            if (Equals(c, b))
+            if (c == b)
                 GetCounts(T, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
@@ -140,7 +138,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
         }
 
-        private int LMS_post_proc(IList<int> T, IList<int> sa, int n, int m)
+        private static int LMS_post_proc(IntAccessor T, Span<int> sa, int n, int m)
         {
             int i, j, p, q;
             int qlen, name;
@@ -224,13 +222,13 @@ namespace DeltaQ.SuffixSorting.SAIS
             return name;
         }
 
-        private void InduceSA(IList<int> T, int[] sa, IList<int> c, IList<int> b, int n, int k)
+        private static void InduceSA(IntAccessor T, int[] sa, Span<int> c, Span<int> b, int n, int k)
         {
             int bb, i, j;
             int c0, c1;
 
             /* compute SAl */
-            if (Equals(c, b))
+            if (c == b)
                 GetCounts(T, c, n, k);
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
@@ -253,7 +251,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
 
             /* compute SAs */
-            if (Equals(c, b))
+            if (c == b)
                 GetCounts(T, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
@@ -278,9 +276,9 @@ namespace DeltaQ.SuffixSorting.SAIS
         /* find the suffix array SA of T[0..n-1] in {0..k-1}^n
            use a working space (excluding T and SA) of at most 2n+O(1) for a constant alphabet */
 
-        private void sais_main(IList<int> T, int[] sa, int fs, int n, int k)
+        private void sais_main(IntAccessor T, int[] sa, int fs, int n, int k)
         {
-            IList<int> c, b;
+            Span<int> c, b;
             int i, j, bb, m;
             int name;
             int c0, c1;
@@ -415,7 +413,7 @@ namespace DeltaQ.SuffixSorting.SAIS
                     }
                 }
 
-                sais_main(sa.Slice(m + newfs, sa.Length - (m + newfs)), sa, newfs, m, name);
+                sais_main(new IntAccessor(sa.Slice(m + newfs, sa.Length - (m + newfs))), sa, newfs, m, name);
 
                 i = n - 1;
                 j = m * 2 - 1;
@@ -513,6 +511,11 @@ namespace DeltaQ.SuffixSorting.SAIS
             if (T == null)
                 throw new ArgumentNullException(nameof(T));
 
+            Span<byte> span = T;
+            return Sort(span);
+        }
+        public int[] Sort(ReadOnlySpan<byte> T)
+        {
             var sa = new int[T.Length + 1];
 
             if (T.Length <= 1)
@@ -522,47 +525,56 @@ namespace DeltaQ.SuffixSorting.SAIS
                     sa[0] = 0;
                 }
             }
-            else
-                sais_main(new IntAccessor(T), sa, 0, T.Length, 256);
+            else sais_main(new IntAccessor(T), sa, 0, T.Length, 256);
 
             return sa;
         }
 
-        private class IntAccessor : IList<int>
+        private ref struct IntAccessor
         {
-            private readonly byte[] _buffer;
+            private readonly Span<int> intSpan;
+            private readonly ReadOnlySpan<byte> byteSpan;
+            private readonly bool packedIndex;
 
-            public IntAccessor(byte[] buf) => _buffer = buf;
-
-            public int IndexOf(int item) => throw new NotImplementedException();
-
-            public void Insert(int index, int item) => throw new NotImplementedException();
-
-            public void RemoveAt(int index) => throw new NotImplementedException();
+            public IntAccessor(ReadOnlySpan<byte> buffer)
+            {
+                this.byteSpan = buffer;
+                this.intSpan = default;
+                this.packedIndex = true;
+            }
+            public IntAccessor(Span<int> buffer)
+            {
+                this.byteSpan = default;
+                this.intSpan = buffer;
+                this.packedIndex = false;
+            }
 
             public int this[int index]
             {
-                get => _buffer[index];
-                set => _buffer[index] = (byte)value;
+                get
+                {
+                    if (packedIndex)
+                    {
+                        return byteSpan[index];
+                    }
+                    else
+                    {
+                        return intSpan[index];
+                    }
+                }
+
+                set
+                {
+                    if (packedIndex)
+                    {
+                        throw new InvalidOperationException("Can't use setter while accessing read only span");
+                    }
+                    else
+                    {
+                        intSpan[index] = (byte)value;
+                    }
+                }
             }
-
-            public void Add(int item) => throw new NotImplementedException();
-
-            public void Clear() => throw new NotImplementedException();
-
-            public bool Contains(int item) => throw new NotImplementedException();
-
-            public void CopyTo(int[] array, int arrayIndex) => throw new NotImplementedException();
-
-            public int Count => _buffer.Length;
-
-            public bool IsReadOnly => false;
-
-            public bool Remove(int item) => throw new NotImplementedException();
-
-            public IEnumerator<int> GetEnumerator() => throw new NotImplementedException();
-
-            IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         }
     }
 }
