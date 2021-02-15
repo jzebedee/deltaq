@@ -241,10 +241,10 @@ namespace DeltaQ.BsDiff
             output.Position = endPosition;
         }
 
-        private static int CompareBytes(IList<byte> left, IList<byte> right)
+        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         {
             var diff = 0;
-            for (var i = 0; i < left.Count && i < right.Count; i++)
+            for (var i = 0; i < left.Length && i < right.Length; i++)
             {
                 diff = left[i] - right[i];
                 if (diff != 0)
@@ -253,10 +253,10 @@ namespace DeltaQ.BsDiff
             return diff;
         }
 
-        private static int MatchLength(IList<byte> oldData, IList<byte> newData)
+        private static int MatchLength(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData)
         {
             int i;
-            for (i = 0; i < oldData.Count && i < newData.Count; i++)
+            for (i = 0; i < oldData.Length && i < newData.Length; i++)
             {
                 if (oldData[i] != newData[i])
                     break;
@@ -265,7 +265,7 @@ namespace DeltaQ.BsDiff
             return i;
         }
 
-        private static int Search(IList<int> I, byte[] oldData, IList<byte> newData, int start, int end, out int pos)
+        private static int Search(ReadOnlySpan<int> I, byte[] oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
         {
             while (true)
             {
