@@ -95,7 +95,7 @@ namespace DeltaQ.Tests
                     {
                         using (var mmfStream = mmf.CreateViewStream())
                         {
-                            BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream);
+                            BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
                         }
 
                         using (var msA = new MemoryStream(oldBuffer))
@@ -114,7 +114,7 @@ namespace DeltaQ.Tests
         [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentNullException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream));
+            Assert.Throws<ArgumentNullException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
 
         public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
@@ -130,7 +130,7 @@ namespace DeltaQ.Tests
         [MemberData(nameof(BsDiffCreateBadStreams_TestData))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream));
+            Assert.Throws<ArgumentException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
 
         public static IEnumerable<object[]> BsDiffCreateBadStreams_TestData()
@@ -144,7 +144,7 @@ namespace DeltaQ.Tests
         {
             using (var outputStream = new MemoryStream())
             {
-                BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream);
+                BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream, new SuffixSorting.SAIS.SAIS());
                 return outputStream.ToArray();
             }
         }
