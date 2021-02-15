@@ -49,6 +49,8 @@
  */
 
 using System;
+using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.SAIS
@@ -63,11 +65,11 @@ namespace DeltaQ.SuffixSorting.SAIS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void GetCounts(IntAccessor T, Span<int> c, int n, int k)
         {
-            int i;
-            for (i = 0; i < k; ++i)
-                c[i] = 0;
+            c.Slice(0, k).Clear();
+            //for (i = 0; i < k; ++i)
+            //    c[i] = 0;
 
-            for (i = 0; i < n; ++i)
+            for (int i = 0; i < n; ++i)
                 c[T[i]]++;
         }
 
@@ -222,7 +224,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             return name;
         }
 
-        private static void InduceSA(IntAccessor T, int[] sa, Span<int> c, Span<int> b, int n, int k)
+        private static void InduceSA(IntAccessor T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
         {
             int bb, i, j;
             int c0, c1;
@@ -276,7 +278,7 @@ namespace DeltaQ.SuffixSorting.SAIS
         /* find the suffix array SA of T[0..n-1] in {0..k-1}^n
            use a working space (excluding T and SA) of at most 2n+O(1) for a constant alphabet */
 
-        private void sais_main(IntAccessor T, int[] sa, int fs, int n, int k)
+        private void sais_main(IntAccessor T, Span<int> sa, int fs, int n, int k)
         {
             Span<int> c, b;
             int i, j, bb, m;
@@ -286,7 +288,7 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             if (k <= MinBucketSize)
             {
-                c = new int[k];
+                c = new int[k];// ArrayPool<int>.Shared.Rent(k);
                 if (k <= fs)
                 {
                     b = sa.Slice(n + fs - k, sa.Length - (n + fs - k));
@@ -327,10 +329,12 @@ namespace DeltaQ.SuffixSorting.SAIS
                sort all the LMS-substrings */
             GetCounts(T, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
-            for (i = 0; i < n; ++i)
-            {
-                sa[i] = 0;
-            }
+
+            sa.Slice(0, n).Clear();
+            //for (i = 0; i < n; ++i)
+            //{
+            //    sa[i] = 0;
+            //}
 
             bb = -1;
             i = n - 1;
@@ -529,6 +533,25 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             return sa;
         }
+
+        //private readonly ref struct PooledArray<T>
+        //{
+        //    private readonly T[] _array;
+
+        //    public readonly Span<T> Span;
+
+        //    public PooledArray(int k)
+        //    {
+        //        _array = ArrayPool<T>.Shared.Rent(k);
+
+        //        Span = new Span<T>(_array, 0, k);
+        //    }
+
+        //    public void Dispose()
+        //    {
+        //        ArrayPool<T>.Shared.Return(_array);
+        //    }
+        //}
 
         private ref struct IntAccessor
         {
