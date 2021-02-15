@@ -9,11 +9,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.Tests", "test\DeltaQ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.CLI", "src\DeltaQ.CLI\DeltaQ.CLI.csproj", "{2E9A6A2A-438E-45DD-BDBC-8156A70B284F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.BsDiff", "src\DeltaQ.BsDiff\DeltaQ.BsDiff.csproj", "{C8834EFF-AB77-42D5-8EA2-0AAB88DFEDA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.BsDiff", "src\DeltaQ.BsDiff\DeltaQ.BsDiff.csproj", "{C8834EFF-AB77-42D5-8EA2-0AAB88DFEDA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.SuffixSorting.Abstractions", "src\DeltaQ.SuffixSorting.Abstractions\DeltaQ.SuffixSorting.Abstractions.csproj", "{D81A3696-DBC3-46EA-8CB4-C7C3FA96564B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.Abstractions", "src\DeltaQ.SuffixSorting.Abstractions\DeltaQ.SuffixSorting.Abstractions.csproj", "{D81A3696-DBC3-46EA-8CB4-C7C3FA96564B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.SuffixSorting.SAIS", "src\DeltaQ.SuffixSorting.SAIS\DeltaQ.SuffixSorting.SAIS.csproj", "{0C1531C0-427B-42BE-B781-E83D7B377537}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.SAIS", "src\DeltaQ.SuffixSorting.SAIS\DeltaQ.SuffixSorting.SAIS.csproj", "{0C1531C0-427B-42BE-B781-E83D7B377537}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.VCDiff", "src\DeltaQ.VCDiff\DeltaQ.VCDiff.csproj", "{C889CB97-5D73-4D53-8249-DD7BFD402475}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B14206D-43D5-4740-96BF-3772DC4C3A6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{03F00ECA-08B1-47A4-8ACE-4624E31741BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,9 +51,22 @@ Global
 		{0C1531C0-427B-42BE-B781-E83D7B377537}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C1531C0-427B-42BE-B781-E83D7B377537}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1531C0-427B-42BE-B781-E83D7B377537}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C889CB97-5D73-4D53-8249-DD7BFD402475}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C889CB97-5D73-4D53-8249-DD7BFD402475}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C889CB97-5D73-4D53-8249-DD7BFD402475}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C889CB97-5D73-4D53-8249-DD7BFD402475}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CE1513B6-2F66-4E62-BDD1-0C41D4433A51} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{784B81AE-E39B-497B-90AE-AA7EC4B98E50} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
+		{2E9A6A2A-438E-45DD-BDBC-8156A70B284F} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{C8834EFF-AB77-42D5-8EA2-0AAB88DFEDA1} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{D81A3696-DBC3-46EA-8CB4-C7C3FA96564B} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{0C1531C0-427B-42BE-B781-E83D7B377537} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{C889CB97-5D73-4D53-8249-DD7BFD402475} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {595D8046-0D57-4408-A80A-777358A7E831}
