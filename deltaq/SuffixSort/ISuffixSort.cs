@@ -1,7 +1,9 @@
-﻿namespace deltaq.SuffixSort
+﻿using System;
+
+namespace deltaq.SuffixSort
 {
     public interface ISuffixSort
     {
-        int[] Sort(byte[] buffer);
+        int[] Sort(ReadOnlySpan<byte> buffer);
     }
 }

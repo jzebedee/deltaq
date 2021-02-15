@@ -26,7 +26,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using bz2core;
 using deltaq.SuffixSort;
@@ -38,7 +37,7 @@ namespace deltaq.BsDiff
         internal const int HeaderSize = 32;
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
 
-        private static readonly Lazy<ISuffixSort> DefaultSuffixSort = new Lazy<ISuffixSort>(() => new SAIS());
+        private static readonly ISuffixSort DefaultSuffixSort = new SAIS();
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
         {
@@ -54,18 +53,14 @@ namespace deltaq.BsDiff
         /// <param name="newData">Byte array of the changed (newer) data</param>
         /// <param name="output">Seekable, writable stream where the patch will be written</param>
         /// <param name="suffixSort">Suffix sort implementation to use for comparison, or null to use a default sorter</param>
-        public static void Create(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort = null)
+        public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output, ISuffixSort suffixSort = null)
         {
-            CreateInternal(oldData, newData, output, suffixSort ?? DefaultSuffixSort.Value);
+            CreateInternal(oldData, newData, output, suffixSort ?? DefaultSuffixSort);
         }
 
-        private static void CreateInternal(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort)
+        private static void CreateInternal(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output, ISuffixSort suffixSort)
         {
             // check arguments
-            if (oldData == null)
-                throw new ArgumentNullException(nameof(oldData));
-            if (newData == null)
-                throw new ArgumentNullException(nameof(newData));
             if (output == null)
                 throw new ArgumentNullException(nameof(output));
             if (suffixSort == null)
@@ -85,12 +80,12 @@ namespace deltaq.BsDiff
                 32	??	Bzip2ed ctrl block
                 ??	??	Bzip2ed diff block
                 ??	??	Bzip2ed extra block */
-            var header = new byte[HeaderSize];
+            Span<byte> header = stackalloc byte[HeaderSize];
             header.WriteLong(Signature);
             header.WriteLongAt(24, newData.Length);
 
             var startPosition = output.Position;
-            output.Write(header, 0, header.Length);
+            output.Write(header);
 
             var I = suffixSort.Sort(oldData);
 
@@ -108,6 +103,9 @@ namespace deltaq.BsDiff
                     var lastscan = 0;
                     var lastpos = 0;
                     var lastoffset = 0;
+                    
+                    //backing for ctrl writes
+                    Span<byte> ctrlWriteBuf = stackalloc byte[24];
 
                     // compute the differences, writing ctrl as we go
                     while (scan < newData.Length)
@@ -195,20 +193,14 @@ namespace deltaq.BsDiff
                             //write extra string
                             var extraLength = (scan - lenb) - (lastscan + lenf);
                             if (extraLength > 0)
-                                extraStream.Write(newData, lastscan + lenf, extraLength);
-
-                            //backing for ctrl writes
-                            var buf = new byte[8];
+                                extraStream.Write(newData.Slice(lastscan + lenf, extraLength));
 
                             //write ctrl block
-                            buf.WriteLong(lenf);
-                            ctrlStream.Write(buf, 0, 8);
-
-                            buf.WriteLong(extraLength);
-                            ctrlStream.Write(buf, 0, 8);
-
-                            buf.WriteLong((pos - lenb) - (lastpos + lenf));
-                            ctrlStream.Write(buf, 0, 8);
+                            ctrlWriteBuf.WriteLong(lenf);
+                            ctrlWriteBuf.Slice(8).WriteLong(extraLength);
+                            ctrlWriteBuf.Slice(16).WriteLong((pos - lenb) - (lastpos + lenf));
+                            
+                            ctrlStream.Write(ctrlWriteBuf);
 
                             lastscan = scan - lenb;
                             lastpos = pos - lenb;
@@ -239,14 +231,14 @@ namespace deltaq.BsDiff
             // seek to the beginning, write the header, then seek back to end
             var endPosition = output.Position;
             output.Position = startPosition;
-            output.Write(header, 0, header.Length);
+            output.Write(header);
             output.Position = endPosition;
         }
 
-        private static int CompareBytes(IList<byte> left, IList<byte> right)
+        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         {
             var diff = 0;
-            for (var i = 0; i < left.Count && i < right.Count; i++)
+            for (var i = 0; i < left.Length && i < right.Length; i++)
             {
                 diff = left[i] - right[i];
                 if (diff != 0)
@@ -255,10 +247,10 @@ namespace deltaq.BsDiff
             return diff;
         }
 
-        private static int MatchLength(IList<byte> oldData, IList<byte> newData)
+        private static int MatchLength(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData)
         {
             int i;
-            for (i = 0; i < oldData.Count && i < newData.Count; i++)
+            for (i = 0; i < oldData.Length && i < newData.Length; i++)
             {
                 if (oldData[i] != newData[i])
                     break;
@@ -267,7 +259,7 @@ namespace deltaq.BsDiff
             return i;
         }
 
-        private static int Search(IList<int> I, byte[] oldData, IList<byte> newData, int start, int end, out int pos)
+        private static int Search(ReadOnlySpan<int> I, ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
         {
             while (true)
             {
