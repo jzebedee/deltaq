@@ -63,18 +63,20 @@ namespace deltaq.SuffixSort
         private const int MinBucketSize = 256;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void GetCounts(IList<int> T, IList<int> c, int n, int k)
+        private void GetCounts<TElem, TAccessor>(ReadOnlySpan<TElem> T, TAccessor acc, Span<int> c, int n, int k)
+            where TElem : unmanaged
+            where TAccessor : IAccessor<TElem>
         {
             int i;
             for (i = 0; i < k; ++i)
                 c[i] = 0;
 
             for (i = 0; i < n; ++i)
-                c[T[i]]++;
+                c[acc.Get(T[i])]++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void GetBuckets(IList<int> c, IList<int> b, int k, bool end)
+        private void GetBuckets(ReadOnlySpan<int> c, Span<int> b, int k, bool end)
         {
             int i, sum = 0;
             for (i = 0; i < k; ++i)
@@ -86,31 +88,35 @@ namespace deltaq.SuffixSort
 
         /* sort all type LMS suffixes */
 
-        private void LMS_sort(IList<int> T, IList<int> sa, IList<int> c, IList<int> b, int n, int k)
+        private void LMS_sort<TElem, TAccessor>(
+            ReadOnlySpan<TElem> T, TAccessor acc,
+            Span<int> sa, Span<int> c, Span<int> b, int n, int k) where TElem : unmanaged
+            where TAccessor : IAccessor<TElem>
         {
             int bb, i, j;
             int c0, c1;
 
             /* compute SAl */
-            if (Equals(c, b))
-                GetCounts(T, c, n, k);
+            if (c == b)
+                GetCounts(T, acc, c, n, k);
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
             j = n - 1;
-            bb = b[c1 = T[j]];
+            bb = b[c1 = acc.Get(T[j])];
             --j;
-            sa[bb++] = (T[j] < c1) ? ~j : j;
+            sa[bb++] = (acc.Get(T[j]) < c1) ? ~j : j;
             for (i = 0; i < n; ++i)
             {
                 if (0 < (j = sa[i]))
                 {
-                    if ((c0 = T[j]) != c1)
+                    if ((c0 = acc.Get(T[j])) != c1)
                     {
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
+
                     --j;
-                    sa[bb++] = (T[j] < c1) ? ~j : j;
+                    sa[bb++] = (acc.Get(T[j]) < c1) ? ~j : j;
                     sa[i] = 0;
                 }
                 else if (j < 0)
@@ -120,27 +126,30 @@ namespace deltaq.SuffixSort
             }
 
             /* compute SAs */
-            if (Equals(c, b))
-                GetCounts(T, c, n, k);
+            if (c == b)
+                GetCounts(T, acc, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
             for (i = n - 1, bb = b[c1 = 0]; 0 <= i; --i)
             {
                 if (0 < (j = sa[i]))
                 {
-                    if ((c0 = T[j]) != c1)
+                    if ((c0 = acc.Get(T[j])) != c1)
                     {
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
+
                     --j;
-                    sa[--bb] = (T[j] > c1) ? ~(j + 1) : j;
+                    sa[--bb] = (acc.Get(T[j]) > c1) ? ~(j + 1) : j;
                     sa[i] = 0;
                 }
             }
         }
 
-        private int LMS_post_proc(IList<int> T, IList<int> sa, int n, int m)
+        private int LMS_post_proc<TElem, TAccessor>(ReadOnlySpan<TElem> T, TAccessor acc, Span<int> sa, int n, int m)
+            where TElem : unmanaged
+            where TAccessor : IAccessor<TElem>
         {
             int i, j, p, q;
             int qlen, name;
@@ -155,7 +164,7 @@ namespace deltaq.SuffixSort
 
             if (i < m)
             {
-                for (j = i, ++i; ; ++i)
+                for (j = i, ++i;; ++i)
                 {
                     if ((p = sa[i]) < 0)
                     {
@@ -172,17 +181,19 @@ namespace deltaq.SuffixSort
             /* store the length of all substrings */
             i = n - 1;
             j = n - 1;
-            c0 = T[n - 1];
+            c0 = acc.Get(T[n - 1]);
             do
             {
                 c1 = c0;
-            } while ((0 <= --i) && ((c0 = T[i]) >= c1));
-            for (; 0 <= i; )
+            } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
+
+            for (; 0 <= i;)
             {
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                } while ((0 <= --i) && ((c0 = acc.Get(T[i])) <= c1));
+
                 if (0 <= i)
                 {
                     sa[m + ((i + 1) >> 1)] = j - i;
@@ -190,7 +201,7 @@ namespace deltaq.SuffixSort
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                    } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
                 }
             }
 
@@ -203,70 +214,78 @@ namespace deltaq.SuffixSort
                 if ((plen == qlen) && ((q + plen) < n))
                 {
                     for (j = 0;
-                        (j < plen) && (T[p + j] == T[q + j]);
+                        (j < plen) && (acc.Get(T[p + j]) == acc.Get(T[q + j]));
                         ++j)
                     {
                     }
+
                     if (j == plen)
                     {
                         diff = false;
                     }
                 }
+
                 if (diff)
                 {
                     ++name;
                     q = p;
                     qlen = plen;
                 }
+
                 sa[m + (p >> 1)] = name;
             }
 
             return name;
         }
 
-        private void InduceSA(IList<int> T, int[] sa, IList<int> c, IList<int> b, int n, int k)
+        private void InduceSA<TElem, TAccessor>(ReadOnlySpan<TElem> T, TAccessor acc, int[] sa, Span<int> c,
+            Span<int> b, int n, int k)
+            where TElem : unmanaged
+            where TAccessor : IAccessor<TElem>
         {
             int bb, i, j;
             int c0, c1;
 
             /* compute SAl */
-            if (Equals(c, b))
-                GetCounts(T, c, n, k);
+            if (c == b)
+                GetCounts(T, acc, c, n, k);
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
             j = n - 1;
-            bb = b[c1 = T[j]];
-            sa[bb++] = ((0 < j) && (T[j - 1] < c1)) ? ~j : j;
+            bb = b[c1 = acc.Get(T[j])];
+            sa[bb++] = ((0 < j) && (acc.Get(T[j - 1]) < c1)) ? ~j : j;
             for (i = 0; i < n; ++i)
             {
                 j = sa[i];
                 sa[i] = ~j;
                 if (0 < j)
                 {
-                    if ((c0 = T[--j]) != c1)
+                    if ((c0 = acc.Get(T[--j])) != c1)
                     {
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
-                    sa[bb++] = ((0 < j) && (T[j - 1] < c1)) ? ~j : j;
+
+                    sa[bb++] = ((0 < j) && (acc.Get(T[j - 1]) < c1)) ? ~j : j;
                 }
             }
 
             /* compute SAs */
-            if (Equals(c, b))
-                GetCounts(T, c, n, k);
+            if (c == b)
+                GetCounts(T, acc, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
             for (i = n - 1, bb = b[c1 = 0]; 0 <= i; --i)
             {
                 if (0 < (j = sa[i]))
                 {
-                    if ((c0 = T[--j]) != c1)
+                    if ((c0 = acc.Get(T[--j])) != c1)
                     {
                         b[c1] = bb;
                         bb = b[c1 = c0];
                     }
-                    sa[--bb] = ((j == 0) || (T[j - 1] > c1)) ? ~j : j;
+
+                    sa[--bb] = ((j == 0) || (acc.Get(T[j - 1]) > c1)) ? ~j : j;
                 }
                 else
                 {
@@ -278,9 +297,16 @@ namespace deltaq.SuffixSort
         /* find the suffix array SA of T[0..n-1] in {0..k-1}^n
            use a working space (excluding T and SA) of at most 2n+O(1) for a constant alphabet */
 
-        private void sais_main(IList<int> T, int[] sa, int fs, int n, int k)
+        // This method is called both with a byte span (where each byte is treated as an int)
+        // and with an int span.
+        // So we take in a ROS<TElem> and then have a separate interface to turn it into the int.
+        // This interface is a struct passed with generics to make it fast
+        // (JIT can and will devirtualize completely at runtime).
+        private void sais_main<TElem, TAccessor>(ReadOnlySpan<TElem> T, TAccessor acc, int[] sa, int fs, int n, int k)
+            where TElem : unmanaged
+            where TAccessor : IAccessor<TElem>
         {
-            IList<int> c, b;
+            Span<int> c, b;
             int i, j, bb, m;
             int name;
             int c0, c1;
@@ -327,7 +353,7 @@ namespace deltaq.SuffixSort
 
             /* stage 1: reduce the problem by at least 1/2
                sort all the LMS-substrings */
-            GetCounts(T, c, n, k);
+            GetCounts(T, acc, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
             for (i = 0; i < n; ++i)
             {
@@ -338,37 +364,40 @@ namespace deltaq.SuffixSort
             i = n - 1;
             j = n;
             m = 0;
-            c0 = T[n - 1];
+            c0 = acc.Get(T[n - 1]);
             do
             {
                 c1 = c0;
-            } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+            } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
 
-            for (; 0 <= i; )
+            for (; 0 <= i;)
             {
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                } while ((0 <= --i) && ((c0 = acc.Get(T[i])) <= c1));
+
                 if (0 <= i)
                 {
                     if (0 <= bb)
                     {
                         sa[bb] = j;
                     }
+
                     bb = --b[c1];
                     j = i;
                     ++m;
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                    } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
                 }
             }
+
             if (1 < m)
             {
-                LMS_sort(T, sa, c, b, n, k);
-                name = LMS_post_proc(T, sa, n, m);
+                LMS_sort(T, acc, sa, c, b, n, k);
+                name = LMS_post_proc(T, acc, sa, n, m);
             }
             else if (m == 1)
             {
@@ -389,10 +418,12 @@ namespace deltaq.SuffixSort
                     c = null;
                     b = null;
                 }
+
                 if ((flags & 2) != 0)
                 {
                     b = null;
                 }
+
                 int newfs = (n + fs) - (m * 2);
                 if ((flags & (1 | 4 | 8)) == 0)
                 {
@@ -415,22 +446,24 @@ namespace deltaq.SuffixSort
                     }
                 }
 
-                sais_main(sa.Slice(m + newfs, sa.Length - (m + newfs)), sa, newfs, m, name);
+                sais_main<int, IntAccessor>(
+                    sa.Slice(m + newfs, sa.Length - (m + newfs)), 
+                    new IntAccessor(), sa, newfs, m, name);
 
                 i = n - 1;
                 j = m * 2 - 1;
-                c0 = T[n - 1];
+                c0 = acc.Get(T[n - 1]);
                 do
                 {
                     c1 = c0;
-                } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
 
-                for (; 0 <= i; )
+                for (; 0 <= i;)
                 {
                     do
                     {
                         c1 = c0;
-                    } while ((0 <= --i) && ((c0 = T[i]) <= c1));
+                    } while ((0 <= --i) && ((c0 = acc.Get(T[i])) <= c1));
 
                     if (0 <= i)
                     {
@@ -438,7 +471,7 @@ namespace deltaq.SuffixSort
                         do
                         {
                             c1 = c0;
-                        } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                        } while ((0 <= --i) && ((c0 = acc.Get(T[i])) >= c1));
                     }
                 }
 
@@ -446,10 +479,12 @@ namespace deltaq.SuffixSort
                 {
                     sa[i] = sa[m + sa[i]];
                 }
+
                 if ((flags & 4) != 0)
                 {
                     c = b = new int[k];
                 }
+
                 if ((flags & 2) != 0)
                 {
                     b = new int[k];
@@ -459,8 +494,9 @@ namespace deltaq.SuffixSort
             /* stage 3: induce the result for the original problem */
             if ((flags & 8) != 0)
             {
-                GetCounts(T, c, n, k);
+                GetCounts(T, acc, c, n, k);
             }
+
             /* put all left-most S characters into their buckets */
             if (1 < m)
             {
@@ -468,7 +504,7 @@ namespace deltaq.SuffixSort
                 i = m - 1;
                 j = n;
                 int p = sa[m - 1];
-                c1 = T[p];
+                c1 = acc.Get(T[p]);
                 do
                 {
                     // ReSharper disable once PossibleNullReferenceException
@@ -487,8 +523,9 @@ namespace deltaq.SuffixSort
                         {
                             break;
                         }
+
                         p = sa[i];
-                    } while ((c1 = T[p]) == c0);
+                    } while ((c1 = acc.Get(T[p])) == c0);
                 } while (0 <= i);
 
                 while (0 < j)
@@ -497,7 +534,7 @@ namespace deltaq.SuffixSort
                 }
             }
 
-            InduceSA(T, sa, c, b, n, k);
+            InduceSA(T, acc, sa, c, b, n, k);
         }
 
         /*- Suffixsorting -*/
@@ -508,7 +545,7 @@ namespace deltaq.SuffixSort
         /// </summary>
         /// <param name="T">input bytes</param>
         /// <returns>0 if no error occurred, -1 or -2 otherwise</returns>
-        public int[] Sort(byte[] T)
+        public int[] Sort(ReadOnlySpan<byte> T)
         {
             if (T == null)
                 throw new ArgumentNullException(nameof(T));
@@ -523,85 +560,24 @@ namespace deltaq.SuffixSort
                 }
             }
             else
-                sais_main(new IntAccessor(T), sa, 0, T.Length, 256);
+                sais_main(T, new ByteAsMainAccessor(), sa, 0, T.Length, 256);
 
             return sa;
         }
 
-        private class IntAccessor : IList<int>
+        private interface IAccessor<TElem>
         {
-            private readonly byte[] _buffer;
+            int Get(TElem elem);
+        }
 
-            public IntAccessor(byte[] buf)
-            {
-                _buffer = buf;
-            }
+        private struct ByteAsMainAccessor : IAccessor<byte>
+        {
+            public int Get(byte elem) => elem;
+        }
 
-            public int IndexOf(int item)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Insert(int index, int item)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void RemoveAt(int index)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int this[int index]
-            {
-                get { return _buffer[index]; }
-                set { _buffer[index] = (byte)value; }
-            }
-
-            public void Add(int item)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Clear()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool Contains(int item)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void CopyTo(int[] array, int arrayIndex)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int Count
-            {
-                get { return _buffer.Length; }
-            }
-
-            public bool IsReadOnly
-            {
-                get { return false; }
-            }
-
-            public bool Remove(int item)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerator<int> GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+        private struct IntAccessor : IAccessor<int>
+        {
+            public int Get(int elem) => elem;
         }
     }
 }

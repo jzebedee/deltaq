@@ -34,6 +34,7 @@
 // exception statement from your version.
 
 using System;
+using System.Collections;
 using System.IO;
 using bz2core.Checksums;
 
@@ -1045,7 +1046,7 @@ namespace bz2core
 
         void QSort3(int loSt, int hiSt, int dSt)
         {
-            var stack = new StackElement[QSORT_STACK_SIZE];
+            Span<StackElement> stack = stackalloc StackElement[QSORT_STACK_SIZE];
 
             var sp = 0;
 

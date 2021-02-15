@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace deltaq
 {
@@ -45,13 +46,13 @@ namespace deltaq
         #endregion
 
         #region Long Read/Write
-        public static void WriteLongAt(this byte[] pb, int offset, long y)
+        public static void WriteLongAt(this Span<byte> pb, int offset, long y)
         {
             pb.Slice(offset, sizeof(long)).WriteLong(y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteLong(this IList<byte> b, long y)
+        public static void WriteLong(this Span<byte> b, long y)
         {
             if (y < 0)
             {
@@ -81,20 +82,20 @@ namespace deltaq
 
         public static long ReadLong(this Stream stream)
         {
-            var buf = new byte[sizeof(long)];
-            if (stream.Read(buf, 0, sizeof(long)) != sizeof(long))
+            Span<byte> buf = stackalloc byte[sizeof(long)];
+            if (stream.Read(buf) != sizeof(long))
                 throw new InvalidOperationException("Could not read long from stream");
 
-            return buf.ReadLong();
+            return ReadLong(buf);
         }
 
-        public static long ReadLongAt(this byte[] buf, int offset)
+        public static long ReadLongAt(this ReadOnlySpan<byte> buf, int offset)
         {
             return buf.Slice(offset, sizeof(long)).ReadLong();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ReadLong(this IList<byte> b)
+        public static long ReadLong(this ReadOnlySpan<byte> b)
         {
             long y = b[7] & 0x7F;
             y <<= 8; y += b[6];

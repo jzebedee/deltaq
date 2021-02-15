@@ -92,18 +92,18 @@ namespace deltaq.BsDiff
                 if (!patchStream.CanSeek)
                     throw new ArgumentException("Patch stream must be seekable", nameof(openPatchStream));
 
-                var header = new byte[BsDiff.HeaderSize];
-                patchStream.Read(header, 0, BsDiff.HeaderSize);
+                Span<byte> header = stackalloc byte[BsDiff.HeaderSize];
+                patchStream.Read(header);
 
                 // check for appropriate magic
-                var signature = header.ReadLong();
+                var signature = Extensions.ReadLong(header);
                 if (signature != BsDiff.Signature)
                     throw new InvalidOperationException("Corrupt patch");
 
                 // read lengths from header
-                controlLength = header.ReadLongAt(8);
-                diffLength = header.ReadLongAt(16);
-                newSize = header.ReadLongAt(24);
+                controlLength = Extensions.ReadLongAt(header, 8);
+                diffLength = Extensions.ReadLongAt(header, 16);
+                newSize = Extensions.ReadLongAt(header, 24);
 
                 if (controlLength < 0 || diffLength < 0 || newSize < 0)
                     throw new InvalidOperationException("Corrupt patch");
