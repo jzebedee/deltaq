@@ -29,7 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using bz2core;
-using DeltaQ.SuffixSort;
+using DeltaQ.SuffixSorting;
 
 namespace DeltaQ.BsDiff
 {
@@ -39,7 +39,16 @@ namespace DeltaQ.BsDiff
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
-            => output ? new BZip2OutputStream(stream) { IsStreamOwner = false } : new BZip2InputStream(stream);
+        {
+            if (output)
+            {
+                return new BZip2OutputStream(stream) { IsStreamOwner = false };
+            }
+            else
+            {
+                return new BZip2InputStream(stream);
+            }
+        }
 
         /// <summary>
         /// Creates a BSDIFF-format patch from two byte arrays
@@ -125,7 +134,7 @@ namespace DeltaQ.BsDiff
                             var s = 0;
                             var sf = 0;
                             var lenf = 0;
-                            for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length); )
+                            for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length);)
                             {
                                 if (oldData[lastpos + i] == newData[lastscan + i])
                                     s++;

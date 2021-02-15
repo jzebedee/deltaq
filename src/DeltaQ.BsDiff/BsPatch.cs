@@ -168,7 +168,7 @@ namespace DeltaQ.BsDiff
                         for (var i = 0; i < bytesRead; i++)
                             readBuffer[i] += inputData[i];
 
-                        output.Write(readBuffer[..bytesRead]);
+                        output.Write(readBuffer.Slice(0, bytesRead));
                         addSize -= bytesRead;
                     }
 
@@ -180,7 +180,7 @@ namespace DeltaQ.BsDiff
                     while (copySize > 0)
                     {
                         var bytesRead = extra.Read(readBuffer.SliceUpTo((int)copySize));
-                        output.Write(readBuffer[..bytesRead]);
+                        output.Write(readBuffer.Slice(0, bytesRead));
                         copySize -= bytesRead;
                     }
 
