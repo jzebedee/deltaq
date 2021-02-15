@@ -48,7 +48,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using DeltaQ.SuffixSort;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -533,76 +532,37 @@ namespace DeltaQ.SuffixSorting.SAIS
         {
             private readonly byte[] _buffer;
 
-            public IntAccessor(byte[] buf)
-            {
-                _buffer = buf;
-            }
+            public IntAccessor(byte[] buf) => _buffer = buf;
 
-            public int IndexOf(int item)
-            {
-                throw new NotImplementedException();
-            }
+            public int IndexOf(int item) => throw new NotImplementedException();
 
-            public void Insert(int index, int item)
-            {
-                throw new NotImplementedException();
-            }
+            public void Insert(int index, int item) => throw new NotImplementedException();
 
-            public void RemoveAt(int index)
-            {
-                throw new NotImplementedException();
-            }
+            public void RemoveAt(int index) => throw new NotImplementedException();
 
             public int this[int index]
             {
-                get { return _buffer[index]; }
-                set { _buffer[index] = (byte)value; }
+                get => _buffer[index];
+                set => _buffer[index] = (byte)value;
             }
 
-            public void Add(int item)
-            {
-                throw new NotImplementedException();
-            }
+            public void Add(int item) => throw new NotImplementedException();
 
-            public void Clear()
-            {
-                throw new NotImplementedException();
-            }
+            public void Clear() => throw new NotImplementedException();
 
-            public bool Contains(int item)
-            {
-                throw new NotImplementedException();
-            }
+            public bool Contains(int item) => throw new NotImplementedException();
 
-            public void CopyTo(int[] array, int arrayIndex)
-            {
-                throw new NotImplementedException();
-            }
+            public void CopyTo(int[] array, int arrayIndex) => throw new NotImplementedException();
 
-            public int Count
-            {
-                get { return _buffer.Length; }
-            }
+            public int Count => _buffer.Length;
 
-            public bool IsReadOnly
-            {
-                get { return false; }
-            }
+            public bool IsReadOnly => false;
 
-            public bool Remove(int item)
-            {
-                throw new NotImplementedException();
-            }
+            public bool Remove(int item) => throw new NotImplementedException();
 
-            public IEnumerator<int> GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            public IEnumerator<int> GetEnumerator() => throw new NotImplementedException();
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         }
     }
 }
