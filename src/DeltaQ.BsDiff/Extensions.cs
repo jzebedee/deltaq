@@ -31,70 +31,47 @@ namespace DeltaQ.BsDiff
 {
     internal static class Extensions
     {
-        #region Long Read/Write
-        public static void WriteLongAt(this byte[] pb, int offset, long y)
-        {
-            pb.Slice(offset, sizeof(long)).WriteLong(y);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteLong(this IList<byte> b, long y)
+        public static void WritePackedLong(this Span<byte> span, long y)
         {
             if (y < 0)
             {
                 y = -y;
 
-                b[0] = (byte)y;
-                b[1] = (byte)(y >>= 8);
-                b[2] = (byte)(y >>= 8);
-                b[3] = (byte)(y >>= 8);
-                b[4] = (byte)(y >>= 8);
-                b[5] = (byte)(y >>= 8);
-                b[6] = (byte)(y >>= 8);
-                b[7] = (byte)(y >> 8 | 0x80);
+                span[0] = (byte)y;
+                span[1] = (byte)(y >>= 8);
+                span[2] = (byte)(y >>= 8);
+                span[3] = (byte)(y >>= 8);
+                span[4] = (byte)(y >>= 8);
+                span[5] = (byte)(y >>= 8);
+                span[6] = (byte)(y >>= 8);
+                span[7] = (byte)((y >> 8) | 0x80);
             }
             else
             {
-                b[0] = (byte)y;
-                b[1] = (byte)(y >>= 8);
-                b[2] = (byte)(y >>= 8);
-                b[3] = (byte)(y >>= 8);
-                b[4] = (byte)(y >>= 8);
-                b[5] = (byte)(y >>= 8);
-                b[6] = (byte)(y >>= 8);
-                b[7] = (byte)(y >> 8);
+                span[0] = (byte)y;
+                span[1] = (byte)(y >>= 8);
+                span[2] = (byte)(y >>= 8);
+                span[3] = (byte)(y >>= 8);
+                span[4] = (byte)(y >>= 8);
+                span[5] = (byte)(y >>= 8);
+                span[6] = (byte)(y >>= 8);
+                span[7] = (byte)(y >> 8);
             }
         }
 
-        public static long ReadLong(this Stream stream)
+        public static long ReadPackedLong(this Span<byte> span)
         {
-            var buf = new byte[sizeof(long)];
-            if (stream.Read(buf, 0, sizeof(long)) != sizeof(long))
-                throw new InvalidOperationException("Could not read long from stream");
+            long y = span[7] & 0x7F;
+            y <<= 8; y += span[6];
+            y <<= 8; y += span[5];
+            y <<= 8; y += span[4];
+            y <<= 8; y += span[3];
+            y <<= 8; y += span[2];
+            y <<= 8; y += span[1];
+            y <<= 8; y += span[0];
 
-            return buf.ReadLong();
+            return (span[7] & 0x80) != 0 ? -y : y;
         }
-
-        public static long ReadLongAt(this byte[] buf, int offset)
-        {
-            return buf.Slice(offset, sizeof(long)).ReadLong();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ReadLong(this IList<byte> b)
-        {
-            long y = b[7] & 0x7F;
-            y <<= 8; y += b[6];
-            y <<= 8; y += b[5];
-            y <<= 8; y += b[4];
-            y <<= 8; y += b[3];
-            y <<= 8; y += b[2];
-            y <<= 8; y += b[1];
-            y <<= 8; y += b[0];
-
-            return (b[7] & 0x80) != 0 ? -y : y;
-        }
-        #endregion
 
         public static Span<T> SliceUpTo<T>(this Span<T> span, int max) => span.Slice(0, Math.Min(span.Length, max));
     }

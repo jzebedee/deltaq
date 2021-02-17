@@ -26,6 +26,7 @@
  */
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using bz2core;
@@ -83,14 +84,17 @@ namespace DeltaQ.BsDiff
                 32	??	Bzip2ed ctrl block
                 ??	??	Bzip2ed diff block
                 ??	??	Bzip2ed extra block */
-            var header = new byte[HeaderSize];
-            header.WriteLong(Signature);
-            header.WriteLongAt(24, newData.Length);
+            Span<byte> header = stackalloc byte[HeaderSize];
+            header.WritePackedLong(Signature);
+            header.Slice(24).WritePackedLong(newData.Length);
 
             var startPosition = output.Position;
-            output.Write(header, 0, header.Length);
+            output.Write(header);
 
             var I = suffixSort.Sort(oldData);
+
+            //backing for ctrl writes
+            Span<byte> buf = stackalloc byte[sizeof(long)];
 
             using (var msControl = new MemoryStream())
             using (var msDiff = new MemoryStream())
@@ -195,18 +199,15 @@ namespace DeltaQ.BsDiff
                             if (extraLength > 0)
                                 extraStream.Write(newData, lastscan + lenf, extraLength);
 
-                            //backing for ctrl writes
-                            var buf = new byte[8];
-
                             //write ctrl block
-                            buf.WriteLong(lenf);
-                            ctrlStream.Write(buf, 0, 8);
+                            buf.WritePackedLong(lenf);
+                            ctrlStream.Write(buf);
 
-                            buf.WriteLong(extraLength);
-                            ctrlStream.Write(buf, 0, 8);
+                            buf.WritePackedLong(extraLength);
+                            ctrlStream.Write(buf);
 
-                            buf.WriteLong((pos - lenb) - (lastpos + lenf));
-                            ctrlStream.Write(buf, 0, 8);
+                            buf.WritePackedLong((pos - lenb) - (lastpos + lenf));
+                            ctrlStream.Write(buf);
 
                             lastscan = scan - lenb;
                             lastpos = pos - lenb;
@@ -220,14 +221,14 @@ namespace DeltaQ.BsDiff
                 msControl.CopyTo(output);
 
                 // compute size of compressed ctrl data
-                header.WriteLongAt(8, msControl.Length);
+                header.Slice(8).WritePackedLong(msControl.Length);
 
                 // write compressed diff data
                 msDiff.Seek(0, SeekOrigin.Begin);
                 msDiff.CopyTo(output);
 
                 // compute size of compressed diff data
-                header.WriteLongAt(16, msDiff.Length);
+                header.Slice(16).WritePackedLong(msDiff.Length);
 
                 // write compressed extra data
                 msExtra.Seek(0, SeekOrigin.Begin);
@@ -237,7 +238,7 @@ namespace DeltaQ.BsDiff
             // seek to the beginning, write the header, then seek back to end
             var endPosition = output.Position;
             output.Position = startPosition;
-            output.Write(header, 0, header.Length);
+            output.Write(header);
             output.Position = endPosition;
         }
 

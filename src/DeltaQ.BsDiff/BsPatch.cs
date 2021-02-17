@@ -93,18 +93,18 @@ namespace DeltaQ.BsDiff
                 if (!patchStream.CanSeek)
                     throw new ArgumentException("Patch stream must be seekable", nameof(openPatchStream));
 
-                var header = new byte[BsDiff.HeaderSize];
-                patchStream.Read(header, 0, BsDiff.HeaderSize);
+                Span<byte> header = stackalloc byte[BsDiff.HeaderSize];
+                patchStream.Read(header);
 
                 // check for appropriate magic
-                var signature = header.ReadLong();
+                var signature = header.ReadPackedLong();
                 if (signature != BsDiff.Signature)
                     throw new InvalidOperationException("Corrupt patch");
 
                 // read lengths from header
-                controlLength = header.ReadLongAt(8);
-                diffLength = header.ReadLongAt(16);
-                newSize = header.ReadLongAt(24);
+                controlLength = header.Slice(8).ReadPackedLong();
+                diffLength = header.Slice(16).ReadPackedLong();
+                newSize = header.Slice(24).ReadPackedLong();
 
                 if (controlLength < 0 || diffLength < 0 || newSize < 0)
                     throw new InvalidOperationException("Corrupt patch");
@@ -140,18 +140,20 @@ namespace DeltaQ.BsDiff
             using (var inputReader = new BinaryReader(input))
             {
                 Span<byte> readBuffer = stackalloc byte[0x1000];
+                Span<byte> ctrlBuffer = stackalloc byte[24];
 
                 while (output.Position < newSize)
                 {
                     //read control data:
                     // set of triples (x,y,z) meaning
+                    ctrl.Read(ctrlBuffer);
 
                     // add x bytes from oldfile to x bytes from the diff block;
-                    var addSize = ctrl.ReadLong();
+                    var addSize = ctrlBuffer.ReadPackedLong();
                     // copy y bytes from the extra block;
-                    var copySize = ctrl.ReadLong();
+                    var copySize = ctrlBuffer.Slice(8).ReadPackedLong();
                     // seek forwards in oldfile by z bytes;
-                    var seekAmount = ctrl.ReadLong();
+                    var seekAmount = ctrlBuffer.Slice(16).ReadPackedLong();
 
                     // sanity-check
                     if (output.Position + addSize > newSize)
