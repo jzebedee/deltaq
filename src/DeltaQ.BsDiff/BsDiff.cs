@@ -25,12 +25,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using bz2core;
 using DeltaQ.SuffixSorting;
+using Microsoft.Toolkit.HighPerformance.Buffers;
+using Microsoft.Toolkit.HighPerformance.Extensions;
+using System;
+using System.Buffers;
+using System.IO;
 
 namespace DeltaQ.BsDiff
 {
@@ -58,7 +59,7 @@ namespace DeltaQ.BsDiff
         /// <param name="newData">Byte array of the changed (newer) data</param>
         /// <param name="output">Seekable, writable stream where the patch will be written</param>
         /// <param name="suffixSort">Suffix sort implementation to use for comparison, or null to use a default sorter</param>
-        public static void Create(byte[] oldData, byte[] newData, Stream output, ISuffixSort suffixSort)
+        public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output, ISuffixSort suffixSort)
         {
             // check arguments
             if (oldData == null)
@@ -85,17 +86,23 @@ namespace DeltaQ.BsDiff
                 ??	??	Bzip2ed diff block
                 ??	??	Bzip2ed extra block */
             Span<byte> header = stackalloc byte[HeaderSize];
-            header.WritePackedLong(Signature);
-            header.Slice(24).WritePackedLong(newData.Length);
+            Span<byte> header_signature = header.Slice(0, sizeof(long));
+            Span<byte> header_compressed_ctrl = header.Slice(sizeof(long), sizeof(long));
+            Span<byte> header_compressed_diff = header.Slice(sizeof(long) * 2, sizeof(long));
+            Span<byte> header_newdata_len = header.Slice(sizeof(long) * 3, sizeof(long));
+            header_signature.WritePackedLong(Signature);
+            header_newdata_len.WritePackedLong(newData.Length);
 
             var startPosition = output.Position;
             output.Write(header);
 
-            var I = suffixSort.Sort(oldData);
-
             //backing for ctrl writes
             Span<byte> buf = stackalloc byte[sizeof(long)];
 
+            //the memory allocated for the suffix array MUST be at least (n+1)
+            //this is only required for bsdiff, so we allocate it ourselves
+            //instead of using the ISuffixSort overloads that might allocate only (n)
+            using (MemoryOwner<int> saOwner = MemoryOwner<int>.Allocate(oldData.Length + 1, AllocationMode.Clear))
             using (var msControl = new MemoryStream())
             using (var msDiff = new MemoryStream())
             using (var msExtra = new MemoryStream())
@@ -104,6 +111,9 @@ namespace DeltaQ.BsDiff
                 using (var diffStream = GetEncodingStream(msDiff, true))
                 using (var extraStream = GetEncodingStream(msExtra, true))
                 {
+                    Span<int> I = saOwner.Span;
+                    suffixSort.Sort(oldData, I);
+
                     var scan = 0;
                     var pos = 0;
                     var len = 0;
@@ -197,7 +207,7 @@ namespace DeltaQ.BsDiff
                             //write extra string
                             var extraLength = (scan - lenb) - (lastscan + lenf);
                             if (extraLength > 0)
-                                extraStream.Write(newData, lastscan + lenf, extraLength);
+                                extraStream.Write(newData.Slice(lastscan + lenf, extraLength));
 
                             //write ctrl block
                             buf.WritePackedLong(lenf);
@@ -221,14 +231,14 @@ namespace DeltaQ.BsDiff
                 msControl.CopyTo(output);
 
                 // compute size of compressed ctrl data
-                header.Slice(8).WritePackedLong(msControl.Length);
+                header_compressed_ctrl.WritePackedLong(msControl.Length);
 
                 // write compressed diff data
                 msDiff.Seek(0, SeekOrigin.Begin);
                 msDiff.CopyTo(output);
 
                 // compute size of compressed diff data
-                header.Slice(16).WritePackedLong(msDiff.Length);
+                header_compressed_diff.WritePackedLong(msDiff.Length);
 
                 // write compressed extra data
                 msExtra.Seek(0, SeekOrigin.Begin);
@@ -242,17 +252,7 @@ namespace DeltaQ.BsDiff
             output.Position = endPosition;
         }
 
-        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-        {
-            var diff = 0;
-            for (var i = 0; i < left.Length && i < right.Length; i++)
-            {
-                diff = left[i] - right[i];
-                if (diff != 0)
-                    break;
-            }
-            return diff;
-        }
+        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right) => left.SequenceCompareTo(right);
 
         private static int MatchLength(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData)
         {
@@ -266,34 +266,43 @@ namespace DeltaQ.BsDiff
             return i;
         }
 
-        private static int Search(ReadOnlySpan<int> I, byte[] oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
+        private static int Search(ReadOnlySpan<int> I, ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
         {
-            while (true)
+            int x, y;
+            if (end - start < 2)
             {
-                if (end - start < 2)
+                //x = MatchLength(oldData[I[start]..], newData);
+                //y = MatchLength(oldData[I[end]..], newData);
+                x = MatchLength(oldData.Slice(I[start]), newData);
+                y = MatchLength(oldData.Slice(I[end]), newData);
+
+                if (x > y)
                 {
-                    var startLength = MatchLength(oldData.Slice(I[start]), newData);
-                    var endLength = MatchLength(oldData.Slice(I[end]), newData);
-
-                    if (startLength > endLength)
-                    {
-                        pos = I[start];
-                        return startLength;
-                    }
-
+                    pos = I[start];
+                    return x;
+                }
+                else
+                {
                     pos = I[end];
-                    return endLength;
+                    return y;
                 }
-
-                var midPoint = start + (end - start) / 2;
-                if (CompareBytes(oldData.Slice(I[midPoint]), newData) < 0)
-                {
-                    start = midPoint;
-                    continue;
-                }
-
-                end = midPoint;
+                //throw new ApplicationException($"start:{start} end:{end} I:{I.Length} I[start]:{I[start]} I[end]:{I[end]} oldData:{oldData.Length} newData:{newData.Length}", e);
             }
+
+            x = start + (end - start) / 2;
+            //var midPoint = start + (end - start) / 2;
+            if (CompareBytes(oldData.Slice(I[x]), newData) < 0)
+            {
+                return Search(I, oldData, newData, x, end, out pos);
+                //start = midPoint;
+                //continue;
+            }
+            else
+            {
+                return Search(I, oldData, newData, start, x, out pos);
+            }
+
+            //end = midPoint;
         }
     }
 }
