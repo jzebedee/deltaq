@@ -9,6 +9,8 @@ namespace DeltaQ.Tests
     using static SAISChecker;
     public class SAISTests
     {
+        private readonly SAIS _sais = new SAIS();
+
 #if NET461
         private static void RandomFillBuffer(byte[] buffer)
         {
@@ -54,7 +56,7 @@ namespace DeltaQ.Tests
 #else
                 Span<byte> T = ownedT.Span;
 #endif
-                using (var ownedSA = new SAIS().SortOwned(T))
+                using (var ownedSA = _sais.SortOwned(T))
                 {
                     Span<int> SA = ownedSA.Span;
                     var result = Check(T, SA, T.Length, false);
@@ -69,28 +71,28 @@ namespace DeltaQ.Tests
 #endif
         }
 
-        //[Theory]
-        //[InlineData(0)]
-        //[InlineData(1)]
-        //[InlineData(2)]
-        //[InlineData(4)]
-        //[InlineData(8)]
-        //[InlineData(16)]
-        //[InlineData(32)]
-        //[InlineData(51)]
-        //[InlineData(0x8000)]
-        //public void CheckRandomBufferContinuous(int size)
-        //{
-        //    const int repetitions = 100_000;
-        //    for (int i = 0; i < repetitions; i++)
-        //    {
-        //        CheckRandomBuffer(size);
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(8)]
+        [InlineData(16)]
+        [InlineData(32)]
+        [InlineData(51)]
+        [InlineData(0x1000)]
+        public void CheckRandomBufferContinuous(int size)
+        {
+            const int repetitions = 2_000;
+            for (int i = 0; i < repetitions; i++)
+            {
+                CheckRandomBuffer(size);
 
-        //        if (i % 100 == 0)
-        //        {
-        //            Debug.WriteLine("Gen0:{0} Gen1:{1} Gen2:{2}", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
-        //        }
-        //    }
-        //}
+                if (i % 100 == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("Gen0:{0} Gen1:{1} Gen2:{2}", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
+                }
+            }
+        }
     }
 }
