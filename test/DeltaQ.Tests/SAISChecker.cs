@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeltaQ.Tests
 {
     internal class SAISChecker
     {
-        internal static int Check(byte[] T, int[] SA, int n, bool verbose = false)
+        internal static int Check(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA, int n, bool verbose = false)
         {
             int[] C = new int[256];
             int i, p, q, t;
