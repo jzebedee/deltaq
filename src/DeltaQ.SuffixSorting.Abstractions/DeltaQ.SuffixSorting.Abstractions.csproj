@@ -5,6 +5,11 @@
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.4" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+  </ItemGroup>
 
 </Project>

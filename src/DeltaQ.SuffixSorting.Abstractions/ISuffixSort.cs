@@ -1,7 +1,12 @@
-﻿namespace DeltaQ.SuffixSorting
+﻿using System;
+using System.Buffers;
+
+namespace DeltaQ.SuffixSorting
 {
     public interface ISuffixSort
     {
-        int[] Sort(byte[] buffer);
+        ReadOnlyMemory<int> Sort(ReadOnlySpan<byte> textBuffer);
+        IMemoryOwner<int> SortOwned(ReadOnlySpan<byte> textBuffer);
+        int Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer);
     }
 }
