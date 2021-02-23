@@ -40,7 +40,7 @@ namespace DeltaQ.Tests
 
         private static byte[] GetBuffer(int size)
         {
-            var rand = new Random(63*13*63*13);
+            var rand = new Random(63 * 13 * 63 * 13);
 
             var buf = new byte[size];
             rand.NextBytes(buf);
@@ -48,66 +48,59 @@ namespace DeltaQ.Tests
             return buf;
         }
 
-        private static IEnumerable<byte[]> GetBuffers(IEnumerable<int> sizes)
+        public static IEnumerable<object[]> TestDoubleBuffers(IEnumerable<int> sizes)
+            => sizes.Select(size => new object[] { GetBuffer(size), GetBuffer(size) });
+
+        [Theory]
+        [MemberData(nameof(TestDoubleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
+        public void BsDiffCreateFromBuffers(byte[] oldBuffer, byte[] newBuffer)
         {
-            return sizes.Select(GetBuffer);
+            var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
+            var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
+
+            Assert.True(newBuffer.AsSpan().SequenceEqual(finishedBuf.Span));
         }
 
-        [Fact]
-        public void BsDiffCreateFromBuffers()
-        {
-            foreach (var oldBuffer in GetBuffers(Sizes))
-                foreach (var newBuffer in GetBuffers(Sizes))
-                {
-                    var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
-                    var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
+        public static IEnumerable<object[]> TestSingleBuffers(IEnumerable<int> sizes)
+           => sizes.Select(size => new object[] { GetBuffer(size) });
 
-                    Assert.Equal(newBuffer, finishedBuf);
-                }
+        [Theory]
+        [MemberData(nameof(TestSingleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
+        public void BsDiffCreateFromBuffers_Identical(byte[] oldBuffer)
+        {
+            var newBuffer = new byte[oldBuffer.Length];
+            Buffer.BlockCopy(oldBuffer, 0, newBuffer, 0, oldBuffer.Length);
+
+            var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
+            var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
+
+            Assert.True(oldBuffer.AsSpan().SequenceEqual(finishedBuf.Span));
+            Assert.True(newBuffer.AsSpan().SequenceEqual(finishedBuf.Span));
         }
 
-        [Fact]
-        public void BsDiffCreateFromBuffers_Identical()
-        {
-            foreach (var oldBuffer in GetBuffers(Sizes))
-            {
-                var newBuffer = new byte[oldBuffer.Length];
-                Buffer.BlockCopy(oldBuffer, 0, newBuffer, 0, oldBuffer.Length);
-                
-                var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
-                var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
-
-                Assert.Equal(oldBuffer, finishedBuf);
-                Assert.Equal(newBuffer, finishedBuf);
-            }
-        }
-
-        [Fact]
-        public void BsDiffCreateFromStreams()
+        [Theory]
+        [MemberData(nameof(TestDoubleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
+        public void BsDiffCreateFromStreams(byte[] oldBuffer, byte[] newBuffer)
         {
             const int outputSize = 0x2A000;
 
-            foreach (var oldBuffer in GetBuffers(Sizes))
-                foreach (var newBuffer in GetBuffers(Sizes))
+            byte[] bytesOut;
+            using (var mmf = MemoryMappedFile.CreateNew(null, outputSize, MemoryMappedFileAccess.ReadWrite))
+            {
+                using (var mmfStream = mmf.CreateViewStream())
                 {
-                    byte[] bytesOut;
-                    using (var mmf = MemoryMappedFile.CreateNew(null, outputSize, MemoryMappedFileAccess.ReadWrite))
-                    {
-                        using (var mmfStream = mmf.CreateViewStream())
-                        {
-                            BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
-                        }
-
-                        using (var msA = new MemoryStream(oldBuffer))
-                        using (var msOutput = new MemoryStream())
-                        {
-                            BsPatch.Apply(msA, mmf.CreateViewStream, msOutput);
-                            bytesOut = msOutput.ToArray();
-                        }
-                    }
-
-                    Assert.Equal(newBuffer, bytesOut);
+                    BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
                 }
+
+                using (var msA = new MemoryStream(oldBuffer))
+                using (var msOutput = new MemoryStream())
+                {
+                    BsPatch.Apply(msA, mmf.CreateViewStream, msOutput);
+                    bytesOut = msOutput.ToArray();
+                }
+            }
+
+            Assert.Equal(newBuffer, bytesOut);
         }
 
         [Theory]
@@ -140,22 +133,18 @@ namespace DeltaQ.Tests
             yield return new object[] { emptybuf, emptybuf, new DeflateStream(new MemoryStream(), CompressionMode.Compress) };
         }
 
-        private static byte[] BsDiffCreate(byte[] oldBuf, byte[] newBuf)
+        private static ReadOnlyMemory<byte> BsDiffCreate(ReadOnlySpan<byte> oldBuf, ReadOnlySpan<byte> newBuf)
         {
-            using (var outputStream = new MemoryStream())
-            {
-                BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream, new SuffixSorting.SAIS.SAIS());
-                return outputStream.ToArray();
-            }
+            var outputStream = new MemoryStream();
+            BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream, new SuffixSorting.SAIS.SAIS());
+            return outputStream.GetBuffer().AsMemory(0, (int)outputStream.Length);
         }
 
-        private static byte[] BsDiffApply(byte[] oldBuffer, byte[] patchBuffer)
+        private static ReadOnlyMemory<byte> BsDiffApply(ReadOnlyMemory<byte> oldBuffer, ReadOnlyMemory<byte> patchBuffer)
         {
-            using (var outputStream = new MemoryStream())
-            {
-                BsPatch.Apply(oldBuffer, patchBuffer, outputStream);
-                return outputStream.ToArray();
-            }
+            var outputStream = new MemoryStream();
+            BsPatch.Apply(oldBuffer, patchBuffer, outputStream);
+            return outputStream.GetBuffer().AsMemory(0, (int)outputStream.Length);
         }
     }
 }
