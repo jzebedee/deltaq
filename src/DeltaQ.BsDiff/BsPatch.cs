@@ -25,6 +25,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Microsoft.Toolkit.HighPerformance.Extensions;
 using System;
 using System.IO;
 
@@ -46,25 +47,16 @@ namespace DeltaQ.BsDiff
         /// <param name="input">Byte array of the original (older) data</param>
         /// <param name="diff">Byte array of the BSDIFF-format patch data</param>
         /// <param name="output">Writable stream where the updated data will be written</param>
-        public static void Apply(byte[] input, byte[] diff, Stream output)
+        public static void Apply(ReadOnlyMemory<byte> input, ReadOnlyMemory<byte> diff, Stream output)
         {
-            Stream openPatchStream(long uOffset, long uLength)
-            {
-                checked
-                {
-                    var offset = (int)uOffset;
-                    var length = (int)uLength;
-                    return new MemoryStream(diff, offset,
-                        uLength > 0
-                            ? length
-                            : diff.Length - offset);
-                }
-            }
-
             var newSize = CreatePatchStreams(openPatchStream, out Stream controlStream, out Stream diffStream, out Stream extraStream);
 
             // prepare to read three parts of the patch in parallel
-            ApplyInternal(newSize, new MemoryStream(input), controlStream, diffStream, extraStream, output);
+            ApplyInternal(newSize, input.AsStream(), controlStream, diffStream, extraStream, output);
+            return;
+
+            Stream openPatchStream(long offset, long length)
+                => diff.Slice((int)offset, length > 0 ? (int)length : diff.Length - (int)offset).AsStream();
         }
 
         /// <summary>
@@ -133,7 +125,6 @@ namespace DeltaQ.BsDiff
             if (!output.CanWrite)
                 throw new ArgumentException("Output stream must be writable", nameof(output));
 
-            using (output)
             using (ctrl)
             using (diff)
             using (extra)
@@ -190,6 +181,8 @@ namespace DeltaQ.BsDiff
                     input.Seek(seekAmount, SeekOrigin.Current);
                 }
             }
+
+            output.Flush();
         }
     }
 }
