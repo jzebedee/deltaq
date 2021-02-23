@@ -48,6 +48,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -502,56 +503,43 @@ namespace DeltaQ.SuffixSorting.SAIS
             InduceSA(T, sa, c, b, n, k);
         }
 
-        /*- Suffixsorting -*/
-        /* byte */
-
         /// <summary>
         ///     Constructs the suffix array of a given string (as byte array) in linear time.
         /// </summary>
-        /// <param name="T">input bytes</param>
+        /// <param name="textBuffer">input bytes</param>
         /// <returns>0 if no error occurred, -1 or -2 otherwise</returns>
-        public int[] Sort(byte[] T)
+        public ReadOnlyMemory<int> Sort(ReadOnlySpan<byte> textBuffer)
         {
-            if (T == null)
-                throw new ArgumentNullException(nameof(T));
-
-            Span<byte> span = T;
-            return Sort(span);
+            var suffixBuffer = new int[textBuffer.Length];
+            Sort(textBuffer, suffixBuffer);
+            return suffixBuffer;
         }
-        public int[] Sort(ReadOnlySpan<byte> T)
-        {
-            var sa = new int[T.Length + 1];
 
-            if (T.Length <= 1)
+        public MemoryOwner<int> SortOwned(ReadOnlySpan<byte> textBuffer)
+        {
+            var owner = MemoryOwner<int>.Allocate(textBuffer.Length);
+            Sort(textBuffer, owner.Span);
+            return owner;
+        }
+
+        IMemoryOwner<int> ISuffixSort.SortOwned(ReadOnlySpan<byte> textBuffer) => SortOwned(textBuffer);
+
+        public int Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
+        {
+            if (suffixBuffer.Length < textBuffer.Length)
+                throw new ArgumentOutOfRangeException(nameof(suffixBuffer), $"Span must have a minimum size of ({nameof(textBuffer)}.Length+1)");
+
+            if (textBuffer.Length <= 1)
             {
-                if (T.Length == 1)
+                if (textBuffer.Length == 1)
                 {
-                    sa[0] = 0;
+                    suffixBuffer[0] = 0;
                 }
             }
-            else sais_main(new IntAccessor(T), sa, 0, T.Length, 256);
-
-            return sa;
+            else sais_main(new IntAccessor(textBuffer), suffixBuffer, 0, textBuffer.Length, 256);
+            
+            return textBuffer.Length;
         }
-
-        //private readonly ref struct PooledArray<T>
-        //{
-        //    private readonly T[] _array;
-
-        //    public readonly Span<T> Span;
-
-        //    public PooledArray(int k)
-        //    {
-        //        _array = ArrayPool<T>.Shared.Rent(k);
-
-        //        Span = new Span<T>(_array, 0, k);
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        ArrayPool<T>.Shared.Return(_array);
-        //    }
-        //}
 
         private ref struct IntAccessor
         {
