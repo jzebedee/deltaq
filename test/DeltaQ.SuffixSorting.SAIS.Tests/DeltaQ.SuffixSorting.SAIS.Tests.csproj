@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net5.0;net461;netcoreapp2.1</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DeltaQ\DeltaQ.csproj" />
+    <ProjectReference Include="..\..\src\DeltaQ.SuffixSorting.SAIS\DeltaQ.SuffixSorting.SAIS.csproj" />
   </ItemGroup>
 
 </Project>
