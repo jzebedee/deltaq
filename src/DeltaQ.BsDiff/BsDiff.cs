@@ -268,41 +268,35 @@ namespace DeltaQ.BsDiff
 
         private static int Search(ReadOnlySpan<int> I, ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
         {
-            int x, y;
-            if (end - start < 2)
+            while (true)
             {
-                //x = MatchLength(oldData[I[start]..], newData);
-                //y = MatchLength(oldData[I[end]..], newData);
-                x = MatchLength(oldData.Slice(I[start]), newData);
-                y = MatchLength(oldData.Slice(I[end]), newData);
-
-                if (x > y)
+                if (end - start < 2)
                 {
-                    pos = I[start];
-                    return x;
+                    var x = MatchLength(oldData.Slice(I[start]), newData);
+                    var y = MatchLength(oldData.Slice(I[end]), newData);
+
+                    if (x > y)
+                    {
+                        pos = I[start];
+                        return x;
+                    }
+                    else
+                    {
+                        pos = I[end];
+                        return y;
+                    }
+                }
+
+                var midPoint = start + (end - start) / 2;
+                if (CompareBytes(oldData.Slice(I[midPoint]), newData) < 0)
+                {
+                    start = midPoint;
                 }
                 else
                 {
-                    pos = I[end];
-                    return y;
+                    end = midPoint;
                 }
-                //throw new ApplicationException($"start:{start} end:{end} I:{I.Length} I[start]:{I[start]} I[end]:{I[end]} oldData:{oldData.Length} newData:{newData.Length}", e);
             }
-
-            x = start + (end - start) / 2;
-            //var midPoint = start + (end - start) / 2;
-            if (CompareBytes(oldData.Slice(I[x]), newData) < 0)
-            {
-                return Search(I, oldData, newData, x, end, out pos);
-                //start = midPoint;
-                //continue;
-            }
-            else
-            {
-                return Search(I, oldData, newData, start, x, out pos);
-            }
-
-            //end = midPoint;
         }
     }
 }
