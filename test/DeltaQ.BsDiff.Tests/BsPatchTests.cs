@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using DeltaQ.BsDiff;
+using System.IO;
 using System.Security.Cryptography;
 using Xunit;
 
@@ -23,13 +24,13 @@ namespace DeltaQ.Tests
             //can't use MemoryStream directly as Flush has no effect
             var patchMs = new MemoryStream();
             var wrappedPatchMs = new BufferedStream(patchMs);
-            BsDiff.BsDiff.Create(oldBuffer, newBuffer, wrappedPatchMs, new SuffixSorting.SAIS.SAIS());
+            Diff.Create(oldBuffer, newBuffer, wrappedPatchMs, new SuffixSorting.SAIS.SAIS());
 
             var patchBuffer = patchMs.ToArray();
 
             var reconstructMs = new MemoryStream();
             var wrappedReconstructMs = new BufferedStream(reconstructMs);
-            BsDiff.BsPatch.Apply(oldBuffer, patchBuffer, wrappedReconstructMs);
+            Patch.Apply(oldBuffer, patchBuffer, wrappedReconstructMs);
 
             var reconstructedBuffer = reconstructMs.ToArray();
 

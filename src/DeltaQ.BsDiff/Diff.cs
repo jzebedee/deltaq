@@ -35,7 +35,7 @@ using System.IO;
 
 namespace DeltaQ.BsDiff
 {
-    public static class BsDiff
+    public static class Diff
     {
         internal const int HeaderSize = 32;
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"

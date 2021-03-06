@@ -24,7 +24,6 @@
  */
 using DeltaQ.BsDiff;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -89,13 +88,13 @@ namespace DeltaQ.Tests
             {
                 using (var mmfStream = mmf.CreateViewStream())
                 {
-                    BsDiff.BsDiff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
+                    Diff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
                 }
 
                 using (var msA = new MemoryStream(oldBuffer))
                 using (var msOutput = new MemoryStream())
                 {
-                    BsPatch.Apply(msA, mmf.CreateViewStream, msOutput);
+                    Patch.Apply(msA, mmf.CreateViewStream, msOutput);
                     bytesOut = msOutput.ToArray();
                 }
             }
@@ -107,7 +106,7 @@ namespace DeltaQ.Tests
         [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
         public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentNullException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
+            Assert.Throws<ArgumentNullException>(() => Diff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
 
         public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
@@ -123,7 +122,7 @@ namespace DeltaQ.Tests
         [MemberData(nameof(BsDiffCreateBadStreams_TestData))]
         public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
         {
-            Assert.Throws<ArgumentException>(() => BsDiff.BsDiff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
+            Assert.Throws<ArgumentException>(() => Diff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
 
         public static IEnumerable<object[]> BsDiffCreateBadStreams_TestData()
@@ -136,14 +135,14 @@ namespace DeltaQ.Tests
         private static ReadOnlyMemory<byte> BsDiffCreate(ReadOnlySpan<byte> oldBuf, ReadOnlySpan<byte> newBuf)
         {
             var outputStream = new MemoryStream();
-            BsDiff.BsDiff.Create(oldBuf, newBuf, outputStream, new SuffixSorting.SAIS.SAIS());
+            Diff.Create(oldBuf, newBuf, outputStream, new SuffixSorting.SAIS.SAIS());
             return outputStream.GetBuffer().AsMemory(0, (int)outputStream.Length);
         }
 
         private static ReadOnlyMemory<byte> BsDiffApply(ReadOnlyMemory<byte> oldBuffer, ReadOnlyMemory<byte> patchBuffer)
         {
             var outputStream = new MemoryStream();
-            BsPatch.Apply(oldBuffer, patchBuffer, outputStream);
+            Patch.Apply(oldBuffer, patchBuffer, outputStream);
             return outputStream.GetBuffer().AsMemory(0, (int)outputStream.Length);
         }
     }
