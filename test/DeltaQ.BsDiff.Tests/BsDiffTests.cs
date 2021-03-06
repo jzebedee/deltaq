@@ -23,11 +23,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 using DeltaQ.BsDiff;
+using Microsoft.Toolkit.HighPerformance.Buffers;
+using Microsoft.Toolkit.HighPerformance.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using Xunit;
 
@@ -79,27 +80,25 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(TestDoubleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
-        public void BsDiffCreateFromStreams(byte[] oldBuffer, byte[] newBuffer)
+        public void BsDiffCreateFromStreams(byte[] oldData, byte[] newData)
         {
-            const int outputSize = 0x2A000;
+            using var outputOwner = MemoryOwner<byte>.Allocate(0x2000);
 
-            byte[] bytesOut;
-            using (var mmf = MemoryMappedFile.CreateNew(null, outputSize, MemoryMappedFileAccess.ReadWrite))
-            {
-                using (var mmfStream = mmf.CreateViewStream())
-                {
-                    Diff.Create(oldBuffer, newBuffer, mmfStream, new SuffixSorting.SAIS.SAIS());
-                }
+            Diff.Create(oldData, newData, outputOwner.Memory.AsStream(), new SuffixSorting.SAIS.SAIS());
 
-                using (var msA = new MemoryStream(oldBuffer))
-                using (var msOutput = new MemoryStream())
-                {
-                    Patch.Apply(msA, mmf.CreateViewStream, msOutput);
-                    bytesOut = msOutput.ToArray();
-                }
-            }
+            using var msOld = new MemoryStream(oldData);
+            using var msPatchOutput = new MemoryStream();
+            Patch.Apply(msOld, OpenPatchStream, msPatchOutput);
 
-            Assert.Equal(newBuffer, bytesOut);
+            Span<byte> newSpan, reconstructedSpan;
+            newSpan = newData;
+            reconstructedSpan = msPatchOutput.GetBuffer().AsSpan(0, (int)msPatchOutput.Length);
+
+            Assert.True(newSpan.SequenceEqual(reconstructedSpan));
+            return;
+
+            Stream OpenPatchStream(long start, long len)
+                => (len > 0 ? outputOwner.Memory.Slice((int)start, (int)len) : outputOwner.Memory.Slice((int)start)).AsStream();
         }
 
         [Theory]
