@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.BsDiff.Tests", "test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.SAIS.Tests", "test\DeltaQ.SuffixSorting.SAIS.Tests\DeltaQ.SuffixSorting.SAIS.Tests.csproj", "{2D37444E-3C89-4E1E-A0E6-C009F205EA84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.Utility.Memory", "src\DeltaQ.Utility.Memory\DeltaQ.Utility.Memory.csproj", "{96F1E46E-53CB-4463-82E2-0F81BEB87080}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{2D37444E-3C89-4E1E-A0E6-C009F205EA84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D37444E-3C89-4E1E-A0E6-C009F205EA84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D37444E-3C89-4E1E-A0E6-C009F205EA84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96F1E46E-53CB-4463-82E2-0F81BEB87080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96F1E46E-53CB-4463-82E2-0F81BEB87080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96F1E46E-53CB-4463-82E2-0F81BEB87080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96F1E46E-53CB-4463-82E2-0F81BEB87080}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{C889CB97-5D73-4D53-8249-DD7BFD402475} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 		{279B6F7C-7FB0-42AA-8804-8FF64A990A9A} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
 		{2D37444E-3C89-4E1E-A0E6-C009F205EA84} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
+		{96F1E46E-53CB-4463-82E2-0F81BEB87080} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {595D8046-0D57-4408-A80A-777358A7E831}
