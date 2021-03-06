@@ -66,8 +66,6 @@ namespace DeltaQ.SuffixSorting.SAIS
         private static void GetCounts(IntAccessor T, Span<int> c, int n, int k)
         {
             c.Slice(0, k).Clear();
-            //for (i = 0; i < k; ++i)
-            //    c[i] = 0;
 
             for (int i = 0; i < n; ++i)
                 c[T[i]]++;
@@ -76,8 +74,7 @@ namespace DeltaQ.SuffixSorting.SAIS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void GetBuckets(Span<int> c, Span<int> b, int k, bool end)
         {
-            int i, sum = 0;
-            for (i = 0; i < k; ++i)
+            for (int i = 0, sum = 0; i < k; ++i)
             {
                 sum += c[i];
                 b[i] = end ? sum : sum - c[i];
@@ -331,10 +328,6 @@ namespace DeltaQ.SuffixSorting.SAIS
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
             sa.Slice(0, n).Clear();
-            //for (i = 0; i < n; ++i)
-            //{
-            //    sa[i] = 0;
-            //}
 
             bb = -1;
             i = n - 1;
@@ -408,7 +401,6 @@ namespace DeltaQ.SuffixSorting.SAIS
                     }
                 }
 
-                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 for (i = m + (n >> 1) - 1, j = m * 2 + newfs - 1; m <= i; --i)
                 {
                     if (sa[i] != 0)
@@ -473,10 +465,8 @@ namespace DeltaQ.SuffixSorting.SAIS
                 c1 = T[p];
                 do
                 {
-                    // ReSharper disable once PossibleNullReferenceException
                     int q = b[c0 = c1];
 
-                    // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                     while (q < j)
                     {
                         sa[--j] = 0;

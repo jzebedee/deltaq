@@ -802,7 +802,6 @@ namespace bz2core
                 char ll_i = selector[i];
                 var j = 0;
                 char tmp = pos[j];
-                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (ll_i != tmp)
                 {
                     j++;
@@ -1614,7 +1613,6 @@ namespace bz2core
 
                 int j = 0;
                 char tmp = yy[j];
-                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 while (ll_i != tmp)
                 {
                     j++;
@@ -1956,7 +1954,6 @@ namespace bz2core
         int workDone;
         int workLimit;
         bool firstAttempt;
-        // ReSharper disable once NotAccessedField.Local
         int nBlocksRandomised;
 
         int currentChar = -1;

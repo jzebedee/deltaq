@@ -188,7 +188,6 @@ namespace bz2core
         /// <param name="offset">The offset to start obtaining data from.</param>
         /// <param name="count">The number of bytes of data to write.</param>
         /// <exception cref="NotSupportedException">Any access</exception>
-        // ReSharper disable once ParameterHidesMember
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException("BZip2InputStream Write not supported");
@@ -215,7 +214,6 @@ namespace bz2core
         /// than the number of bytes requested if that number of bytes are not 
         /// currently available or zero if the end of the stream is reached.
         /// </returns>
-        // ReSharper disable once ParameterHidesMember
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (buffer == null)
