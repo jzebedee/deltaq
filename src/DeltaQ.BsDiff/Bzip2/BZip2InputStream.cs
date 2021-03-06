@@ -218,7 +218,7 @@ namespace bz2core
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
 
             for (var i = 0; i < count; ++i)
