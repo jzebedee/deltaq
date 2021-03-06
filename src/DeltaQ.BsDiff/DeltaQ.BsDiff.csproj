@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="0.1.0" />
+    <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="0.2.0" />
     <PackageReference Include="DeltaQ.Utility.Memory" Version="0.2.0" />
   </ItemGroup>
 
