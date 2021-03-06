@@ -53,12 +53,12 @@ namespace DeltaQ.BsDiff
         }
 
         /// <summary>
-        /// Creates a BSDIFF-format patch from two byte arrays
+        /// Creates a BSDIFF-format patch from two byte buffers
         /// </summary>
-        /// <param name="oldData">Byte array of the original (older) data</param>
-        /// <param name="newData">Byte array of the changed (newer) data</param>
+        /// <param name="oldData">Byte buffer of the original (older) data</param>
+        /// <param name="newData">Byte buffer of the changed (newer) data</param>
         /// <param name="output">Seekable, writable stream where the patch will be written</param>
-        /// <param name="suffixSort">Suffix sort implementation to use for comparison, or null to use a default sorter</param>
+        /// <param name="suffixSort">Suffix sort implementation to use for comparison</param>
         public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output, ISuffixSort suffixSort)
         {
             // check arguments
@@ -86,11 +86,14 @@ namespace DeltaQ.BsDiff
                 ??	??	Bzip2ed diff block
                 ??	??	Bzip2ed extra block */
             Span<byte> header = stackalloc byte[HeaderSize];
+
             Span<byte> header_signature = header.Slice(0, sizeof(long));
+            header_signature.WritePackedLong(Signature);
+
             Span<byte> header_compressed_ctrl = header.Slice(sizeof(long), sizeof(long));
             Span<byte> header_compressed_diff = header.Slice(sizeof(long) * 2, sizeof(long));
+
             Span<byte> header_newdata_len = header.Slice(sizeof(long) * 3, sizeof(long));
-            header_signature.WritePackedLong(Signature);
             header_newdata_len.WritePackedLong(newData.Length);
 
             var startPosition = output.Position;
@@ -252,7 +255,8 @@ namespace DeltaQ.BsDiff
             output.Position = endPosition;
         }
 
-        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right) => left.SequenceCompareTo(right);
+        private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+            => left.SequenceCompareTo(right);
 
         private static int MatchLength(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData)
         {

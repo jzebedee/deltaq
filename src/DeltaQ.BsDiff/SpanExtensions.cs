@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 
 namespace DeltaQ.BsDiff
 {
-    internal static class Extensions
+    internal static class SpanExtensions
     {
         public static void WritePackedLong(this Span<byte> span, long y)
         {
