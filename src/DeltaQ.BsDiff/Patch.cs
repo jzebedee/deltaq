@@ -53,7 +53,8 @@ namespace DeltaQ.BsDiff
             var newSize = CreatePatchStreams(openPatchStream, out Stream controlStream, out Stream diffStream, out Stream extraStream);
 
             // prepare to read three parts of the patch in parallel
-            ApplyInternal(newSize, input.AsStream(), controlStream, diffStream, extraStream, output);
+            using var inputStream = input.AsStream();
+            ApplyInternal(newSize, inputStream, controlStream, diffStream, extraStream, output);
             return;
 
             Stream openPatchStream(long offset, long length)
@@ -78,16 +79,16 @@ namespace DeltaQ.BsDiff
         {
             // read header
             long controlLength, diffLength, newSize;
-            using (var patchStream = openPatchStream(0, Diff.HeaderSize))
+            using (var headerStream = openPatchStream(0, Diff.HeaderSize))
             {
                 // check patch stream capabilities
-                if (!patchStream.CanRead)
+                if (!headerStream.CanRead)
                     throw new ArgumentException("Patch stream must be readable", nameof(openPatchStream));
-                if (!patchStream.CanSeek)
+                if (!headerStream.CanSeek)
                     throw new ArgumentException("Patch stream must be seekable", nameof(openPatchStream));
 
                 Span<byte> header = stackalloc byte[Diff.HeaderSize];
-                patchStream.Read(header);
+                headerStream.Read(header);
 
                 // check for appropriate magic
                 var signature = header.ReadPackedLong();

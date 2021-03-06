@@ -53,7 +53,7 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(TestDoubleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
-        public void BsDiffCreateFromBuffers(byte[] oldBuffer, byte[] newBuffer)
+        public void BsDiffRoundtripFromBuffers(byte[] oldBuffer, byte[] newBuffer)
         {
             var patchBuf = BsDiffCreate(oldBuffer, newBuffer);
             var finishedBuf = BsDiffApply(oldBuffer, patchBuf);
@@ -66,7 +66,7 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(TestSingleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
-        public void BsDiffCreateFromBuffers_Identical(byte[] oldBuffer)
+        public void BsDiffRoundtripFromBuffers_Identical(byte[] oldBuffer)
         {
             var newBuffer = new byte[oldBuffer.Length];
             Buffer.BlockCopy(oldBuffer, 0, newBuffer, 0, oldBuffer.Length);
@@ -80,7 +80,7 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(TestDoubleBuffers), new int[] { 0, 1, 512, 999, 1024, 4096 })]
-        public void BsDiffCreateFromStreams(byte[] oldData, byte[] newData)
+        public void BsDiffRoundtripFromStreams(byte[] oldData, byte[] newData)
         {
             using var outputOwner = MemoryOwner<byte>.Allocate(0x2000);
 
@@ -103,14 +103,14 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
-        public void BsDiffCreateNullArguments(byte[] oldData, byte[] newData, Stream outStream)
+        public void BsDiffCreateNullArgumentsThrows(byte[] oldData, byte[] newData, Stream outStream)
         {
             Assert.Throws<ArgumentNullException>(() => Diff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
 
         public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
         {
-            var emptybuf = new byte[0];
+            var emptybuf = Array.Empty<byte>();
             var ms = new MemoryStream();
             yield return new object[] { null, emptybuf, ms };
             yield return new object[] { emptybuf, null, ms };
@@ -119,7 +119,7 @@ namespace DeltaQ.Tests
 
         [Theory]
         [MemberData(nameof(BsDiffCreateBadStreams_TestData))]
-        public void BsDiffCreateBadStreams(byte[] oldData, byte[] newData, Stream outStream)
+        public void BsDiffCreateBadStreamsThrows(byte[] oldData, byte[] newData, Stream outStream)
         {
             Assert.Throws<ArgumentException>(() => Diff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
         }
