@@ -51,7 +51,6 @@
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.SAIS
@@ -503,31 +502,20 @@ namespace DeltaQ.SuffixSorting.SAIS
             InduceSA(T, sa, c, b, n, k);
         }
 
-        /// <summary>
-        ///     Constructs the suffix array of a given string (as byte array) in linear time.
-        /// </summary>
-        /// <param name="textBuffer">input bytes</param>
-        /// <returns>0 if no error occurred, -1 or -2 otherwise</returns>
-        public ReadOnlyMemory<int> Sort(ReadOnlySpan<byte> textBuffer)
-        {
-            var suffixBuffer = new int[textBuffer.Length];
-            Sort(textBuffer, suffixBuffer);
-            return suffixBuffer;
-        }
-
-        public MemoryOwner<int> SortOwned(ReadOnlySpan<byte> textBuffer)
+        public MemoryOwner<int> Sort(ReadOnlySpan<byte> textBuffer)
         {
             var owner = MemoryOwner<int>.Allocate(textBuffer.Length);
             Sort(textBuffer, owner.Span);
             return owner;
         }
 
-        IMemoryOwner<int> ISuffixSort.SortOwned(ReadOnlySpan<byte> textBuffer) => SortOwned(textBuffer);
+        IMemoryOwner<int> ISuffixSort.Sort(ReadOnlySpan<byte> textBuffer)
+            => Sort(textBuffer);
 
         public int Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
         {
             if (suffixBuffer.Length < textBuffer.Length)
-                throw new ArgumentOutOfRangeException(nameof(suffixBuffer), $"Span must have a minimum size of ({nameof(textBuffer)}.Length+1)");
+                throw new ArgumentException("Output span must have length greater than or equal to input span", nameof(suffixBuffer));
 
             if (textBuffer.Length <= 1)
             {

@@ -101,7 +101,7 @@ namespace DeltaQ.BsDiff
 
             //the memory allocated for the suffix array MUST be at least (n+1)
             //this is only required for bsdiff, so we allocate it ourselves
-            //instead of using the ISuffixSort overloads that might allocate only (n)
+            //instead of using the ISuffixSort overloads that only require allocations of (n)
             using (MemoryOwner<int> saOwner = MemoryOwner<int>.Allocate(oldData.Length + 1, AllocationMode.Clear))
             using (var msControl = new MemoryStream())
             using (var msDiff = new MemoryStream())

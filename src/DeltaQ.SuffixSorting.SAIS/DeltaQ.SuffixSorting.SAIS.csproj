@@ -5,12 +5,12 @@
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="0.1.0" />
-    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="6.1.1" />
+    <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="0.2.0" />
+    <PackageReference Include="DeltaQ.Utility.Memory" Version="0.2.0" />
     <PackageReference Include="System.Memory" Version="4.5.4" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
 

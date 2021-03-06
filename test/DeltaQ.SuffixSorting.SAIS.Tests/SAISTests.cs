@@ -56,7 +56,7 @@ namespace DeltaQ.Tests
 #else
                 Span<byte> T = ownedT.Span;
 #endif
-                using (var ownedSA = _sais.SortOwned(T))
+                using (var ownedSA = _sais.Sort(T))
                 {
                     Span<int> SA = ownedSA.Span;
                     var result = Check(T, SA, T.Length, false);
