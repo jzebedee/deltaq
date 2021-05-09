@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
-    public class LibDivSufSort : ISuffixSort
+    public partial class LibDivSufSort : ISuffixSort
     {
         public IMemoryOwner<int> Sort(ReadOnlySpan<byte> textBuffer)
         {
@@ -14,5 +14,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         {
             throw new NotImplementedException();
         }
+
     }
 }
