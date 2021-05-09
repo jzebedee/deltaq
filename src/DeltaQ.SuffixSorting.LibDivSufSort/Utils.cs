@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using sauchar_t = System.Byte;
 using saint_t = System.Int32;
 using saidx_t = System.Int32;
+using System.Diagnostics;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
@@ -13,12 +14,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
     {
         private const int ALPHABET_SIZE = sizeof(byte) + 1;
 
-        /*- Private Function -*/
-
         /* Binary search for inverse bwt. */
-        static
-        saidx_t
-        binarysearch_lower(ReadOnlySpan<saidx_t> A, saidx_t size, saidx_t value)
+        static saidx_t binarysearch_lower(ReadOnlySpan<saidx_t> A, saidx_t size, saidx_t value)
         {
             saidx_t half, i;
             for (i = 0, half = size >> 1;
@@ -39,32 +36,32 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
         /* Burrows-Wheeler transform. */
         saint_t
-        bw_transform(ReadOnlySpan<sauchar_t> T, sauchar_t* U, saidx_t* SA,
-                     saidx_t n, saidx_t* idx)
+        bw_transform(ReadOnlySpan<sauchar_t> T, Span<sauchar_t> U, Span<saidx_t> SA,
+                     saidx_t n, ref saidx_t idx)
         {
-            saidx_t* A, i, j, p, t;
+            Span<saidx_t> A;
             saint_t c;
 
             /* Check arguments. */
-            if ((T == NULL) || (U == NULL) || (n < 0) || (idx == NULL)) { return -1; }
+            if ((T == null) || (U == null) || (n < 0) || (idx == null)) { return -1; }
             if (n <= 1)
             {
                 if (n == 1) { U[0] = T[0]; }
-                *idx = n;
+                idx = n;
                 return 0;
             }
 
-            if ((A = SA) == NULL)
+            if ((A = SA) == null)
             {
-                i = divbwt(T, U, NULL, n);
-                if (0 <= i) { *idx = i; i = 0; }
+                saidx_t i = divbwt(T, U, null, n);
+                if (0 <= i) { idx = i; i = 0; }
                 return (saint_t)i;
             }
 
             /* BW transform. */
             if (T == U)
             {
-                t = n;
+                saidx_t i, j, p, t = n;
                 for (i = 0, j = 0; i < n; ++i)
                 {
                     p = t - 1;
@@ -78,7 +75,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                     else
                     {
-                        *idx = i;
+                        idx = i;
                     }
                 }
                 p = t - 1;
@@ -90,21 +87,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
                 else
                 {
-                    *idx = i;
+                    idx = i;
                 }
             }
             else
             {
+                saidx_t i;
                 U[0] = T[n - 1];
                 for (i = 0; A[i] != 0; ++i) { U[i + 1] = T[A[i] - 1]; }
-                *idx = i + 1;
+                idx = i + 1;
                 for (++i; i < n; ++i) { U[i] = T[A[i] - 1]; }
-            }
-
-            if (SA == NULL)
-            {
-                /* Deallocate memory. */
-                free(A);
             }
 
             return 0;
@@ -112,27 +104,38 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
         /* Inverse Burrows-Wheeler transform. */
         saint_t
-        inverse_bw_transform(ReadOnlySpan<sauchar_t> T, sauchar_t* U, saidx_t* A,
+        inverse_bw_transform(ReadOnlySpan<sauchar_t> T, Span<sauchar_t> U, Span<saidx_t> A,
                              saidx_t n, saidx_t idx)
         {
-            saidx_t C[ALPHABET_SIZE];
-            sauchar_t D[ALPHABET_SIZE];
-            saidx_t* B;
+            Span<saidx_t> C = new saidx_t[ALPHABET_SIZE];
+            Span<sauchar_t> D = new sauchar_t[ALPHABET_SIZE];
+            //saidx_t C[ALPHABET_SIZE];
+            //sauchar_t D[ALPHABET_SIZE];
+            Span<saidx_t> B;
             saidx_t i, p;
             saint_t c, d;
 
             /* Check arguments. */
-            if ((T == NULL) || (U == NULL) || (n < 0) || (idx < 0) ||
+            if ((T == null) || (U == null) || (n < 0) || (idx < 0) ||
                (n < idx) || ((0 < n) && (idx == 0)))
             {
                 return -1;
             }
             if (n <= 1) { return 0; }
 
-            if ((B = A) == NULL)
+            if ((B = A) == null)
             {
                 /* Allocate n*sizeof(saidx_t) bytes of memory. */
-                if ((B = (saidx_t*)malloc((size_t)n * sizeof(saidx_t))) == NULL) { return -2; }
+                try
+                {
+                    B = new saidx_t[n];// (saidx_t*)malloc((size_t)n * sizeof(saidx_t));
+                    //if (B == null) { return -2; }
+                }
+                //TODO: fixme
+                catch (Exception)
+                {
+                    return -2;
+                }
             }
 
             /* Inverse BW transform. */
@@ -157,7 +160,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 p = B[p - 1];
             }
 
-            if (A == NULL)
+            if (A == null)
             {
                 /* Deallocate memory. */
                 free(B);
@@ -169,23 +172,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         /* Checks the suffix array SA of the string T. */
         saint_t
         sufcheck(ReadOnlySpan<sauchar_t> T, ReadOnlySpan<saidx_t> SA,
-                 saidx_t n, saint_t verbose)
+                 saidx_t n)
         {
-            saidx_t C[ALPHABET_SIZE];
+            Span<saidx_t> C = new saidx_t[ALPHABET_SIZE];
+            //saidx_t C[ALPHABET_SIZE];
             saidx_t i, p, q, t;
             saint_t c;
 
-            if (verbose) { fprintf(stderr, "sufcheck: "); }
+            Debug.Write("sufcheck: ");
 
             /* Check arguments. */
-            if ((T == NULL) || (SA == NULL) || (n < 0))
+            if ((T == null) || (SA == null) || (n < 0))
             {
-                if (verbose) { fprintf(stderr, "Invalid arguments.\n"); }
+                Debug.WriteLine("Invalid arguments.");
                 return -1;
             }
             if (n == 0)
             {
-                if (verbose) { fprintf(stderr, "Done.\n"); }
+                Debug.WriteLine("Done.");
                 return 0;
             }
 
@@ -194,16 +198,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 if ((SA[i] < 0) || (n <= SA[i]))
                 {
-                    if (verbose)
-                    {
-                        fprintf(stderr, "Out of the range [0,%" PRIdSAIDX_T "].\n"
-        
-
-
-
-                                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "\n",
-                                        n - 1, i, SA[i]);
-                    }
+                    Debug.WriteLine("Out of the range [0,{0}]", n - 1);
+                    Debug.WriteLine("SA[{0}]={1}", i, SA[i]);
                     return -2;
                 }
             }
@@ -213,21 +209,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 if (T[SA[i - 1]] > T[SA[i]])
                 {
-                    if (verbose)
-                    {
-                        fprintf(stderr, "Suffixes in wrong order.\n"
-        
-
-
-
-                                        "  T[SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "]=%d"
-        
-
-
-
-                                        " > T[SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "]=%d\n",
-                                        i - 1, SA[i - 1], T[SA[i - 1]], i, SA[i], T[SA[i]]);
-                    }
+                    Debug.WriteLine("Suffixes in wrong order.");
+                    Debug.WriteLine("   T[SA[{0}]={1}]={2}", i - 1, SA[i - 1], T[SA[i - 1]]);
+                    Debug.WriteLine(" > T[SA[{0}]={1}]={2}", i, SA[i], T[SA[i]]);
                     return -3;
                 }
             }
@@ -259,21 +243,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
                 if ((t < 0) || (p != SA[t]))
                 {
-                    if (verbose)
-                    {
-                        fprintf(stderr, "Suffix in wrong position.\n"
-        
-
-
-
-                                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T " or\n"
-        
-
-
-
-                                        "  SA[%" PRIdSAIDX_T "]=%" PRIdSAIDX_T "\n",
-                                        t, (0 <= t) ? SA[t] : -1, i, SA[i]);
-                    }
+                    Debug.WriteLine("Suffix in wrong position.");
+                    Debug.WriteLine("  SA[{0}]={1} or", t, 0 <= t ? SA[t] : -1);
+                    Debug.WriteLine("  SA[{0}]={1}", i, SA[i]);
                     return -4;
                 }
                 if (t != q)
@@ -283,7 +255,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
             }
 
-            if (1 <= verbose) { fprintf(stderr, "Done.\n"); }
+            Debug.WriteLine("Done.");
             return 0;
         }
 
@@ -291,23 +263,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         static
         int
         _compare(ReadOnlySpan<sauchar_t> T, saidx_t Tsize,
-                     ReadOnlySpan<sauchar_t> P, saidx_t Psize,
-                 saidx_t suf, saidx_t* match)
+         ReadOnlySpan<sauchar_t> P, saidx_t Psize,
+         saidx_t suf, ref saidx_t match)
         {
             saidx_t i, j;
             saint_t r;
-            for (i = suf + *match, j = *match, r = 0;
+            for (i = suf + match, j = match, r = 0;
                 (i < Tsize) && (j < Psize) && ((r = T[i] - P[j]) == 0); ++i, ++j) { }
-            *match = j;
-            return (r == 0) ? -(j != Psize) : r;
+            match = j;
+            //TODO: checkme
+            return (r == 0) ? (j != Psize ? -1 : 0) : r;
         }
 
         /* Search for the pattern P in the string T. */
         saidx_t
         sa_search(ReadOnlySpan<sauchar_t> T, saidx_t Tsize,
-                      ReadOnlySpan<sauchar_t> P, saidx_t Psize,
+                  ReadOnlySpan<sauchar_t> P, saidx_t Psize,
                   ReadOnlySpan<saidx_t> SA, saidx_t SAsize,
-                  saidx_t* idx)
+                  ref saidx_t idx)
         {
             saidx_t size, lsize, rsize, half;
             saidx_t match, lmatch, rmatch;
@@ -315,18 +288,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             saidx_t i, j, k;
             saint_t r;
 
-            if (idx != NULL) { *idx = -1; }
-            if ((T == NULL) || (P == NULL) || (SA == NULL) ||
+            if (idx != null) { idx = -1; }
+            if ((T == null) || (P == null) || (SA == null) ||
                (Tsize < 0) || (Psize < 0) || (SAsize < 0)) { return -1; }
             if ((Tsize == 0) || (SAsize == 0)) { return 0; }
-            if (Psize == 0) { if (idx != NULL) { *idx = 0; } return SAsize; }
+            if (Psize == 0) { if (idx != null) { idx = 0; } return SAsize; }
 
             for (i = j = k = 0, lmatch = rmatch = 0, size = SAsize, half = size >> 1;
                 0 < size;
                 size = half, half >>= 1)
             {
-                match = MIN(lmatch, rmatch);
-                r = _compare(T, Tsize, P, Psize, SA[i + half], &match);
+                match = Math.Min(lmatch, rmatch);
+                r = _compare(T, Tsize, P, Psize, SA[i + half], ref match);
                 if (r < 0)
                 {
                     i += half + 1;
@@ -339,15 +312,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
                 else
                 {
-                    lsize = half, j = i, rsize = size - half - 1, k = i + half + 1;
+                    lsize = half;
+                    j = i;
+                    rsize = size - half - 1;
+                    k = i + half + 1;
 
                     /* left part */
                     for (llmatch = lmatch, lrmatch = match, half = lsize >> 1;
                         0 < lsize;
                         lsize = half, half >>= 1)
                     {
-                        lmatch = MIN(llmatch, lrmatch);
-                        r = _compare(T, Tsize, P, Psize, SA[j + half], &lmatch);
+                        lmatch = Math.Min(llmatch, lrmatch);
+                        r = _compare(T, Tsize, P, Psize, SA[j + half], ref lmatch);
                         if (r < 0)
                         {
                             j += half + 1;
@@ -365,8 +341,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         0 < rsize;
                         rsize = half, half >>= 1)
                     {
-                        rmatch = MIN(rlmatch, rrmatch);
-                        r = _compare(T, Tsize, P, Psize, SA[k + half], &rmatch);
+                        rmatch = Math.Min(rlmatch, rrmatch);
+                        r = _compare(T, Tsize, P, Psize, SA[k + half], ref rmatch);
                         if (r <= 0)
                         {
                             k += half + 1;
@@ -383,7 +359,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
             }
 
-            if (idx != NULL) { *idx = (0 < (k - j)) ? j : i; }
+            if (idx != null) { idx = (0 < (k - j)) ? j : i; }
             return k - j;
         }
 
@@ -391,14 +367,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         saidx_t
         sa_simplesearch(ReadOnlySpan<sauchar_t> T, saidx_t Tsize,
                         ReadOnlySpan<saidx_t> SA, saidx_t SAsize,
-                        saint_t c, saidx_t* idx)
+                        saint_t c, ref saidx_t idx)
         {
             saidx_t size, lsize, rsize, half;
             saidx_t i, j, k, p;
             saint_t r;
 
-            if (idx != NULL) { *idx = -1; }
-            if ((T == NULL) || (SA == NULL) || (Tsize < 0) || (SAsize < 0)) { return -1; }
+            if (idx != null) { idx = -1; }
+            if ((T == null) || (SA == null) || (Tsize < 0) || (SAsize < 0)) { return -1; }
             if ((Tsize == 0) || (SAsize == 0)) { return 0; }
 
             for (i = j = k = 0, size = SAsize, half = size >> 1;
@@ -414,7 +390,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
                 else if (r == 0)
                 {
-                    lsize = half, j = i, rsize = size - half - 1, k = i + half + 1;
+                    lsize = half;
+                    j = i;
+                    rsize = size - half - 1;
+                    k = i + half + 1;
 
                     /* left part */
                     for (half = lsize >> 1;
@@ -448,7 +427,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
             }
 
-            if (idx != NULL) { *idx = (0 < (k - j)) ? j : i; }
+            if (idx != null) { idx = (0 < (k - j)) ? j : i; }
             return k - j;
         }
 
