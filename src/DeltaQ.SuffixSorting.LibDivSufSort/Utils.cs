@@ -11,6 +11,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     class Utils
     {
+        private const int ALPHABET_SIZE = sizeof(byte) + 1;
+
         /*- Private Function -*/
 
         /* Binary search for inverse bwt. */
