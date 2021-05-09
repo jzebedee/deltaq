@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using sauchar_t = System.Byte;
+using saint_t = System.Int32;
+using saidx_t = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
