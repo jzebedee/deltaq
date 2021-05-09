@@ -210,7 +210,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 {
                     /* Scan the suffix array from right to left. */
                     for (i = SA + BUCKET_BSTAR(c1, c1 + 1),
-                        j = SA + BUCKET_A(c1 + 1) - 1, k = NULL, c2 = -1;
+                        j = SA + BUCKET_A(c1 + 1) - 1, k = null, c2 = -1;
                         i <= j;
                         --j)
                     {
@@ -287,7 +287,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 {
                     /* Scan the suffix array from right to left. */
                     for (i = SA + BUCKET_BSTAR(c1, c1 + 1),
-                        j = SA + BUCKET_A(c1 + 1) - 1, k = NULL, c2 = -1;
+                        j = SA + BUCKET_A(c1 + 1) - 1, k = null, c2 = -1;
                         i <= j;
                         --j)
                     {
@@ -361,14 +361,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         /*- Function -*/
 
         saint_t
-        divsufsort(ReadOnlySpan<sauchar_t> T, saidx_t* SA, saidx_t n)
+        divsufsort(ReadOnlySpan<sauchar_t> T, Span<saidx_t> SA, saidx_t n)
         {
-            saidx_t* bucket_A, *bucket_B;
+            Span<saidx_t> bucket_A, bucket_B;
             saidx_t m;
             saint_t err = 0;
 
             /* Check arguments. */
-            if ((T == NULL) || (SA == NULL) || (n < 0)) { return -1; }
+            if ((T == null) || (SA == null) || (n < 0)) { return -1; }
             else if (n == 0) { return 0; }
             else if (n == 1) { SA[0] = 0; return 0; }
             else if (n == 2) { m = (T[0] < T[1]); SA[m ^ 1] = 0, SA[m] = 1; return 0; }
@@ -377,7 +377,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             bucket_B = (saidx_t*)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
 
             /* Suffixsort. */
-            if ((bucket_A != NULL) && (bucket_B != NULL))
+            if ((bucket_A != null) && (bucket_B != null))
             {
                 m = sort_typeBstar(T, SA, bucket_A, bucket_B, n);
                 construct_SA(T, SA, bucket_A, bucket_B, n, m);
@@ -401,15 +401,15 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             saidx_t m, pidx, i;
 
             /* Check arguments. */
-            if ((T == NULL) || (U == NULL) || (n < 0)) { return -1; }
+            if ((T == null) || (U == null) || (n < 0)) { return -1; }
             else if (n <= 1) { if (n == 1) { U[0] = T[0]; } return n; }
 
-            if ((B = A) == NULL) { B = (saidx_t*)malloc((size_t)(n + 1) * sizeof(saidx_t)); }
+            if ((B = A) == null) { B = (saidx_t*)malloc((size_t)(n + 1) * sizeof(saidx_t)); }
             bucket_A = (saidx_t*)malloc(BUCKET_A_SIZE * sizeof(saidx_t));
             bucket_B = (saidx_t*)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
 
             /* Burrows-Wheeler Transform. */
-            if ((B != NULL) && (bucket_A != NULL) && (bucket_B != NULL))
+            if ((B != null) && (bucket_A != null) && (bucket_B != null))
             {
                 m = sort_typeBstar(T, B, bucket_A, bucket_B, n);
                 pidx = construct_BWT(T, B, bucket_A, bucket_B, n, m);
@@ -427,7 +427,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
             free(bucket_B);
             free(bucket_A);
-            if (A == NULL) { free(B); }
+            if (A == null) { free(B); }
 
             return pidx;
         }
