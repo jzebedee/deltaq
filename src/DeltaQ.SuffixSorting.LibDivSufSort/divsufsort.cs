@@ -6,21 +6,26 @@ using System.Threading.Tasks;
 using sauchar_t = System.Byte;
 using saint_t = System.Int32;
 using saidx_t = System.Int32;
+using Microsoft.Toolkit.HighPerformance.Buffers;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     public partial class LibDivSufSort
     {
-        /*- Private Functions -*/
+        private const int ALPHABET_SIZE = sizeof(byte) + 1;
+        private const int BUCKET_A_SIZE = ALPHABET_SIZE;
+        private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
 
         /* Sorts suffixes of type B*. */
         static
         saidx_t
-        sort_typeBstar(ReadOnlySpan<sauchar_t> T, saidx_t* SA,
-               saidx_t* bucket_A, saidx_t* bucket_B,
+        sort_typeBstar(ReadOnlySpan<sauchar_t> T, Span<saidx_t> SA,
+               Span<saidx_t> bucket_A, Span<saidx_t> bucket_B,
                saidx_t n)
         {
-            saidx_t* PAb, *ISAb, *buf;
+            saidx_t PAb, ISAb, buf;
 #if _OPENMP
             saidx_t* curbuf;
             saidx_t l;
@@ -33,8 +38,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 #endif
 
             /* Initialize bucket arrays. */
-            for (i = 0; i < BUCKET_A_SIZE; ++i) { bucket_A[i] = 0; }
-            for (i = 0; i < BUCKET_B_SIZE; ++i) { bucket_B[i] = 0; }
+            Debug.Assert(bucket_A.Length == BUCKET_A_SIZE);
+            Debug.Assert(bucket_B.Length == BUCKET_B_SIZE);
+            bucket_A.Clear();
+            bucket_B.Clear();
 
             /* Count the number of occurrences of the first one or two characters of each
                type A, B and B* suffix. Moreover, store the beginning position of all
@@ -42,16 +49,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             for (i = n - 1, m = n, c0 = T[n - 1]; 0 <= i;)
             {
                 /* type A suffix. */
-                do { ++BUCKET_A(c1 = c0); } while ((0 <= --i) && ((c0 = T[i]) >= c1));
+                do { ++BUCKET_A(bucket_A, c1 = c0); } while ((0 <= --i) && ((c0 = T[i]) >= c1));
                 if (0 <= i)
                 {
                     /* type B* suffix. */
-                    ++BUCKET_BSTAR(c0, c1);
+                    ++BUCKET_BSTAR(bucket_B, c0, c1);
                     SA[--m] = i;
                     /* type B suffix. */
                     for (--i, c1 = c0; (0 <= i) && ((c0 = T[i]) <= c1); --i, c1 = c0)
                     {
-                        ++BUCKET_B(c0, c1);
+                        ++BUCKET_B(bucket_B, c0, c1);
                     }
                 }
             }
@@ -65,14 +72,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             /* Calculate the index of start/end point of each bucket. */
             for (c0 = 0, i = 0, j = 0; c0 < ALPHABET_SIZE; ++c0)
             {
-                t = i + BUCKET_A(c0);
-                BUCKET_A(c0) = i + j; /* start point */
-                i = t + BUCKET_B(c0, c0);
+                t = i + BUCKET_A(bucket_A, c0);
+                BUCKET_A(bucket_A, c0) = i + j; /* start point */
+                i = t + BUCKET_B(bucket_B, c0, c0);
                 for (c1 = c0 + 1; c1 < ALPHABET_SIZE; ++c1)
                 {
-                    j += BUCKET_BSTAR(c0, c1);
-                    BUCKET_BSTAR(c0, c1) = j; /* end point */
-                    i += BUCKET_B(c0, c1);
+                    j += BUCKET_BSTAR(bucket_B, c0, c1);
+                    BUCKET_BSTAR(bucket_B, c0, c1) = j; /* end point */
+                    i += BUCKET_B(bucket_B, c0, c1);
                 }
             }
 
@@ -83,10 +90,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 for (i = m - 2; 0 <= i; --i)
                 {
                     t = PAb[i], c0 = T[t], c1 = T[t + 1];
-                    SA[--BUCKET_BSTAR(c0, c1)] = i;
+                    SA[--BUCKET_BSTAR(bucket_B, c0, c1)] = i;
                 }
                 t = PAb[m - 1], c0 = T[t], c1 = T[t + 1];
-                SA[--BUCKET_BSTAR(c0, c1)] = m - 1;
+                SA[--BUCKET_BSTAR(bucket_B, c0, c1)] = m - 1;
 
                 /* Sort the type B* substrings using sssort. */
 #if _OPENMP
@@ -128,7 +135,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 {
                     for (c1 = ALPHABET_SIZE - 1; c0 < c1; j = i, --c1)
                     {
-                        i = BUCKET_BSTAR(c0, c1);
+                        i = BUCKET_BSTAR(bucket_B, c0, c1);
                         if (1 < (j - i))
                         {
                             sssort(T, PAb, SA + i, SA + j,
@@ -169,26 +176,33 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
 
                 /* Calculate the index of start/end point of each bucket. */
-                BUCKET_B(ALPHABET_SIZE - 1, ALPHABET_SIZE - 1) = n; /* end point */
+                BUCKET_B(bucket_B, ALPHABET_SIZE - 1, ALPHABET_SIZE - 1) = n; /* end point */
                 for (c0 = ALPHABET_SIZE - 2, k = m - 1; 0 <= c0; --c0)
                 {
-                    i = BUCKET_A(c0 + 1) - 1;
+                    i = BUCKET_A(bucket_A, c0 + 1) - 1;
                     for (c1 = ALPHABET_SIZE - 1; c0 < c1; --c1)
                     {
-                        t = i - BUCKET_B(c0, c1);
-                        BUCKET_B(c0, c1) = i; /* end point */
+                        t = i - BUCKET_B(bucket_B, c0, c1);
+                        BUCKET_B(bucket_B, c0, c1) = i; /* end point */
 
                         /* Move all type B* suffixes to the correct position. */
-                        for (i = t, j = BUCKET_BSTAR(c0, c1);
+                        for (i = t, j = BUCKET_BSTAR(bucket_B, c0, c1);
                             j <= k;
                             --i, --k) { SA[i] = SA[k]; }
                     }
-                    BUCKET_BSTAR(c0, c0 + 1) = i - BUCKET_B(c0, c0) + 1; /* start point */
-                    BUCKET_B(c0, c0) = i; /* end point */
+                    BUCKET_BSTAR(bucket_B, c0, c0 + 1) = i - BUCKET_B(bucket_B, c0, c0) + 1; /* start point */
+                    BUCKET_B(bucket_B, c0, c0) = i; /* end point */
                 }
             }
 
             return m;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ref int BUCKET_A(Span<int> bucket_A, int c0) => ref bucket_A[c0];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ref int BUCKET_B(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c1) << 8) | (c0)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ref int BUCKET_BSTAR(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c0) << 8) | (c1)];
         }
 
         /* Constructs the suffix array by using the sorted order of type B* suffixes. */
@@ -363,34 +377,29 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         saint_t
         divsufsort(ReadOnlySpan<sauchar_t> T, Span<saidx_t> SA, saidx_t n)
         {
-            Span<saidx_t> bucket_A, bucket_B;
             saidx_t m;
-            saint_t err = 0;
 
             /* Check arguments. */
             if ((T == null) || (SA == null) || (n < 0)) { return -1; }
             else if (n == 0) { return 0; }
             else if (n == 1) { SA[0] = 0; return 0; }
-            else if (n == 2) { m = (T[0] < T[1]); SA[m ^ 1] = 0, SA[m] = 1; return 0; }
+            else if (n == 2) { /*TODO: checkme*/m = T[0] < T[1] ? 1 : 0; SA[m ^ 1] = 0; SA[m] = 1; return 0; }
 
-            bucket_A = (saidx_t*)malloc(BUCKET_A_SIZE * sizeof(saidx_t));
-            bucket_B = (saidx_t*)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
+            using var owner_A = SpanOwner<saidx_t>.Allocate(BUCKET_A_SIZE);
+            using var owner_B = SpanOwner<saidx_t>.Allocate(BUCKET_B_SIZE);
+
+            Span<saidx_t> bucket_A = owner_A.Span;
+            Span<saidx_t> bucket_B = owner_B.Span;
 
             /* Suffixsort. */
-            if ((bucket_A != null) && (bucket_B != null))
+            if (bucket_A == null || bucket_B == null)
             {
-                m = sort_typeBstar(T, SA, bucket_A, bucket_B, n);
-                construct_SA(T, SA, bucket_A, bucket_B, n, m);
-            }
-            else
-            {
-                err = -2;
+                return -2;
             }
 
-            free(bucket_B);
-            free(bucket_A);
-
-            return err;
+            m = sort_typeBstar(T, SA, bucket_A, bucket_B, n);
+            construct_SA(T, SA, bucket_A, bucket_B, n, m);
+            return 0;
         }
 
         saidx_t
