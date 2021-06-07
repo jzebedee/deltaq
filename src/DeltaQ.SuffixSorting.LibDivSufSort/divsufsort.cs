@@ -9,11 +9,19 @@ using saidx_t = System.Int32;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     public partial class LibDivSufSort
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ref int BUCKET_A(Span<int> bucket_A, int c0) => ref bucket_A[c0];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ref int BUCKET_B(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c1) << 8) | (c0)];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ref int BUCKET_BSTAR(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c0) << 8) | (c1)];
+
         private const int ALPHABET_SIZE = sizeof(byte) + 1;
         private const int BUCKET_A_SIZE = ALPHABET_SIZE;
         private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
@@ -25,7 +33,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                Span<saidx_t> bucket_A, Span<saidx_t> bucket_B,
                saidx_t n)
         {
-            saidx_t PAb, ISAb, buf;
+            Span<saidx_t> PAb, ISAb, buf;
 #if _OPENMP
             saidx_t* curbuf;
             saidx_t l;
@@ -86,51 +94,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             if (0 < m)
             {
                 /* Sort the type B* suffixes by their first two characters. */
-                PAb = SA + n - m; ISAb = SA + m;
+                //PAb = SA + n - m; ISAb = SA + m;
+                PAb = SA[(n - m)..];
+                ISAb = SA[m..];
                 for (i = m - 2; 0 <= i; --i)
                 {
-                    t = PAb[i], c0 = T[t], c1 = T[t + 1];
+                    t = PAb[i];
+                    c0 = T[t];
+                    c1 = T[t + 1];
                     SA[--BUCKET_BSTAR(bucket_B, c0, c1)] = i;
                 }
-                t = PAb[m - 1], c0 = T[t], c1 = T[t + 1];
+                t = PAb[m - 1];
+                c0 = T[t];
+                c1 = T[t + 1];
                 SA[--BUCKET_BSTAR(bucket_B, c0, c1)] = m - 1;
 
                 /* Sort the type B* substrings using sssort. */
-#if _OPENMP
-                tmp = omp_get_max_threads();
-                buf = SA + m, bufsize = (n - (2 * m)) / tmp;
-                c0 = ALPHABET_SIZE - 2, c1 = ALPHABET_SIZE - 1, j = m;
-#pragma omp parallel default(shared) private(curbuf, k, l, d0, d1, tmp)
-                {
-                    tmp = omp_get_thread_num();
-                    curbuf = buf + tmp * bufsize;
-                    k = 0;
-                    for (; ; )
-                    {
-#pragma omp critical(sssort_lock)
-                        {
-                            if (0 < (l = j))
-                            {
-                                d0 = c0, d1 = c1;
-                                do
-                                {
-                                    k = BUCKET_BSTAR(d0, d1);
-                                    if (--d1 <= d0)
-                                    {
-                                        d1 = ALPHABET_SIZE - 1;
-                                        if (--d0 < 0) { break; }
-                                    }
-                                } while (((l - k) <= 1) && (0 < (l = k)));
-                                c0 = d0, c1 = d1, j = k;
-                            }
-                        }
-                        if (l == 0) { break; }
-                        sssort(T, PAb, SA + k, SA + l,
-                               curbuf, bufsize, 2, n, *(SA + k) == (m - 1));
-                    }
-                }
-#else
-                buf = SA + m, bufsize = n - (2 * m);
+                buf = SA[m..];
+                bufsize = n - (2 * m);
                 for (c0 = ALPHABET_SIZE - 2, j = m; 0 < j; --c0)
                 {
                     for (c1 = ALPHABET_SIZE - 1; c0 < c1; j = i, --c1)
@@ -138,12 +119,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         i = BUCKET_BSTAR(bucket_B, c0, c1);
                         if (1 < (j - i))
                         {
-                            sssort(T, PAb, SA + i, SA + j,
-                                   buf, bufsize, 2, n, *(SA + i) == (m - 1));
+                            sssort(T, PAb, ref SA[i], ref SA[j], buf, bufsize, 2, n, SA[i] == (m - 1));
                         }
                     }
                 }
-#endif
 
                 /* Compute ranks of type B* substrings. */
                 for (i = m - 1; 0 <= i; --i)
@@ -196,23 +175,15 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
 
             return m;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static ref int BUCKET_A(Span<int> bucket_A, int c0) => ref bucket_A[c0];
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static ref int BUCKET_B(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c1) << 8) | (c0)];
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static ref int BUCKET_BSTAR(Span<int> bucket_B, int c0, int c1) => ref bucket_B[((c0) << 8) | (c1)];
         }
 
         /* Constructs the suffix array by using the sorted order of type B* suffixes. */
         static
         void
-        construct_SA(ReadOnlySpan<sauchar_t> T, saidx_t* SA,
-                     saidx_t* bucket_A, saidx_t* bucket_B,
+        construct_SA(ReadOnlySpan<sauchar_t> T, Span<saidx_t> SA,
+                     Span<saidx_t> bucket_A, Span<saidx_t> bucket_B,
                      saidx_t n, saidx_t m)
         {
-            saidx_t* i, *j, *k;
             saidx_t s;
             saint_t c0, c1, c2;
 
@@ -223,31 +194,34 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 for (c1 = ALPHABET_SIZE - 2; 0 <= c1; --c1)
                 {
                     /* Scan the suffix array from right to left. */
-                    for (i = SA + BUCKET_BSTAR(c1, c1 + 1),
-                        j = SA + BUCKET_A(c1 + 1) - 1, k = null, c2 = -1;
+                    c2 = -1;
+                    for (ref saidx_t i = ref Unsafe.Add(ref MemoryMarshal.GetReference(SA), BUCKET_BSTAR(bucket_B, c1, c1 + 1)),
+                        j = ref Unsafe.Add(ref MemoryMarshal.GetReference(SA), BUCKET_A(bucket_A, c1 + 1) - 1),
+                        k = ref Unsafe.NullRef<saidx_t>();
                         i <= j;
                         --j)
                     {
-                        if (0 < (s = *j))
+                        if (0 < (s = j))
                         {
-                            assert(T[s] == c1);
-                            assert(((s + 1) < n) && (T[s] <= T[s + 1]));
-                            assert(T[s - 1] <= T[s]);
-                            *j = ~s;
+                            Debug.Assert(T[s] == c1);
+                            Debug.Assert(((s + 1) < n) && (T[s] <= T[s + 1]));
+                            Debug.Assert(T[s - 1] <= T[s]);
+                            j = ~s;
                             c0 = T[--s];
                             if ((0 < s) && (T[s - 1] > c0)) { s = ~s; }
                             if (c0 != c2)
                             {
-                                if (0 <= c2) { BUCKET_B(c2, c1) = k - SA; }
-                                k = SA + BUCKET_B(c2 = c0, c1);
+                                if (0 <= c2) { BUCKET_B(bucket_B, c2, c1) = k - MemoryMarshal.GetReference(SA); }
+                                k = Unsafe.Add(ref MemoryMarshal.GetReference(SA), BUCKET_B(bucket_B, c2 = c0, c1));
                             }
-                            assert(k < j);
-                            *k-- = s;
+                            Debug.Assert(k < j);
+                            k = ref Unsafe.Subtract(ref k, 1);
+                            k = s;
                         }
                         else
                         {
-                            assert(((s == 0) && (T[s] == c1)) || (s < 0));
-                            *j = ~s;
+                            Debug.Assert(((s == 0) && (T[s] == c1)) || (s < 0));
+                            j = ~s;
                         }
                     }
                 }
@@ -262,7 +236,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 if (0 < (s = *i))
                 {
-                    assert(T[s - 1] >= T[s]);
+                    Debug.Assert(T[s - 1] >= T[s]);
                     c0 = T[--s];
                     if ((s == 0) || (T[s - 1] < c0)) { s = ~s; }
                     if (c0 != c2)
@@ -270,12 +244,12 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         BUCKET_A(c2) = k - SA;
                         k = SA + BUCKET_A(c2 = c0);
                     }
-                    assert(i < k);
+                    Debug.Assert(i < k);
                     *k++ = s;
                 }
                 else
                 {
-                    assert(s < 0);
+                    Debug.Assert(s < 0);
                     *i = ~s;
                 }
             }
@@ -285,11 +259,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
            by using the sorted order of type B* suffixes. */
         static
         saidx_t
-        construct_BWT(ReadOnlySpan<sauchar_t> T, saidx_t* SA,
-                      saidx_t* bucket_A, saidx_t* bucket_B,
+        construct_BWT(ReadOnlySpan<sauchar_t> T, Span<saidx_t> SA,
+                      Span<saidx_t> bucket_A, Span<saidx_t> bucket_B,
                       saidx_t n, saidx_t m)
         {
-            saidx_t* i, *j, *k, *orig;
+            saidx_t i, j, k, orig;
             saidx_t s;
             saint_t c0, c1, c2;
 
@@ -307,9 +281,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     {
                         if (0 < (s = *j))
                         {
-                            assert(T[s] == c1);
-                            assert(((s + 1) < n) && (T[s] <= T[s + 1]));
-                            assert(T[s - 1] <= T[s]);
+                            Debug.Assert(T[s] == c1);
+                            Debug.Assert(((s + 1) < n) && (T[s] <= T[s + 1]));
+                            Debug.Assert(T[s - 1] <= T[s]);
                             c0 = T[--s];
                             *j = ~((saidx_t)c0);
                             if ((0 < s) && (T[s - 1] > c0)) { s = ~s; }
@@ -318,17 +292,17 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (0 <= c2) { BUCKET_B(c2, c1) = k - SA; }
                                 k = SA + BUCKET_B(c2 = c0, c1);
                             }
-                            assert(k < j);
+                            Debug.Assert(k < j);
                             *k-- = s;
                         }
                         else if (s != 0)
                         {
                             *j = ~s;
-#if !NDEBUG
+#if DEBUG
                         }
                         else
                         {
-                            assert(T[s] == c1);
+                            Debug.Assert(T[s] == c1);
 #endif
                         }
                     }
@@ -344,7 +318,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 if (0 < (s = *i))
                 {
-                    assert(T[s - 1] >= T[s]);
+                    Debug.Assert(T[s - 1] >= T[s]);
                     c0 = T[--s];
                     *i = c0;
                     if ((0 < s) && (T[s - 1] < c0)) { s = ~((saidx_t)T[s - 1]); }
@@ -353,7 +327,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         BUCKET_A(c2) = k - SA;
                         k = SA + BUCKET_A(c2 = c0);
                     }
-                    assert(i < k);
+                    Debug.Assert(i < k);
                     *k++ = s;
                 }
                 else if (s != 0)
@@ -403,20 +377,20 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
 
         saidx_t
-        divbwt(ReadOnlySpan<sauchar_t> T, sauchar_t* U, saidx_t* A, saidx_t n)
+        divbwt(ReadOnlySpan<sauchar_t> T, Span<sauchar_t> U, Span<saidx_t> A, saidx_t n)
         {
-            saidx_t* B;
-            saidx_t* bucket_A, *bucket_B;
+            Span<saidx_t> B;
+            Span<saidx_t> bucket_A, bucket_B;
             saidx_t m, pidx, i;
 
             /* Check arguments. */
             if ((T == null) || (U == null) || (n < 0)) { return -1; }
             else if (n <= 1) { if (n == 1) { U[0] = T[0]; } return n; }
 
-            if ((B = A) == null) { B = (saidx_t*)malloc((size_t)(n + 1) * sizeof(saidx_t)); }
-            bucket_A = (saidx_t*)malloc(BUCKET_A_SIZE * sizeof(saidx_t));
-            bucket_B = (saidx_t*)malloc(BUCKET_B_SIZE * sizeof(saidx_t));
-
+            if ((B = A) == null) { B = new saidx_t[n + 1]; }
+            bucket_A = new saidx_t[BUCKET_A_SIZE];
+            bucket_B = new saidx_t[BUCKET_B_SIZE];
+            
             /* Burrows-Wheeler Transform. */
             if ((B != null) && (bucket_A != null) && (bucket_B != null))
             {
@@ -434,9 +408,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 pidx = -2;
             }
 
-            free(bucket_B);
-            free(bucket_A);
-            if (A == null) { free(B); }
+            //free(bucket_B);
+            //free(bucket_A);
+            //if (A == null) { free(B); }
 
             return pidx;
         }

@@ -123,21 +123,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
             if (n <= 1) { return 0; }
 
-            if ((B = A) == null)
-            {
-                /* Allocate n*sizeof(saidx_t) bytes of memory. */
-                try
-                {
-                    B = new saidx_t[n];// (saidx_t*)malloc((size_t)n * sizeof(saidx_t));
-                    //if (B == null) { return -2; }
-                }
-                //TODO: fixme
-                catch (Exception)
-                {
-                    return -2;
-                }
-            }
-
             /* Inverse BW transform. */
             for (c = 0; c < ALPHABET_SIZE; ++c) { C[c] = 0; }
             for (i = 0; i < n; ++i) { ++C[T[i]]; }
@@ -158,12 +143,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 U[i] = D[binarysearch_lower(C, d, p)];
                 p = B[p - 1];
-            }
-
-            if (A == null)
-            {
-                /* Deallocate memory. */
-                free(B);
             }
 
             return 0;

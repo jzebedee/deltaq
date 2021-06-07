@@ -747,18 +747,17 @@ ss_swapmerge(const sauchar_t *T, const saidx_t *PA,
         /*- Function -*/
 
         /* Substring sort */
-        void
-        sssort(ReadOnlySpan<sauchar_t> T, ReadOnlySpan<saidx_t> PA,
-               ref saidx_t first, ref saidx_t last,
+        void sssort(ReadOnlySpan<sauchar_t> T, ReadOnlySpan<saidx_t> PA,
+               saidx_t first, saidx_t last,
                Span<saidx_t> buf, saidx_t bufsize,
-               saidx_t depth, saidx_t n, saint_t lastsuffix)
+               saidx_t depth, saidx_t n, bool lastsuffix)
         {
-            saidx_t* a;
-            saidx_t* b, *middle, *curbuf;
+            ref saidx_t a;
+            ref saidx_t b, middle, curbuf;
             saidx_t j, k, curbufsize, limit;
             saidx_t i;
 
-            if (lastsuffix != 0) { ++first; }
+            if (lastsuffix) { ++first; }
 
             if ((bufsize < SS_BLOCKSIZE) &&
                 (bufsize < (last - first)) &&
@@ -797,10 +796,12 @@ ss_swapmerge(const sauchar_t *T, const saidx_t *PA,
                 ss_inplacemerge(T, PA, first, middle, last, depth);
             }
 
-            if (lastsuffix != 0)
+            if (lastsuffix)
             {
                 /* Insert last type B* suffix. */
-                saidx_t PAi[2]; PAi[0] = PA[*(first - 1)], PAi[1] = n - 2;
+                Span<saidx_t> PAi = stackalloc saidx_t[2];
+                PAi[0] = PA[*(first - 1)];
+                PAi[1] = n - 2;
                 for (a = first, i = *(first - 1);
                     (a < last) && ((*a < 0) || (0 < ss_compare(T, &(PAi[0]), PA + *a, depth)));
                     ++a)
