@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,35 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         private const int BUCKET_A_SIZE = ALPHABET_SIZE;
         private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
 
+        public void divsufsort(ReadOnlySpan<byte> T, Span<int> SA)
+        {
+            Debug.Assert(T.Length == SA.Length);
+
+            var n = T.Length;
+
+            switch(n)
+            {
+                case 0: return;
+                case 1:
+                    SA[0] = 0;
+                    return;
+                //case 2:
+                //    if(T[0] < T[1])
+                //    {
+                //        SA.copy
+                //    }
+                //    break;
+            }
+
+            var result = sort_typeBstar(T, SA);
+            construct_SA(T, SA, result.A, result.B, result.m);
+        }
+
+        private void construct_SA(ReadOnlySpan<byte> t, Span<int> sA, Span<int> a, Span<int> b, int m)
+        {
+            throw new NotImplementedException();
+        }
+
         public ref struct SortTypeBstarResult
         {
             public Span<int> A;
@@ -20,19 +50,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public int m;
         }
 
+        public ref struct BStarBucket
+        {
+            public readonly Span<int> B;
+            public BStarBucket(Span<int> B) => this.B = B;
+
+            public ref int this[(int c0, int c1) index] => ref B[(index.c0 << 8) | index.c1];
+        }
+
         public ref struct BBucket
         {
             public readonly Span<int> B;
-            public BBucket(Span<int> B)
-            {
-                this.B = B;
-            }
+            public BBucket(Span<int> B) => this.B = B;
 
             public ref int this[(int c0, int c1) index] => ref B[(index.c1 << 8) | index.c0];
         }
 
         //fn sort_typeBstar(T: &Text, SA: &mut SuffixArray) -> SortTypeBstarResult {
-        public SortTypeBstarResult sort_typeBstar(in ReadOnlySpan<byte> T, Span<byte> SA)
+        public SortTypeBstarResult sort_typeBstar(in ReadOnlySpan<byte> T, Span<int> SA)
         {
             var n = T.Length;
 
@@ -40,7 +75,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             using var owner_B = SpanOwner<int>.Allocate(BUCKET_B_SIZE);
 
             Span<int> A = owner_A.Span;
-            BBucket B = new(owner_B.Span);
+            Span<int> B = owner_B.Span;
+
+            BBucket Bb = new(B);
+            BStarBucket Bstar = new(B);
 
             int c0, c1, i, j, k, t, m;
 
@@ -76,7 +114,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if (0 <= i)
                 {
                     // type B* suffix
-                    B.bstar()[(c0, c1)] += 1;
+                    Bstar[(c0, c1)] += 1;
 
                     m -= 1;
                     SA[m] = i;
@@ -101,7 +139,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
 
                         // body
-                        B[(c0, c1)] += 1;
+                        Bb[(c0, c1)] += 1;
 
                         // iter
                         i -= 1;
