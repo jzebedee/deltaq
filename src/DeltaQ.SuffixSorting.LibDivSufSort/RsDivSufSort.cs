@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAPtr = System.Index;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
@@ -65,6 +66,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
             public ref int this[(int c0, int c1) index] => ref B[(index.c1 << 8) | index.c0];
         }
+
+        //[DebuggerDisplay("")]
+        //public ref struct SAPtr
+        //{
+        //    public readonly Index Index;
+        //    public SAPtr(Index idx)
+        //    {
+        //        this.Index = idx;
+        //    }
+        //}
 
         //fn sort_typeBstar(T: &Text, SA: &mut SuffixArray) -> SortTypeBstarResult {
         public SortTypeBstarResult sort_typeBstar(in ReadOnlySpan<byte> T, Span<int> SA)
@@ -175,53 +186,58 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             if (0 < m)
             {
                 // Sort the type B* suffixes by their first two characters
-                let PAb = SAPtr(n - m);
-                let ISAb = SAPtr(m);
+                SAPtr PAb = new(n - m);
+                SAPtr ISAb = new(m);
 
-                for i in (0.. = (m - 2)).rev() {
-                    t = SA[PAb + i];
-                    c0 = T.get(t);
-                    c1 = T.get(t + 1);
-                    B.bstar()[(c0, c1)] -= 1;
-                    SA[B.bstar()[(c0, c1)]] = i;
+                for (i = m - 2; i > 0; i--)
+                {
+                    //for i in (0.. = (m - 2)).rev() {
+                    t = SA[PAb.Value + i];
+                    c0 = T[t];
+                    c1 = T[t + 1];
+                    Bstar[(c0, c1)] -= 1;
+                    SA[Bstar[(c0, c1)]] = i;
                 }
-                t = SA[PAb + m - 1];
-                c0 = T.get(t);
-                c1 = T.get(t + 1);
-                B.bstar()[(c0, c1)] -= 1;
-                SA[B.bstar()[(c0, c1)]] = m - 1;
+                t = SA[PAb.Value + m - 1];
+                c0 = T[t];
+                c1 = T[t + 1];
+                Bstar[(c0, c1)] -= 1;
+                SA[Bstar[(c0, c1)]] = m - 1;
 
                 // Sort the type B* substrings using sssort.
-                let buf = SAPtr(m);
-                let bufsize = n - (2 * m);
+                SAPtr buf = new(m);
+                var bufsize = n - (2 * m);
 
                 // init (outer)
-                c0 = ALPHABET_SIZE as Idx - 2;
+                c0 = ALPHABET_SIZE - 2;
                 j = m;
-                while 0 < j {
+                while (0 < j)
+                {
                     // init (inner)
-                    c1 = ALPHABET_SIZE as Idx - 1;
-                    while c0 < c1 {
+                    c1 = ALPHABET_SIZE - 1;
+                    while (c0 < c1)
+                    {
                         // body (inner)
-                        i = B.bstar()[(c0, c1)];
+                        i = Bstar[(c0, c1)];
 
                         if (1 < (j - i))
                         {
-                            SA_dump!(&SA.range(i..j), "sssort(A)");
-                            sssort::sssort(
-                                T,
-                                SA,
-                                PAb,
-                                SAPtr(i),
-                                SAPtr(j),
-                                buf,
-                                bufsize,
-                                2,
-                                n,
-                                SA[i] == (m - 1),
+                            Debugger.Break();
+                            //SA_dump!(&SA.range(i..j), "sssort(A)");
+                            //sssort::sssort(
+                            //    T,
+                            //    SA,
+                            //    PAb,
+                            //    SAPtr(i),
+                            //    SAPtr(j),
+                            //    buf,
+                            //    bufsize,
+                            //    2,
+                            //    n,
+                            //    SA[i] == (m - 1),
 
-                            );
-                            SA_dump!(&SA.range(i..j), "sssort(B)");
+                            //);
+                            //SA_dump!(&SA.range(i..j), "sssort(B)");
                         }
 
                         // iter (inner)
@@ -235,18 +251,21 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                 // Compute ranks of type B* substrings
                 i = m - 1;
-                while 0 <= i {
+                while (0 <= i)
+                {
                     if (0 <= SA[i])
                     {
                         j = i;
-                        loop {
+                        while (true)
+                        {
                             {
-                                let SAi = SA[i];
-                                SA[ISAb + SAi] = i;
+                                var SAi = SA[i];
+                                SA[ISAb.Value + SAi] = i;
                             }
 
                             i -= 1;
-                            if !((0 <= i) && (0 <= SA[i])) {
+                            if (!((0 <= i) && (0 <= SA[i])))
+                            {
                                 break;
                             }
                         }
@@ -258,20 +277,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
                     }
                     j = i;
-                    loop {
-                        SA[i] = !SA[i];
+                    while (true)
+                    {
+                        //TODO: check this
+                        //SA[i] = !SA[i];
+                        SA[i] = ~SA[i];
                         {
-                            let idx = ISAb + SA[i];
+                            var idx = ISAb.Value + SA[i];
                             SA[idx] = j;
                         }
 
                         i -= 1;
-                        if !(SA[i] < 0) {
+                        if (!(SA[i] < 0))
+                        {
                             break;
                         }
                     }
                     {
-                        let idx = ISAb + SA[i];
+                        var idx = ISAb.Value + SA[i];
                         SA[idx] = j;
                     }
 
