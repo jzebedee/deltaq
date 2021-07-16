@@ -301,69 +301,78 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     i -= 1;
                 }
 
-                //        // Construct the inverse suffix array of type B* suffixes using trsort.
-                //        trsort::trsort(ISAb, SA, m, 1);
+                // Construct the inverse suffix array of type B* suffixes using trsort.
+                trsort(ISAb, SA, m, 1);
 
-                //        // Set the sorted order of type B* suffixes
-                //        {
-                //            // init
-                //            i = n - 1;
-                //            j = m;
-                //            c0 = T.get(n - 1);
-                //            while 0 <= i {
-                //                // init
-                //                i -= 1;
-                //                c1 = c0;
+                // Set the sorted order of type B* suffixes
+                {
+                    // init
+                    i = n - 1;
+                    j = m;
+                    c0 = T[n - 1];
+                    while (0 <= i)
+                    {
+                        // init
+                        i -= 1;
+                        c1 = c0;
 
-                //                loop {
-                //                    // cond
-                //                    if !(0 <= i) {
-                //                        break;
-                //                    }
-                //                    c0 = T.get(i);
-                //                    if !(c0 >= c1) {
-                //                        break;
-                //                    }
+                        while (true)
+                        {
+                            // cond
+                            if (!(0 <= i))
+                            {
+                                break;
+                            }
+                            c0 = T[i];
+                            if (!(c0 >= c1))
+                            {
+                                break;
+                            }
 
-                //                    // body (empty)
+                            // body (empty)
 
-                //                    // iter
-                //                    i -= 1;
-                //                    c1 = c0;
-                //                }
+                            // iter
+                            i -= 1;
+                            c1 = c0;
+                        }
 
-                //                if 0 <= i {
-                //                    t = i;
+                        if (0 <= i)
+                        {
+                            t = i;
 
-                //                    // init
-                //                    i -= 1;
-                //                    c1 = c0;
+                            // init
+                            i -= 1;
+                            c1 = c0;
 
-                //                    loop {
-                //                        // cond
-                //                        if !(0 <= i) {
-                //                            break;
-                //                        }
-                //                        c0 = T.get(i);
-                //                        if !(c0 <= c1) {
-                //                            break;
-                //                        }
+                            while (true)
+                            {
+                                // cond
+                                if (!(0 <= i))
+                                {
+                                    break;
+                                }
+                                c0 = T[i];
+                                if (!(c0 <= c1))
+                                {
+                                    break;
+                                }
 
-                //                        // body (empty)
+                                // body (empty)
 
-                //                        // iter
-                //                        i -= 1;
-                //                        c1 = c0;
-                //                    }
+                                // iter
+                                i -= 1;
+                                c1 = c0;
+                            }
 
-                //                    j -= 1;
-                //                    {
-                //                        let pos = SA[ISAb + j];
-                //                        SA[pos] = if (t == 0) || (1 < (t - i)) { t } else { !t };
-                //                    }
-                //                }
-                //            }
-                //        } // End: Set the sorted order of type B* suffixes
+                            j -= 1;
+                            {
+                                var pos = SA[ISAb.Value + j];
+                                //TODO: check complement
+                                SA[pos] = (t == 0 || (1 < (t - i))) ? t : ~t;
+                            }
+                        }
+                    }
+                } // End: Set the sorted order of type B* suffixes
 
                 //        // Calculate the index of start/end point of each bucket
                 //        {
@@ -413,5 +422,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
             //}
 
+        }
+
+        private void trsort(SAPtr iSAb, Span<int> sA, int m, int v)
+        {
+            throw new NotImplementedException();
         }
     }
