@@ -571,3 +571,4 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
     }
+}
