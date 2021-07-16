@@ -374,58 +374,60 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                 } // End: Set the sorted order of type B* suffixes
 
-                //        // Calculate the index of start/end point of each bucket
-                //        {
-                //            B.b()[(ALPHABET_SIZE as Idx - 1, ALPHABET_SIZE as Idx - 1)] = n; // end point
+                // Calculate the index of start/end point of each bucket
+                {
+                    Bb[(ALPHABET_SIZE - 1, ALPHABET_SIZE - 1)] = n; // end point
 
-                //            // init
-                //            c0 = ALPHABET_SIZE as Idx - 2;
-                //            k = m - 1;
+                    // init
+                    c0 = ALPHABET_SIZE - 2;
+                    k = m - 1;
 
-                //            while 0 <= c0 {
-                //                i = A[c0 + 1] - 1;
+                    while (0 <= c0)
+                    {
+                        i = A[c0 + 1] - 1;
 
-                //                // init
-                //                c1 = ALPHABET_SIZE as Idx - 1;
-                //                while c0 < c1 {
-                //                    t = i - B.b()[(c0, c1)];
-                //                    B.b()[(c0, c1)] = i; // end point
+                        // init
+                        c1 = ALPHABET_SIZE - 1;
+                        while (c0 < c1)
+                        {
+                            t = i - Bb[(c0, c1)];
+                            Bb[(c0, c1)] = i; // end point
 
-                //                    // Move all type B* suffixes to the correct position
-                //                    {
-                //                        // init
-                //                        i = t;
-                //                        j = B.bstar()[(c0, c1)];
+                            // Move all type B* suffixes to the correct position
+                            {
+                                // init
+                                i = t;
+                                j = Bstar[(c0, c1)];
 
-                //                        while j <= k {
-                //                            SA[i] = SA[k];
+                                while (j <= k)
+                                {
+                                    SA[i] = SA[k];
 
-                //                            // iter
-                //                            i -= 1;
-                //                            k -= 1;
-                //                        }
-                //                    } // End: Move all type B* suffixes to the correct position
+                                    // iter
+                                    i -= 1;
+                                    k -= 1;
+                                }
+                            } // End: Move all type B* suffixes to the correct position
 
-                //                    // iter
-                //                    c1 -= 1;
-                //                }
-                //                B.bstar()[(c0, c0 + 1)] = i - B.b()[(c0, c0)] + 1;
-                //                B.b()[(c0, c0)] = i; // end point
+                            // iter
+                            c1 -= 1;
+                        }
+                        Bstar[(c0, c0 + 1)] = i - Bb[(c0, c0)] + 1;
+                        Bb[(c0, c0)] = i; // end point
 
-                //                // iter
-                //                c0 -= 1;
-                //            }
-                //        } // End: Calculate the index of start/end point of each bucket
-                //    }
-
-                //    SortTypeBstarResult { A, B, m }
+                        // iter
+                        c0 -= 1;
+                    }
+                } // End: Calculate the index of start/end point of each bucket
             }
-            //}
 
+            return new SortTypeBstarResult { A = A, B = B, m = m };
         }
+        //}
 
         private void trsort(SAPtr iSAb, Span<int> sA, int m, int v)
         {
             throw new NotImplementedException();
         }
     }
+}
