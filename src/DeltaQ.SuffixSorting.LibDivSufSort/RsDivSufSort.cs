@@ -425,9 +425,136 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
         //}
 
-        private void trsort(SAPtr iSAb, Span<int> sA, int m, int v)
+        private static readonly int[] lg_table_array = new[]
         {
-            throw new NotImplementedException();
+         -1,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+          5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+          6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+          6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+        };
+        private static ReadOnlySpan<int> lg_table => lg_table_array;
+
+        private static int tr_ilg(int n)
+        {
+            if ((n & 0xffff_0000) > 0)
+            {
+                if ((n & 0xff00_0000) > 0)
+                {
+                    return 24 + lg_table[((n >> 24) & 0xff)];
+                }
+                else
+                {
+                    return 16 + lg_table[((n >> 16) & 0xff)];
+                }
+            }
+            else
+            {
+                if ((n & 0x0000_ff00) > 0)
+                {
+                    return 8 + lg_table[((n >> 8) & 0xff)];
+                }
+                else
+                {
+                    return 0 + lg_table[((n >> 0) & 0xff)];
+                }
+            }
+        }
+
+        private ref struct Budget
+        {
+            public int Chance;
+            public int Remain;
+            public int IncVal;
+            public int Count;
+
+            public Budget(int chance, int incVal) : this()
+            {
+                Chance = chance;
+                IncVal = incVal;
+            }
+        }
+
+        /// Tandem repeat sort
+        private void trsort(SAPtr ISA, Span<int> SA, int n, int depth)
+        {
+            SAPtr ISAd;
+            SAPtr first;
+            SAPtr last;
+            Index t;
+            Index skip;
+            Index unsorted;
+            Budget budget = new(tr_ilg(n) * 2 / 3, n);
+
+            macro_rules! ISA {
+                ($x: expr) => {
+                    SA[ISA + $x]
+                };
+            }
+
+            // JERRY
+            ISAd = ISA + depth;
+            while (-n < SA[0])
+            {
+                first = SAPtr(0);
+                skip = 0;
+                unsorted = 0;
+
+                // PETER
+                loop {
+                    t = SA[first];
+                    if (t < 0)
+                    {
+                        first -= t;
+                        skip += t;
+                    }
+                    else
+                    {
+                        if (skip != 0)
+                        {
+                            SA[first + skip] = skip;
+                            skip = 0;
+                        }
+                        last = SAPtr(ISA!(t) + 1);
+                        if (1 < (last - first))
+                        {
+                            budget.count = 0;
+                            tr_introsort(ISA, ISAd, SA, first, last, &mut budget);
+                            if (budget.count != 0)
+                            {
+                                unsorted += budget.count;
+                            }
+                            else
+                            {
+                                skip = (first - last).0;
+                            }
+                        }
+                        else if (last - first) == 1 {
+                            skip = -1;
+                        }
+                        first = last;
+                    }
+
+                    // cond (PETER)
+                    if !(first < n) {
+                        break;
+                    }
+                }
+
+                if (skip != 0)
+                {
+                    SA[first + skip] = skip;
+                }
+                if (unsorted == 0)
+                {
+                    break;
+                }
+
+                // iter
+                ISAd += ISAd - ISA;
+            }
         }
     }
-}
