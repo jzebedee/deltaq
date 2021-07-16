@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SAPtr = System.Index;
+using SAPtr = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
@@ -186,26 +186,26 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             if (0 < m)
             {
                 // Sort the type B* suffixes by their first two characters
-                SAPtr PAb = new(n - m);
-                SAPtr ISAb = new(m);
+                SAPtr PAb = n - m;
+                SAPtr ISAb = m;
 
                 for (i = m - 2; i > 0; i--)
                 {
                     //for i in (0.. = (m - 2)).rev() {
-                    t = SA[PAb.Value + i];
+                    t = SA[PAb + i];
                     c0 = T[t];
                     c1 = T[t + 1];
                     Bstar[(c0, c1)] -= 1;
                     SA[Bstar[(c0, c1)]] = i;
                 }
-                t = SA[PAb.Value + m - 1];
+                t = SA[PAb + m - 1];
                 c0 = T[t];
                 c1 = T[t + 1];
                 Bstar[(c0, c1)] -= 1;
                 SA[Bstar[(c0, c1)]] = m - 1;
 
                 // Sort the type B* substrings using sssort.
-                SAPtr buf = new(m);
+                SAPtr buf = m;
                 var bufsize = n - (2 * m);
 
                 // init (outer)
@@ -260,7 +260,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             {
                                 var SAi = SA[i];
-                                SA[ISAb.Value + SAi] = i;
+                                SA[ISAb + SAi] = i;
                             }
 
                             i -= 1;
@@ -283,7 +283,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         //SA[i] = !SA[i];
                         SA[i] = ~SA[i];
                         {
-                            var idx = ISAb.Value + SA[i];
+                            var idx = ISAb + SA[i];
                             SA[idx] = j;
                         }
 
@@ -294,7 +294,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
                     }
                     {
-                        var idx = ISAb.Value + SA[i];
+                        var idx = ISAb + SA[i];
                         SA[idx] = j;
                     }
 
@@ -366,7 +366,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                             j -= 1;
                             {
-                                var pos = SA[ISAb.Value + j];
+                                var pos = SA[ISAb + j];
                                 //TODO: check complement
                                 SA[pos] = (t == 0 || (1 < (t - i))) ? t : ~t;
                             }
@@ -484,27 +484,33 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             SAPtr ISAd;
             SAPtr first;
             SAPtr last;
-            Index t;
-            Index skip;
-            Index unsorted;
+            /*Index*/
+            int t;
+            /*Index*/
+            int skip;
+            /*Index*/
+            int unsorted;
             Budget budget = new(tr_ilg(n) * 2 / 3, n);
 
-            macro_rules! ISA {
-                ($x: expr) => {
-                    SA[ISA + $x]
-                };
-            }
+            //macro_rules! ISA {
+            //    ($x: expr) => {
+            //        SA[ISA + $x]
+            //    };
+            //}
+
+            //ref int getISA(int x) => ref SA[ISA + x];
 
             // JERRY
             ISAd = ISA + depth;
             while (-n < SA[0])
             {
-                first = SAPtr(0);
+                first = 0;
                 skip = 0;
                 unsorted = 0;
 
                 // PETER
-                loop {
+                while (true)
+                {
                     t = SA[first];
                     if (t < 0)
                     {
@@ -518,28 +524,30 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             SA[first + skip] = skip;
                             skip = 0;
                         }
-                        last = SAPtr(ISA!(t) + 1);
+                        last = SA[ISA + (t)] + 1;
                         if (1 < (last - first))
                         {
-                            budget.count = 0;
-                            tr_introsort(ISA, ISAd, SA, first, last, &mut budget);
-                            if (budget.count != 0)
+                            budget.Count = 0;
+                            tr_introsort(ISA, ISAd, SA, first, last, budget);
+                            if (budget.Count != 0)
                             {
-                                unsorted += budget.count;
+                                unsorted += budget.Count;
                             }
                             else
                             {
-                                skip = (first - last).0;
+                                skip = first - last;
                             }
                         }
-                        else if (last - first) == 1 {
+                        else if ((last - first) == 1)
+                        {
                             skip = -1;
                         }
                         first = last;
                     }
 
                     // cond (PETER)
-                    if !(first < n) {
+                    if (!(first < n))
+                    {
                         break;
                     }
                 }
@@ -556,5 +564,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 // iter
                 ISAd += ISAd - ISA;
             }
+        }
+
+        private void tr_introsort(int iSA, int iSAd, Span<int> sA, int first, int last, Budget budget)
+        {
+            throw new NotImplementedException();
         }
     }
