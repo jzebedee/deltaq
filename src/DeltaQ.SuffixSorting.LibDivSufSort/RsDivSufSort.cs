@@ -928,11 +928,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("budget fail");
-                                if(0 <= trlink) {
+                                if (0 <= trlink)
+                                {
                                     crosscheck("0<=trlink");
                                     stack.Items[trlink].d = -1;
                                 }
-                                if(1 < (last - a)) {
+                                if (1 < (last - a))
+                                {
                                     crosscheck("1<(last-a)");
                                     first = a;
                                     limit = -3;
@@ -940,7 +942,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 else
                                 {
                                     crosscheck("1<(last-a) not");
-                                    if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                    if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                     {
                                         return;
                                     }
@@ -959,7 +961,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         else
                         {
                             crosscheck("times pop");
-                            if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                            if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                             {
                                 return;
                             }
@@ -977,7 +979,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     continue;
                 } // end if limit < 0
 
-                if (last - first) <= TR_INSERTIONSORT_THRESHOLD {
+                if ((last - first) <= TR_INSERTIONSORT_THRESHOLD)
+                {
                     crosscheck("insertionsort last-first={}", last - first);
                     tr_insertionsort(SA, ISAd, first, last);
                     limit = -3;
@@ -996,16 +999,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         last - first
                     );
                     SA_dump!(&SA.range(first..last), "before tr_heapsort");
-                    tr_heapsort(ISAd, SA, first, (last - first).0);
+                    tr_heapsort(ISAd, SA, first, (last - first));
                     SA_dump!(&SA.range(first..last), "after tr_heapsort");
 
                     // YOHAN
                     a = last - 1;
-                    while first < a {
+                    while (first < a)
+                    {
                         // VINCENT
                         x = ISAd!(SA[a]);
                         b = a - 1;
-                        while (first <= b) && (ISAd!(SA[b])) == x {
+                        while ((first <= b) && (ISAd!(SA[b])) == x)
+                        {
                             SA[b] = !SA[b];
 
                             // iter (VINCENT)
@@ -1257,6 +1262,21 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                 }
             } // end PASCAL
+        }
+
+        private int tr_pivot(Span<int> sA, int iSAd, int first, int last)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void tr_insertionsort(Span<int> sA, int iSAd, int first, int last)
+        {
+            throw new NotImplementedException();
         }
 
         private void tr_partialcopy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
