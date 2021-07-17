@@ -711,10 +711,12 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             trlink = stack.Size - 2;
                         }
 
-                        if((a - first) <= (last - b)) {
+                        if ((a - first) <= (last - b))
+                        {
                             //TODO: crosscheck
                             //crosscheck!("star");
-                            if(1 < (a - first)) {
+                            if (1 < (a - first))
+                            {
                                 //TODO: crosscheck
                                 //crosscheck!("board");
                                 //crosscheck!(
@@ -729,7 +731,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 last = a;
                                 limit = tr_ilg(a - first);
                             }
-                            else if(1 < (last - b)) {
+                            else if (1 < (last - b))
+                            {
                                 //TODO: crosscheck
                                 //crosscheck!("north");
                                 first = b;
@@ -739,16 +742,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             {
                                 //TODO: crosscheck
                                 //crosscheck!("denny");
-                                if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
                                 //crosscheck!("denny-post");
                             }
-                        } else
+                        }
+                        else
                         {
                             //crosscheck!("moon");
-                            if(1 < (last - b)) {
+                            if (1 < (last - b))
+                            {
                                 //crosscheck!("land");
                                 //crosscheck!(
                                 //    "push {} {} {} {} {}",
@@ -762,7 +767,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
-                            else if(1 < (a - first)) {
+                            else if (1 < (a - first))
+                            {
                                 //crosscheck!("ship");
                                 last = a;
                                 limit = tr_ilg(a - first);
@@ -770,7 +776,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 //crosscheck!("clap");
-                                if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
@@ -783,22 +789,21 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // end if limit == -1
 
                         // tandem repeat copy
-                        stack.Size -= 1;
-                        a = stack.items[stack.size].b;
-                        b = stack.items[stack.size].c;
-                        if stack.items[stack.size].d == 0 {
-                            tr_copy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
+                        ref StackItem item = ref stack.Items[--stack.Size];
+                        a = item.b;
+                        b = item.c;
+                        if (item.d == 0)
+                        {
+                            tr_copy(ISA, SA, first, a, b, last, ISAd - ISA);
                         }
                         else
                         {
-                            if 0 <= trlink {
-                                stack.items[trlink as usize].d = -1;
+                            if(0 <= trlink) {
+                                stack.Items[trlink].d = -1;
                             }
-                            tr_partialcopy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
+                            tr_partialcopy(ISA, SA, first, a, b, last, ISAd - ISA);
                         }
-                        if !stack
-                            .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                            .is_ok()
+                        if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                         {
                             return;
                         }
