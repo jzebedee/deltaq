@@ -477,6 +477,25 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 Chance = chance;
                 IncVal = incVal;
             }
+
+            public bool Check(int size)
+            {
+                if (size <= Remain)
+                {
+                    Remain -= size;
+                    return true;
+                }
+
+                if (Chance == 0)
+                {
+                    Count += size;
+                    return false;
+                }
+
+                Remain += IncVal - size;
+                Chance -= 1;
+                return true;
+            }
         }
 
         /// Tandem repeat sort
@@ -871,7 +890,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             }
 
                             // push
-                            if (budget.check((a - first).0))
+                            if (budget.Check(a - first))
                             {
                                 crosscheck("budget pass");
                                 if ((a - first) <= (last - a))
