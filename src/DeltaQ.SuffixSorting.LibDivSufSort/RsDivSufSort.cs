@@ -632,6 +632,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
         }
 
+        private const Idx TR_INSERTIONSORT_THRESHOLD = 8;
         private void tr_introsort(SAPtr ISA, ref SAPtr ISAd, Span<int> SA, ref SAPtr first, ref SAPtr last, Budget budget)
         {
             SAPtr a = 0;
@@ -987,7 +988,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     continue;
                 }
 
-                let old_limit = limit;
+                var old_limit = limit;
                 limit -= 1;
                 if (old_limit == 0)
                 {
