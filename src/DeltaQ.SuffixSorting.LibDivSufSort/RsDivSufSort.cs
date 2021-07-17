@@ -580,35 +580,36 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         private ref struct TrStack
         {
             public readonly Span<StackItem> Items;
-
-            public int Size => _size;
-            private int _size;
+            public int Size;
 
             public TrStack(Span<StackItem> items)
             {
                 Items = items;
-                _size = 0;
+                Size = 0;
             }
 
             public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d, Idx e)
             {
-                Debug.Assert(_size < Items.Length);
-                ref StackItem item = ref Items[_size++];
+                Debug.Assert(Size < Items.Length);
+                ref StackItem item = ref Items[Size++];
                 item.a = a;
                 item.b = b;
                 item.c = c;
                 item.d = d;
                 item.e = e;
             }
-            public void Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d, ref Idx e)
+            public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d, ref Idx e)
             {
-                Debug.Assert(_size > 0);
-                ref StackItem item = ref Items[--_size];
+                //Debug.Assert(Size > 0);
+                if (Size == 0) return false;
+
+                ref StackItem item = ref Items[--Size];
                 a = item.a;
                 b = item.b;
                 c = item.c;
                 d = item.d;
                 e = item.e;
+                return true;
             }
         }
 
@@ -710,70 +711,70 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             trlink = stack.Size - 2;
                         }
 
-                        if (a - first) <= (last - b) {
-                            crosscheck!("star");
-                            if 1 < (a - first) {
-                                crosscheck!("board");
-                                crosscheck!(
-                                    "push {} {} {} {} {}",
-                                    ISAd,
-                                    b,
-                                    last,
-                                    tr_ilg(last - b),
-                                    trlink
-                                );
-                                stack.push(ISAd, b, last, tr_ilg(last - b), trlink);
+                        if((a - first) <= (last - b)) {
+                            //TODO: crosscheck
+                            //crosscheck!("star");
+                            if(1 < (a - first)) {
+                                //TODO: crosscheck
+                                //crosscheck!("board");
+                                //crosscheck!(
+                                //    "push {} {} {} {} {}",
+                                //    ISAd,
+                                //    b,
+                                //    last,
+                                //    tr_ilg(last - b),
+                                //    trlink
+                                //);
+                                stack.Push(ISAd, b, last, tr_ilg(last - b), trlink);
                                 last = a;
                                 limit = tr_ilg(a - first);
                             }
-                            else if 1 < (last - b) {
-                                crosscheck!("north");
+                            else if(1 < (last - b)) {
+                                //TODO: crosscheck
+                                //crosscheck!("north");
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
                             else
                             {
-                                crosscheck!("denny");
-                                if !stack
-                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                    .is_ok()
+                                //TODO: crosscheck
+                                //crosscheck!("denny");
+                                if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
-                                crosscheck!("denny-post");
+                                //crosscheck!("denny-post");
                             }
                         } else
                         {
-                            crosscheck!("moon");
-                            if 1 < (last - b) {
-                                crosscheck!("land");
-                                crosscheck!(
-                                    "push {} {} {} {} {}",
-                                    ISAd,
-                                    first,
-                                    a,
-                                    tr_ilg(a - first),
-                                    trlink
-                                );
-                                stack.push(ISAd, first, a, tr_ilg(a - first), trlink);
+                            //crosscheck!("moon");
+                            if(1 < (last - b)) {
+                                //crosscheck!("land");
+                                //crosscheck!(
+                                //    "push {} {} {} {} {}",
+                                //    ISAd,
+                                //    first,
+                                //    a,
+                                //    tr_ilg(a - first),
+                                //    trlink
+                                //);
+                                stack.Push(ISAd, first, a, tr_ilg(a - first), trlink);
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
-                            else if 1 < (a - first) {
-                                crosscheck!("ship");
+                            else if(1 < (a - first)) {
+                                //crosscheck!("ship");
                                 last = a;
                                 limit = tr_ilg(a - first);
                             }
                             else
                             {
-                                crosscheck!("clap");
-                                if !stack
-                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                    .is_ok()
+                                //crosscheck!("clap");
+                                if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
-                                crosscheck!("clap-post");
+                                //crosscheck!("clap-post");
                             }
                         }
                     }
@@ -782,7 +783,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // end if limit == -1
 
                         // tandem repeat copy
-                        stack.size -= 1;
+                        stack.Size -= 1;
                         a = stack.items[stack.size].b;
                         b = stack.items[stack.size].c;
                         if stack.items[stack.size].d == 0 {
