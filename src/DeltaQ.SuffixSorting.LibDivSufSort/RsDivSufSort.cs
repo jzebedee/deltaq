@@ -853,9 +853,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 }
                             }
 
-                            var xisa = SA[ISA + SA[a]];//ISA!(SA[a]);
-                            var xisad = SA[ISAd + SA[a]];//ISAd!(SA[a]);
-                            next = xisa != xisad ? tr_ilg(a - first + 1) : -1;
+                            next = SA[ISA + SA[a]] != SA[ISAd + SA[a]] ? tr_ilg(a - first + 1) : -1;
                             a += 1;
                             if (a < last)
                             {
@@ -866,8 +864,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 while (b < a)
                                 {
                                     {
-                                        var SA_b = SA[b];
-                                        ISA!(SA_b) = v;
+                                        SA[ISA + SA[b]] = v;
                                     }
                                     b += 1;
                                 }
