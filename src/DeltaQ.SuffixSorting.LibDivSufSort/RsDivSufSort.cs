@@ -928,11 +928,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("budget fail");
-                                if 0 <= trlink {
+                                if(0 <= trlink) {
                                     crosscheck("0<=trlink");
-                                    stack.items[trlink as usize].d = -1;
+                                    stack.Items[trlink].d = -1;
                                 }
-                                if 1 < (last - a) {
+                                if(1 < (last - a)) {
                                     crosscheck("1<(last-a)");
                                     first = a;
                                     limit = -3;
@@ -940,9 +940,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 else
                                 {
                                     crosscheck("1<(last-a) not");
-                                    if !stack
-                                        .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                        .is_ok()
+                                    if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                     {
                                         return;
                                     }
@@ -961,9 +959,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         else
                         {
                             crosscheck("times pop");
-                            if !stack
-                                .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                .is_ok()
+                            if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                             {
                                 return;
                             }
