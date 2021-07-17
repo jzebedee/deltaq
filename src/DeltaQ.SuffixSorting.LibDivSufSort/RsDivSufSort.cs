@@ -529,7 +529,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (1 < (last - first))
                         {
                             budget.Count = 0;
-                            tr_introsort(ISA, ISAd, SA, first, last, budget);
+                            tr_introsort(ISA, ref ISAd, SA, ref first, ref last, budget);
                             if (budget.Count != 0)
                             {
                                 unsorted += budget.Count;
@@ -619,557 +619,622 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             SAPtr c;
             Idx t, v, x;
             Idx incr = ISAd - ISA;
-            Idx limit;
             Idx next;
             Idx trlink = -1;
 
-            TrStack stack = new();
+            TrStack stack = new(stackalloc StackItem[STACK_SIZE]);
 
-        }
-        /*
-           macro_rules! ISA {
-               ($x: expr) => {
-                   SA[ISA + $x]
-               };
-           }
-           macro_rules! ISAd {
-               ($x: expr) => {
-                   SA[ISAd + $x]
-               };
-           }
+            /*
+               macro_rules! ISA {
+                   ($x: expr) => {
+                       SA[ISA + $x]
+                   };
+               }
+               macro_rules! ISAd {
+                   ($x: expr) => {
+                       SA[ISAd + $x]
+                   };
+               }
+            */
 
-           let mut limit = tr_ilg(last - first);
-           // PASCAL
-           loop {
-               crosscheck!("pascal limit={} first={} last={}", limit, first, last);
-               if (limit < 0) {
-                   if (limit == -1) {
-                       // tandem repeat partition
-                       tr_partition(
-                           SA,
-                           ISAd - incr,
-                           first,
-                           first,
-                           last,
-                           &mut a,
-                           &mut b,
-                           (last - 1).0,
-                       );
+            Idx limit = tr_ilg(last - first);
 
-                       // update ranks
-                       if a < last {
-                           crosscheck!("ranks a<last");
-                           // JONAS
-                           c = first;
-                           v = (a - 1).0;
-                           while c < a {
-                               {
-                                   let SA_c = SA[c];
-                                   ISA!(SA_c) = v;
-                               }
+            // PASCAL
+            while (true)
+            {
+                //TODO: crosscheck
+                //crosscheck!("pascal limit={} first={} last={}", limit, first, last);
+                if (limit < 0)
+                {
+                    if (limit == -1)
+                    {
+                        // tandem repeat partition
+                        tr_partition(
+                            SA,
+                            ISAd - incr,
+                            first,
+                            first,
+                            last,
+                            ref a,
+                            ref b,
+                            (last - 1)
+                        );
 
-                               // iter (JONAS)
-                               c += 1;
-                           }
-                       }
-                       if b < last {
-                           crosscheck!("ranks b<last");
-                           // AHAB
-                           c = a;
-                           v = (b - 1).0;
-                           while c < b {
-                               {
-                                   let SA_c = SA[c];
-                                   ISA!(SA_c) = v;
-                               }
+                        // update ranks
+                        if (a < last)
+                        {
+                            //TODO: crosscheck
+                            //crosscheck!("ranks a<last");
 
-                               // iter (AHAB)
-                               c += 1;
-                           }
-                       }
+                            // JONAS
+                            c = first;
+                            v = (a - 1);
+                            while (c < a)
+                            {
+                                {
+                                    SA[ISA + SA[c]] = v;
+                                }
 
-                       // push
-                       if 1 < (b - a) {
-                           crosscheck!("1<(b-a)");
-                           crosscheck!("push NULL {} {} {} {}", a, b, 0, 0);
-                           stack.push(SAPtr(0), a, b, 0, 0);
-                           crosscheck!("push {} {} {} {} {}", ISAd - incr, first, last, -2, trlink);
-                           stack.push(ISAd - incr, first, last, -2, trlink);
-                           trlink = (stack.size as Idx) - 2;
-                       }
+                                // iter (JONAS)
+                                c += 1;
+                            }
+                        }
+                        if (b < last)
+                        {
+                            //TODO: crosscheck
+                            //crosscheck!("ranks b<last");
 
-                       if (a - first) <= (last - b) {
-                           crosscheck!("star");
-                           if 1 < (a - first) {
-                               crosscheck!("board");
-                               crosscheck!(
-                                   "push {} {} {} {} {}",
-                                   ISAd,
-                                   b,
-                                   last,
-                                   tr_ilg(last - b),
-                                   trlink
-                               );
-                               stack.push(ISAd, b, last, tr_ilg(last - b), trlink);
-                               last = a;
-                               limit = tr_ilg(a - first);
-                           } else if 1 < (last - b) {
-                               crosscheck!("north");
-                               first = b;
-                               limit = tr_ilg(last - b);
-                           } else {
-                               crosscheck!("denny");
-                               if !stack
-                                   .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                   .is_ok()
-                               {
-                                   return;
-                               }
-                               crosscheck!("denny-post");
-                           }
-                       } else {
-                           crosscheck!("moon");
-                           if 1 < (last - b) {
-                               crosscheck!("land");
-                               crosscheck!(
-                                   "push {} {} {} {} {}",
-                                   ISAd,
-                                   first,
-                                   a,
-                                   tr_ilg(a - first),
-                                   trlink
-                               );
-                               stack.push(ISAd, first, a, tr_ilg(a - first), trlink);
-                               first = b;
-                               limit = tr_ilg(last - b);
-                           } else if 1 < (a - first) {
-                               crosscheck!("ship");
-                               last = a;
-                               limit = tr_ilg(a - first);
-                           } else {
-                               crosscheck!("clap");
-                               if !stack
-                                   .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                   .is_ok()
-                               {
-                                   return;
-                               }
-                               crosscheck!("clap-post");
-                           }
-                       }
-                   } else if (limit == -2) {
-                       // end if limit == -1
+                            // AHAB
+                            c = a;
+                            v = (b - 1);
+                            while (c < b)
+                            {
+                                {
+                                    SA[ISA + (SA[c])] = v;
+                                }
 
-                       // tandem repeat copy
-                       stack.size -= 1;
-                       a = stack.items[stack.size].b;
-                       b = stack.items[stack.size].c;
-                       if stack.items[stack.size].d == 0 {
-                           tr_copy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
-                       } else {
-                           if 0 <= trlink {
-                               stack.items[trlink as usize].d = -1;
-                           }
-                           tr_partialcopy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
-                       }
-                       if !stack
-                           .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                           .is_ok()
-                       {
-                           return;
-                       }
-                   } else {
-                       // end if limit == -2
+                                // iter (AHAB)
+                                c += 1;
+                            }
+                        }
 
-                       // sorted partition
-                       if 0 <= SA[first] {
-                           crosscheck!("0<=*first");
-                           a = first;
-                           // GEMINI
-                           loop {
-                               {
-                                   let SA_a = SA[a];
-                                   ISA!(SA_a) = a.0;
-                               }
+                        // push
+                        if (1 < (b - a))
+                        {
+                            //TODO: crosscheck
+                            //crosscheck!("1<(b-a)");
+                            //crosscheck!("push NULL {} {} {} {}", a, b, 0, 0);
+                            stack.Push(0, a, b, 0, 0);
+                            //crosscheck!("push {} {} {} {} {}", ISAd - incr, first, last, -2, trlink);
+                            stack.Push(ISAd - incr, first, last, -2, trlink);
+                            trlink = stack.Size - 2;
+                        }
 
-                               // cond (GEMINI)
-                               a += 1;
-                               if !((a < last) && (0 <= SA[a])) {
-                                   break;
-                               }
-                           }
-                           first = a;
-                       }
+                        if (a - first) <= (last - b) {
+                            crosscheck!("star");
+                            if 1 < (a - first) {
+                                crosscheck!("board");
+                                crosscheck!(
+                                    "push {} {} {} {} {}",
+                                    ISAd,
+                                    b,
+                                    last,
+                                    tr_ilg(last - b),
+                                    trlink
+                                );
+                                stack.push(ISAd, b, last, tr_ilg(last - b), trlink);
+                                last = a;
+                                limit = tr_ilg(a - first);
+                            }
+                            else if 1 < (last - b) {
+                                crosscheck!("north");
+                                first = b;
+                                limit = tr_ilg(last - b);
+                            }
+                            else
+                            {
+                                crosscheck!("denny");
+                                if !stack
+                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                    .is_ok()
+                                {
+                                    return;
+                                }
+                                crosscheck!("denny-post");
+                            }
+                        } else
+                        {
+                            crosscheck!("moon");
+                            if 1 < (last - b) {
+                                crosscheck!("land");
+                                crosscheck!(
+                                    "push {} {} {} {} {}",
+                                    ISAd,
+                                    first,
+                                    a,
+                                    tr_ilg(a - first),
+                                    trlink
+                                );
+                                stack.push(ISAd, first, a, tr_ilg(a - first), trlink);
+                                first = b;
+                                limit = tr_ilg(last - b);
+                            }
+                            else if 1 < (a - first) {
+                                crosscheck!("ship");
+                                last = a;
+                                limit = tr_ilg(a - first);
+                            }
+                            else
+                            {
+                                crosscheck!("clap");
+                                if !stack
+                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                    .is_ok()
+                                {
+                                    return;
+                                }
+                                crosscheck!("clap-post");
+                            }
+                        }
+                    }
+                    else if (limit == -2)
+                    {
+                        // end if limit == -1
 
-                       if first < last {
-                           crosscheck!("first<last");
-                           a = first;
-                           // MONSTRO
-                           loop {
-                               SA[a] = !SA[a];
+                        // tandem repeat copy
+                        stack.size -= 1;
+                        a = stack.items[stack.size].b;
+                        b = stack.items[stack.size].c;
+                        if stack.items[stack.size].d == 0 {
+                            tr_copy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
+                        }
+                        else
+                        {
+                            if 0 <= trlink {
+                                stack.items[trlink as usize].d = -1;
+                            }
+                            tr_partialcopy(ISA, SA, first, a, b, last, (ISAd - ISA).0);
+                        }
+                        if !stack
+                            .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                            .is_ok()
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // end if limit == -2
 
-                               a += 1;
-                               if !(SA[a] < 0) {
-                                   break;
-                               }
-                           }
+                        // sorted partition
+                        if 0 <= SA[first] {
+                            crosscheck!("0<=*first");
+                            a = first;
+                            // GEMINI
+                            loop {
+                                {
+                                    let SA_a = SA[a];
+                                    ISA!(SA_a) = a.0;
+                                }
 
-                           next = if ISA!(SA[a]) != ISAd!(SA[a]) {
-                               tr_ilg(a - first + 1)
-                           } else {
-                               -1
+                                // cond (GEMINI)
+                                a += 1;
+                                if !((a < last) && (0 <= SA[a])) {
+                                    break;
+                                }
+                            }
+                            first = a;
+                        }
+
+                        if first < last {
+                            crosscheck!("first<last");
+                            a = first;
+                            // MONSTRO
+                            loop {
+                                SA[a] = !SA[a];
+
+                                a += 1;
+                                if !(SA[a] < 0) {
+                                    break;
+                                }
+                            }
+
+                            next = if ISA!(SA[a]) != ISAd!(SA[a]) {
+                                tr_ilg(a - first + 1)
+                            }
+                            else
+                            {
+                                -1
                            };
-                           a += 1;
-                           if a < last {
-                               crosscheck!("++a<last");
-                               // CLEMENTINE
-                               b = first;
-                               v = (a - 1).0;
-                               while b < a {
-                                   {
-                                       let SA_b = SA[b];
-                                       ISA!(SA_b) = v;
-                                   }
-                                   b += 1;
-                               }
-                           }
+                            a += 1;
+                            if a < last {
+                                crosscheck!("++a<last");
+                                // CLEMENTINE
+                                b = first;
+                                v = (a - 1).0;
+                                while b < a {
+                                    {
+                                        let SA_b = SA[b];
+                                        ISA!(SA_b) = v;
+                                    }
+                                    b += 1;
+                                }
+                            }
 
-                           // push
-                           if (budget.check((a - first).0)) {
-                               crosscheck!("budget pass");
-                               if (a - first) <= (last - a) {
-                                   crosscheck!("push {} {} {} {} {}", ISAd, a, last, -3, trlink);
-                                   stack.push(ISAd, a, last, -3, trlink);
-                                   ISAd += incr;
-                                   last = a;
-                                   limit = next;
-                               } else {
-                                   if 1 < (last - a) {
-                                       crosscheck!(
-                                           "push {} {} {} {} {}",
-                                           ISAd + incr,
-                                           first,
-                                           a,
-                                           next,
-                                           trlink
-                                       );
-                                       stack.push(ISAd + incr, first, a, next, trlink);
-                                       first = a;
-                                       limit = -3;
-                                   } else {
-                                       ISAd += incr;
-                                       last = a;
-                                       limit = next;
-                                   }
-                               }
-                           } else {
-                               crosscheck!("budget fail");
-                               if 0 <= trlink {
-                                   crosscheck!("0<=trlink");
-                                   stack.items[trlink as usize].d = -1;
-                               }
-                               if 1 < (last - a) {
-                                   crosscheck!("1<(last-a)");
-                                   first = a;
-                                   limit = -3;
-                               } else {
-                                   crosscheck!("1<(last-a) not");
-                                   if !stack
-                                       .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                       .is_ok()
-                                   {
-                                       return;
-                                   }
-                                   crosscheck!("1<(last-a) not post");
-                                   crosscheck!(
-                                       "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                                       ISAd,
-                                       first,
-                                       last,
-                                       limit,
-                                       trlink
-                                   );
-                               }
-                           }
-                       } else {
-                           crosscheck!("times pop");
-                           if !stack
-                               .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                               .is_ok()
-                           {
-                               return;
-                           }
-                           crosscheck!("times pop-post");
-                           crosscheck!(
-                               "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                               ISAd,
-                               first,
-                               last,
-                               limit,
-                               trlink
-                           );
-                       } // end if first < last
-                   } // end if limit == -1, -2, or something else
-                   continue;
-               } // end if limit < 0
+                            // push
+                            if (budget.check((a - first).0))
+                            {
+                                crosscheck!("budget pass");
+                                if (a - first) <= (last - a) {
+                                    crosscheck!("push {} {} {} {} {}", ISAd, a, last, -3, trlink);
+                                    stack.push(ISAd, a, last, -3, trlink);
+                                    ISAd += incr;
+                                    last = a;
+                                    limit = next;
+                                } else
+                                {
+                                    if 1 < (last - a) {
+                                        crosscheck!(
+                                            "push {} {} {} {} {}",
+                                            ISAd + incr,
+                                            first,
+                                            a,
+                                            next,
+                                            trlink
+                                        );
+                                        stack.push(ISAd + incr, first, a, next, trlink);
+                                        first = a;
+                                        limit = -3;
+                                    }
+                                    else
+                                    {
+                                        ISAd += incr;
+                                        last = a;
+                                        limit = next;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                crosscheck!("budget fail");
+                                if 0 <= trlink {
+                                    crosscheck!("0<=trlink");
+                                    stack.items[trlink as usize].d = -1;
+                                }
+                                if 1 < (last - a) {
+                                    crosscheck!("1<(last-a)");
+                                    first = a;
+                                    limit = -3;
+                                }
+                                else
+                                {
+                                    crosscheck!("1<(last-a) not");
+                                    if !stack
+                                        .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                        .is_ok()
+                                    {
+                                        return;
+                                    }
+                                    crosscheck!("1<(last-a) not post");
+                                    crosscheck!(
+                                        "were popped: ISAd={} first={} last={} limit={} trlink={}",
+                                        ISAd,
+                                        first,
+                                        last,
+                                        limit,
+                                        trlink
+                                    );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            crosscheck!("times pop");
+                            if !stack
+                                .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                .is_ok()
+                            {
+                                return;
+                            }
+                            crosscheck!("times pop-post");
+                            crosscheck!(
+                                "were popped: ISAd={} first={} last={} limit={} trlink={}",
+                                ISAd,
+                                first,
+                                last,
+                                limit,
+                                trlink
+                            );
+                        } // end if first < last
+                    } // end if limit == -1, -2, or something else
+                    continue;
+                } // end if limit < 0
 
-               if (last - first) <= TR_INSERTIONSORT_THRESHOLD {
-                   crosscheck!("insertionsort last-first={}", last - first);
-                   tr_insertionsort(SA, ISAd, first, last);
-                   limit = -3;
-                   continue;
-               }
+                if (last - first) <= TR_INSERTIONSORT_THRESHOLD {
+                    crosscheck!("insertionsort last-first={}", last - first);
+                    tr_insertionsort(SA, ISAd, first, last);
+                    limit = -3;
+                    continue;
+                }
 
-               let old_limit = limit;
-               limit -= 1;
-               if (old_limit == 0) {
-                   crosscheck!(
-                       "heapsort ISAd={} first={} last={} last-first={}",
-                       ISAd,
-                       first,
-                       last,
-                       last - first
-                   );
-                   SA_dump!(&SA.range(first..last), "before tr_heapsort");
-                   tr_heapsort(ISAd, SA, first, (last - first).0);
-                   SA_dump!(&SA.range(first..last), "after tr_heapsort");
+                let old_limit = limit;
+                limit -= 1;
+                if (old_limit == 0)
+                {
+                    crosscheck!(
+                        "heapsort ISAd={} first={} last={} last-first={}",
+                        ISAd,
+                        first,
+                        last,
+                        last - first
+                    );
+                    SA_dump!(&SA.range(first..last), "before tr_heapsort");
+                    tr_heapsort(ISAd, SA, first, (last - first).0);
+                    SA_dump!(&SA.range(first..last), "after tr_heapsort");
 
-                   // YOHAN
-                   a = last - 1;
-                   while first < a {
-                       // VINCENT
-                       x = ISAd!(SA[a]);
-                       b = a - 1;
-                       while (first <= b) && (ISAd!(SA[b])) == x {
-                           SA[b] = !SA[b];
+                    // YOHAN
+                    a = last - 1;
+                    while first < a {
+                        // VINCENT
+                        x = ISAd!(SA[a]);
+                        b = a - 1;
+                        while (first <= b) && (ISAd!(SA[b])) == x {
+                            SA[b] = !SA[b];
 
-                           // iter (VINCENT)
-                           b -= 1;
-                       }
+                            // iter (VINCENT)
+                            b -= 1;
+                        }
 
-                       // iter (YOHAN)
-                       a = b;
-                   }
-                   limit = -3;
-                   crosscheck!("post-vincent continue");
-                   continue;
-               }
+                        // iter (YOHAN)
+                        a = b;
+                    }
+                    limit = -3;
+                    crosscheck!("post-vincent continue");
+                    continue;
+                }
 
-               // choose pivot
-               a = tr_pivot(SA, ISAd, first, last);
-               crosscheck!("picked pivot {}", a);
-               SA.swap(first, a);
-               v = ISAd!(SA[first]);
+                // choose pivot
+                a = tr_pivot(SA, ISAd, first, last);
+                crosscheck!("picked pivot {}", a);
+                SA.swap(first, a);
+                v = ISAd!(SA[first]);
 
-               // partition
-               tr_partition(SA, ISAd, first, first + 1, last, &mut a, &mut b, v);
-               if (last - first) != (b - a) {
-                   crosscheck!("pre-nolwenn");
-                   next = if ISA!(SA[a]) != v { tr_ilg(b - a) } else { -1 };
+                // partition
+                tr_partition(SA, ISAd, first, first + 1, last, &mut a, &mut b, v);
+                if (last - first) != (b - a) {
+                    crosscheck!("pre-nolwenn");
+                    next = if ISA!(SA[a]) != v { tr_ilg(b - a) } else { -1 };
 
-                   // update ranks
-                   // NOLWENN
-                   c = first;
-                   v = (a - 1).0;
-                   while c < a {
-                       {
-                           let SAc = SA[c];
-                           ISA!(SAc) = v;
-                       }
-                       c += 1;
-                   }
-                   if b < last {
-                       // ARTHUR
-                       c = a;
-                       v = (b - 1).0;
-                       while c < b {
-                           {
-                               let SAc = SA[c];
-                               ISA!(SAc) = v;
-                           }
-                           c += 1;
-                       }
-                   }
+                    // update ranks
+                    // NOLWENN
+                    c = first;
+                    v = (a - 1).0;
+                    while c < a {
+                        {
+                            let SAc = SA[c];
+                            ISA!(SAc) = v;
+                        }
+                        c += 1;
+                    }
+                    if b < last {
+                        // ARTHUR
+                        c = a;
+                        v = (b - 1).0;
+                        while c < b {
+                            {
+                                let SAc = SA[c];
+                                ISA!(SAc) = v;
+                            }
+                            c += 1;
+                        }
+                    }
 
-                   // push
-                   if (1 < (b - a)) && budget.check(b - a) {
-                       crosscheck!("a");
-                       if (a - first) <= (last - b) {
-                           crosscheck!("aa");
-                           if (last - b) <= (b - a) {
-                               crosscheck!("aaa");
-                               if 1 < (a - first) {
-                                   crosscheck!("aaaa");
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                   stack.push(ISAd, b, last, limit, trlink);
-                                   last = a;
-                               } else if 1 < (last - b) {
-                                   crosscheck!("aaab");
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   first = b;
-                               } else {
-                                   crosscheck!("aaac");
-                                   ISAd += incr;
-                                   first = a;
-                                   last = b;
-                                   limit = next;
-                               }
-                           } else if (a - first) <= (b - a) {
-                               crosscheck!("aab");
-                               if 1 < (a - first) {
-                                   crosscheck!("aaba");
-                                   crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                   stack.push(ISAd, b, last, limit, trlink);
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   last = a;
-                               } else {
-                                   crosscheck!("aabb");
-                                   crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                   stack.push(ISAd, b, last, limit, trlink);
-                                   ISAd += incr;
-                                   first = a;
-                                   last = b;
-                                   limit = next;
-                               }
-                           } else {
-                               crosscheck!("aac");
-                               crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                               stack.push(ISAd, b, last, limit, trlink);
-                               crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                               stack.push(ISAd, first, a, limit, trlink);
-                               ISAd += incr;
-                               first = a;
-                               last = b;
-                               limit = next;
-                           }
-                       } else {
-                           crosscheck!("ab");
-                           if (a - first) <= (b - a) {
-                               crosscheck!("aba");
-                               if 1 < (last - b) {
-                                   crosscheck!("abaa");
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                   stack.push(ISAd, first, a, limit, trlink);
-                                   first = b;
-                               } else if 1 < (a - first) {
-                                   crosscheck!("abab");
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   last = a;
-                               } else {
-                                   crosscheck!("abac");
-                                   ISAd += incr;
-                                   first = a;
-                                   last = b;
-                                   limit = next;
-                               }
-                           } else if (last - b) <= (b - a) {
-                               crosscheck!("abb");
-                               if 1 < (last - b) {
-                                   crosscheck!("abba");
-                                   crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                   stack.push(ISAd, first, a, limit, trlink);
-                                   crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                   stack.push(ISAd + incr, a, b, next, trlink);
-                                   first = b;
-                               } else {
-                                   crosscheck!("abbb");
-                                   crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                   stack.push(ISAd, first, a, limit, trlink);
-                                   ISAd += incr;
-                                   first = a;
-                                   last = b;
-                                   limit = next;
-                               }
-                           } else {
-                               crosscheck!("abc");
-                               crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                               stack.push(ISAd, first, a, limit, trlink);
-                               crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                               stack.push(ISAd, b, last, limit, trlink);
-                               ISAd += incr;
-                               first = a;
-                               last = b;
-                               limit = next;
-                           }
-                       }
-                   } else {
-                       crosscheck!("b");
-                       if (1 < (b - a)) && (0 <= trlink) {
-                           crosscheck!("ba");
-                           stack.items[trlink as usize].d = -1;
-                       }
-                       if (a - first) <= (last - b) {
-                           crosscheck!("bb");
-                           if 1 < (a - first) {
-                               crosscheck!("bba");
-                               crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                               stack.push(ISAd, b, last, limit, trlink);
-                               last = a;
-                           } else if 1 < (last - b) {
-                               crosscheck!("bbb");
-                               first = b;
-                           } else {
-                               crosscheck!("bbc");
-                               if !stack
-                                   .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                   .is_ok()
-                               {
-                                   return;
-                               }
-                           }
-                       } else {
-                           crosscheck!("bc");
-                           if 1 < (last - b) {
-                               crosscheck!("bca");
-                               crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                               stack.push(ISAd, first, a, limit, trlink);
-                               first = b;
-                           } else if 1 < (a - first) {
-                               crosscheck!("bcb");
-                               last = a;
-                           } else {
-                               crosscheck!("bcc");
-                               if !stack
-                                   .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                                   .is_ok()
-                               {
-                                   return;
-                               }
-                               crosscheck!("bcc post");
-                           }
-                       }
-                   }
-               } else {
-                   crosscheck!("c");
-                   if budget.check(last - first) {
-                       crosscheck!("ca");
-                       limit = tr_ilg(last - first);
-                       ISAd += incr;
-                   } else {
-                       crosscheck!("cb");
-                       if 0 <= trlink {
-                           crosscheck!("cba");
-                           stack.items[trlink as usize].d = -1;
-                       }
-                       if !stack
-                           .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
-                           .is_ok()
-                       {
-                           return;
-                       }
-                       crosscheck!("cb post");
-                   }
-               }
-           } // end PASCAL
-       }
+                    // push
+                    if (1 < (b - a)) && budget.check(b - a) {
+                        crosscheck!("a");
+                        if (a - first) <= (last - b) {
+                            crosscheck!("aa");
+                            if (last - b) <= (b - a) {
+                                crosscheck!("aaa");
+                                if 1 < (a - first) {
+                                    crosscheck!("aaaa");
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    stack.push(ISAd, b, last, limit, trlink);
+                                    last = a;
+                                }
+                                else if 1 < (last - b) {
+                                    crosscheck!("aaab");
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    first = b;
+                                }
+                                else
+                                {
+                                    crosscheck!("aaac");
+                                    ISAd += incr;
+                                    first = a;
+                                    last = b;
+                                    limit = next;
+                                }
+                            } else if (a - first) <= (b - a) {
+                                crosscheck!("aab");
+                                if 1 < (a - first) {
+                                    crosscheck!("aaba");
+                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    stack.push(ISAd, b, last, limit, trlink);
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    last = a;
+                                }
+                                else
+                                {
+                                    crosscheck!("aabb");
+                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    stack.push(ISAd, b, last, limit, trlink);
+                                    ISAd += incr;
+                                    first = a;
+                                    last = b;
+                                    limit = next;
+                                }
+                            } else
+                            {
+                                crosscheck!("aac");
+                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                stack.push(ISAd, b, last, limit, trlink);
+                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                stack.push(ISAd, first, a, limit, trlink);
+                                ISAd += incr;
+                                first = a;
+                                last = b;
+                                limit = next;
+                            }
+                        } else
+                        {
+                            crosscheck!("ab");
+                            if (a - first) <= (b - a) {
+                                crosscheck!("aba");
+                                if 1 < (last - b) {
+                                    crosscheck!("abaa");
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    stack.push(ISAd, first, a, limit, trlink);
+                                    first = b;
+                                }
+                                else if 1 < (a - first) {
+                                    crosscheck!("abab");
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    last = a;
+                                }
+                                else
+                                {
+                                    crosscheck!("abac");
+                                    ISAd += incr;
+                                    first = a;
+                                    last = b;
+                                    limit = next;
+                                }
+                            } else if (last - b) <= (b - a) {
+                                crosscheck!("abb");
+                                if 1 < (last - b) {
+                                    crosscheck!("abba");
+                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    stack.push(ISAd, first, a, limit, trlink);
+                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    stack.push(ISAd + incr, a, b, next, trlink);
+                                    first = b;
+                                }
+                                else
+                                {
+                                    crosscheck!("abbb");
+                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    stack.push(ISAd, first, a, limit, trlink);
+                                    ISAd += incr;
+                                    first = a;
+                                    last = b;
+                                    limit = next;
+                                }
+                            } else
+                            {
+                                crosscheck!("abc");
+                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                stack.push(ISAd, first, a, limit, trlink);
+                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                stack.push(ISAd, b, last, limit, trlink);
+                                ISAd += incr;
+                                first = a;
+                                last = b;
+                                limit = next;
+                            }
+                        }
+                    } else
+                    {
+                        crosscheck!("b");
+                        if (1 < (b - a)) && (0 <= trlink) {
+                            crosscheck!("ba");
+                            stack.items[trlink as usize].d = -1;
+                        }
+                        if (a - first) <= (last - b) {
+                            crosscheck!("bb");
+                            if 1 < (a - first) {
+                                crosscheck!("bba");
+                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                stack.push(ISAd, b, last, limit, trlink);
+                                last = a;
+                            }
+                            else if 1 < (last - b) {
+                                crosscheck!("bbb");
+                                first = b;
+                            }
+                            else
+                            {
+                                crosscheck!("bbc");
+                                if !stack
+                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                    .is_ok()
+                                {
+                                    return;
+                                }
+                            }
+                        } else
+                        {
+                            crosscheck!("bc");
+                            if 1 < (last - b) {
+                                crosscheck!("bca");
+                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                stack.push(ISAd, first, a, limit, trlink);
+                                first = b;
+                            }
+                            else if 1 < (a - first) {
+                                crosscheck!("bcb");
+                                last = a;
+                            }
+                            else
+                            {
+                                crosscheck!("bcc");
+                                if !stack
+                                    .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                                    .is_ok()
+                                {
+                                    return;
+                                }
+                                crosscheck!("bcc post");
+                            }
+                        }
+                    }
+                } else
+                {
+                    crosscheck!("c");
+                    if budget.check(last - first) {
+                        crosscheck!("ca");
+                        limit = tr_ilg(last - first);
+                        ISAd += incr;
+                    }
+                    else
+                    {
+                        crosscheck!("cb");
+                        if 0 <= trlink {
+                            crosscheck!("cba");
+                            stack.items[trlink as usize].d = -1;
+                        }
+                        if !stack
+                            .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
+                            .is_ok()
+                        {
+                            return;
+                        }
+                        crosscheck!("cb post");
+                    }
+                }
+            } // end PASCAL
+        }
 
-         */
+        private void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
