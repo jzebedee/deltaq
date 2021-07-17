@@ -644,7 +644,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             while (true)
             {
                 //TODO: crosscheck
-                //crosscheck!("pascal limit={} first={} last={}", limit, first, last);
+                crosscheck("pascal limit={} first={} last={}", limit, first, last);
                 if (limit < 0)
                 {
                     if (limit == -1)
@@ -665,7 +665,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (a < last)
                         {
                             //TODO: crosscheck
-                            //crosscheck!("ranks a<last");
+                            crosscheck("ranks a<last");
 
                             // JONAS
                             c = first;
@@ -683,7 +683,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (b < last)
                         {
                             //TODO: crosscheck
-                            //crosscheck!("ranks b<last");
+                            crosscheck("ranks b<last");
 
                             // AHAB
                             c = a;
@@ -703,10 +703,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (1 < (b - a))
                         {
                             //TODO: crosscheck
-                            //crosscheck!("1<(b-a)");
-                            //crosscheck!("push NULL {} {} {} {}", a, b, 0, 0);
+                            crosscheck("1<(b-a)");
+                            crosscheck("push NULL {} {} {} {}", a, b, 0, 0);
                             stack.Push(0, a, b, 0, 0);
-                            //crosscheck!("push {} {} {} {} {}", ISAd - incr, first, last, -2, trlink);
+                            crosscheck("push {} {} {} {} {}", ISAd - incr, first, last, -2, trlink);
                             stack.Push(ISAd - incr, first, last, -2, trlink);
                             trlink = stack.Size - 2;
                         }
@@ -714,19 +714,19 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if ((a - first) <= (last - b))
                         {
                             //TODO: crosscheck
-                            //crosscheck!("star");
+                            crosscheck("star");
                             if (1 < (a - first))
                             {
                                 //TODO: crosscheck
-                                //crosscheck!("board");
-                                //crosscheck!(
-                                //    "push {} {} {} {} {}",
-                                //    ISAd,
-                                //    b,
-                                //    last,
-                                //    tr_ilg(last - b),
-                                //    trlink
-                                //);
+                                crosscheck("board");
+                                crosscheck(
+                                    "push {} {} {} {} {}",
+                                    ISAd,
+                                    b,
+                                    last,
+                                    tr_ilg(last - b),
+                                    trlink
+                                );
                                 stack.Push(ISAd, b, last, tr_ilg(last - b), trlink);
                                 last = a;
                                 limit = tr_ilg(a - first);
@@ -734,53 +734,53 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else if (1 < (last - b))
                             {
                                 //TODO: crosscheck
-                                //crosscheck!("north");
+                                crosscheck("north");
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
                             else
                             {
                                 //TODO: crosscheck
-                                //crosscheck!("denny");
+                                crosscheck("denny");
                                 if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
-                                //crosscheck!("denny-post");
+                                crosscheck("denny-post");
                             }
                         }
                         else
                         {
-                            //crosscheck!("moon");
+                            crosscheck("moon");
                             if (1 < (last - b))
                             {
-                                //crosscheck!("land");
-                                //crosscheck!(
-                                //    "push {} {} {} {} {}",
-                                //    ISAd,
-                                //    first,
-                                //    a,
-                                //    tr_ilg(a - first),
-                                //    trlink
-                                //);
+                                crosscheck("land");
+                                crosscheck(
+                                    "push {} {} {} {} {}",
+                                    ISAd,
+                                    first,
+                                    a,
+                                    tr_ilg(a - first),
+                                    trlink
+                                );
                                 stack.Push(ISAd, first, a, tr_ilg(a - first), trlink);
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
                             else if (1 < (a - first))
                             {
-                                //crosscheck!("ship");
+                                crosscheck("ship");
                                 last = a;
                                 limit = tr_ilg(a - first);
                             }
                             else
                             {
-                                //crosscheck!("clap");
+                                crosscheck("clap");
                                 if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
-                                //crosscheck!("clap-post");
+                                crosscheck("clap-post");
                             }
                         }
                     }
@@ -798,12 +798,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
                         else
                         {
-                            if(0 <= trlink) {
+                            if (0 <= trlink)
+                            {
                                 stack.Items[trlink].d = -1;
                             }
                             tr_partialcopy(ISA, SA, first, a, b, last, ISAd - ISA);
                         }
-                        if(!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                        if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
                         {
                             return;
                         }
@@ -813,34 +814,40 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // end if limit == -2
 
                         // sorted partition
-                        if 0 <= SA[first] {
-                            crosscheck!("0<=*first");
+                        if (0 <= SA[first])
+                        {
+                            crosscheck("0<=*first");
                             a = first;
                             // GEMINI
-                            loop {
+                            while (true)
+                            {
                                 {
-                                    let SA_a = SA[a];
+                                    var SA_a = SA[a];
                                     ISA!(SA_a) = a.0;
                                 }
 
                                 // cond (GEMINI)
                                 a += 1;
-                                if !((a < last) && (0 <= SA[a])) {
+                                if (!((a < last) && (0 <= SA[a])))
+                                {
                                     break;
                                 }
                             }
                             first = a;
                         }
 
-                        if first < last {
-                            crosscheck!("first<last");
+                        if (first < last)
+                        {
+                            crosscheck("first<last");
                             a = first;
                             // MONSTRO
-                            loop {
+                            while (true)
+                            {
                                 SA[a] = !SA[a];
 
                                 a += 1;
-                                if !(SA[a] < 0) {
+                                if (!(SA[a] < 0))
+                                {
                                     break;
                                 }
                             }
@@ -853,14 +860,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 -1
                            };
                             a += 1;
-                            if a < last {
-                                crosscheck!("++a<last");
+                            if (a < last)
+                            {
+                                crosscheck("++a<last");
                                 // CLEMENTINE
                                 b = first;
-                                v = (a - 1).0;
-                                while b < a {
+                                v = a - 1;
+                                while (b < a)
+                                {
                                     {
-                                        let SA_b = SA[b];
+                                        var SA_b = SA[b];
                                         ISA!(SA_b) = v;
                                     }
                                     b += 1;
@@ -870,9 +879,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             // push
                             if (budget.check((a - first).0))
                             {
-                                crosscheck!("budget pass");
+                                crosscheck("budget pass");
                                 if (a - first) <= (last - a) {
-                                    crosscheck!("push {} {} {} {} {}", ISAd, a, last, -3, trlink);
+                                    crosscheck("push {} {} {} {} {}", ISAd, a, last, -3, trlink);
                                     stack.push(ISAd, a, last, -3, trlink);
                                     ISAd += incr;
                                     last = a;
@@ -880,7 +889,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 } else
                                 {
                                     if 1 < (last - a) {
-                                        crosscheck!(
+                                        crosscheck(
                                             "push {} {} {} {} {}",
                                             ISAd + incr,
                                             first,
@@ -902,27 +911,27 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             }
                             else
                             {
-                                crosscheck!("budget fail");
+                                crosscheck("budget fail");
                                 if 0 <= trlink {
-                                    crosscheck!("0<=trlink");
+                                    crosscheck("0<=trlink");
                                     stack.items[trlink as usize].d = -1;
                                 }
                                 if 1 < (last - a) {
-                                    crosscheck!("1<(last-a)");
+                                    crosscheck("1<(last-a)");
                                     first = a;
                                     limit = -3;
                                 }
                                 else
                                 {
-                                    crosscheck!("1<(last-a) not");
+                                    crosscheck("1<(last-a) not");
                                     if !stack
                                         .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
                                         .is_ok()
                                     {
                                         return;
                                     }
-                                    crosscheck!("1<(last-a) not post");
-                                    crosscheck!(
+                                    crosscheck("1<(last-a) not post");
+                                    crosscheck(
                                         "were popped: ISAd={} first={} last={} limit={} trlink={}",
                                         ISAd,
                                         first,
@@ -935,15 +944,15 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
                         else
                         {
-                            crosscheck!("times pop");
+                            crosscheck("times pop");
                             if !stack
                                 .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
                                 .is_ok()
                             {
                                 return;
                             }
-                            crosscheck!("times pop-post");
-                            crosscheck!(
+                            crosscheck("times pop-post");
+                            crosscheck(
                                 "were popped: ISAd={} first={} last={} limit={} trlink={}",
                                 ISAd,
                                 first,
@@ -957,7 +966,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 } // end if limit < 0
 
                 if (last - first) <= TR_INSERTIONSORT_THRESHOLD {
-                    crosscheck!("insertionsort last-first={}", last - first);
+                    crosscheck("insertionsort last-first={}", last - first);
                     tr_insertionsort(SA, ISAd, first, last);
                     limit = -3;
                     continue;
@@ -967,7 +976,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 limit -= 1;
                 if (old_limit == 0)
                 {
-                    crosscheck!(
+                    crosscheck(
                         "heapsort ISAd={} first={} last={} last-first={}",
                         ISAd,
                         first,
@@ -995,20 +1004,20 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         a = b;
                     }
                     limit = -3;
-                    crosscheck!("post-vincent continue");
+                    crosscheck("post-vincent continue");
                     continue;
                 }
 
                 // choose pivot
                 a = tr_pivot(SA, ISAd, first, last);
-                crosscheck!("picked pivot {}", a);
+                crosscheck("picked pivot {}", a);
                 SA.swap(first, a);
                 v = ISAd!(SA[first]);
 
                 // partition
                 tr_partition(SA, ISAd, first, first + 1, last, &mut a, &mut b, v);
                 if (last - first) != (b - a) {
-                    crosscheck!("pre-nolwenn");
+                    crosscheck("pre-nolwenn");
                     next = if ISA!(SA[a]) != v { tr_ilg(b - a) } else { -1 };
 
                     // update ranks
@@ -1037,47 +1046,47 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                     // push
                     if (1 < (b - a)) && budget.check(b - a) {
-                        crosscheck!("a");
+                        crosscheck("a");
                         if (a - first) <= (last - b) {
-                            crosscheck!("aa");
+                            crosscheck("aa");
                             if (last - b) <= (b - a) {
-                                crosscheck!("aaa");
+                                crosscheck("aaa");
                                 if 1 < (a - first) {
-                                    crosscheck!("aaaa");
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("aaaa");
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
-                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                     stack.push(ISAd, b, last, limit, trlink);
                                     last = a;
                                 }
                                 else if 1 < (last - b) {
-                                    crosscheck!("aaab");
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("aaab");
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
                                     first = b;
                                 }
                                 else
                                 {
-                                    crosscheck!("aaac");
+                                    crosscheck("aaac");
                                     ISAd += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
                                 }
                             } else if (a - first) <= (b - a) {
-                                crosscheck!("aab");
+                                crosscheck("aab");
                                 if 1 < (a - first) {
-                                    crosscheck!("aaba");
-                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    crosscheck("aaba");
+                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                     stack.push(ISAd, b, last, limit, trlink);
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
                                     last = a;
                                 }
                                 else
                                 {
-                                    crosscheck!("aabb");
-                                    crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                    crosscheck("aabb");
+                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                     stack.push(ISAd, b, last, limit, trlink);
                                     ISAd += incr;
                                     first = a;
@@ -1086,10 +1095,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 }
                             } else
                             {
-                                crosscheck!("aac");
-                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                crosscheck("aac");
+                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                 stack.push(ISAd, b, last, limit, trlink);
-                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                 stack.push(ISAd, first, a, limit, trlink);
                                 ISAd += incr;
                                 first = a;
@@ -1098,45 +1107,45 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             }
                         } else
                         {
-                            crosscheck!("ab");
+                            crosscheck("ab");
                             if (a - first) <= (b - a) {
-                                crosscheck!("aba");
+                                crosscheck("aba");
                                 if 1 < (last - b) {
-                                    crosscheck!("abaa");
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("abaa");
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
-                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                     stack.push(ISAd, first, a, limit, trlink);
                                     first = b;
                                 }
                                 else if 1 < (a - first) {
-                                    crosscheck!("abab");
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("abab");
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
                                     last = a;
                                 }
                                 else
                                 {
-                                    crosscheck!("abac");
+                                    crosscheck("abac");
                                     ISAd += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
                                 }
                             } else if (last - b) <= (b - a) {
-                                crosscheck!("abb");
+                                crosscheck("abb");
                                 if 1 < (last - b) {
-                                    crosscheck!("abba");
-                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    crosscheck("abba");
+                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                     stack.push(ISAd, first, a, limit, trlink);
-                                    crosscheck!("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
                                     stack.push(ISAd + incr, a, b, next, trlink);
                                     first = b;
                                 }
                                 else
                                 {
-                                    crosscheck!("abbb");
-                                    crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                    crosscheck("abbb");
+                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                     stack.push(ISAd, first, a, limit, trlink);
                                     ISAd += incr;
                                     first = a;
@@ -1145,10 +1154,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 }
                             } else
                             {
-                                crosscheck!("abc");
-                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                crosscheck("abc");
+                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                 stack.push(ISAd, first, a, limit, trlink);
-                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                 stack.push(ISAd, b, last, limit, trlink);
                                 ISAd += incr;
                                 first = a;
@@ -1158,26 +1167,26 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         }
                     } else
                     {
-                        crosscheck!("b");
+                        crosscheck("b");
                         if (1 < (b - a)) && (0 <= trlink) {
-                            crosscheck!("ba");
+                            crosscheck("ba");
                             stack.items[trlink as usize].d = -1;
                         }
                         if (a - first) <= (last - b) {
-                            crosscheck!("bb");
+                            crosscheck("bb");
                             if 1 < (a - first) {
-                                crosscheck!("bba");
-                                crosscheck!("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
+                                crosscheck("bba");
+                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
                                 stack.push(ISAd, b, last, limit, trlink);
                                 last = a;
                             }
                             else if 1 < (last - b) {
-                                crosscheck!("bbb");
+                                crosscheck("bbb");
                                 first = b;
                             }
                             else
                             {
-                                crosscheck!("bbc");
+                                crosscheck("bbc");
                                 if !stack
                                     .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
                                     .is_ok()
@@ -1187,43 +1196,43 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             }
                         } else
                         {
-                            crosscheck!("bc");
+                            crosscheck("bc");
                             if 1 < (last - b) {
-                                crosscheck!("bca");
-                                crosscheck!("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
+                                crosscheck("bca");
+                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
                                 stack.push(ISAd, first, a, limit, trlink);
                                 first = b;
                             }
                             else if 1 < (a - first) {
-                                crosscheck!("bcb");
+                                crosscheck("bcb");
                                 last = a;
                             }
                             else
                             {
-                                crosscheck!("bcc");
+                                crosscheck("bcc");
                                 if !stack
                                     .pop(&mut ISAd, &mut first, &mut last, &mut limit, &mut trlink)
                                     .is_ok()
                                 {
                                     return;
                                 }
-                                crosscheck!("bcc post");
+                                crosscheck("bcc post");
                             }
                         }
                     }
                 } else
                 {
-                    crosscheck!("c");
+                    crosscheck("c");
                     if budget.check(last - first) {
-                        crosscheck!("ca");
+                        crosscheck("ca");
                         limit = tr_ilg(last - first);
                         ISAd += incr;
                     }
                     else
                     {
-                        crosscheck!("cb");
+                        crosscheck("cb");
                         if 0 <= trlink {
-                            crosscheck!("cba");
+                            crosscheck("cba");
                             stack.items[trlink as usize].d = -1;
                         }
                         if !stack
@@ -1232,10 +1241,15 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             return;
                         }
-                        crosscheck!("cb post");
+                        crosscheck("cb post");
                     }
                 }
             } // end PASCAL
+        }
+
+        private void crosscheck(string v, params object[] args)
+        {
+            throw new NotImplementedException();
         }
 
         private void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
