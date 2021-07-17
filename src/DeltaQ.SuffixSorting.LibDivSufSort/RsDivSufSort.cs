@@ -998,20 +998,21 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         last,
                         last - first
                     );
-                    SA_dump!(&SA.range(first..last), "before tr_heapsort");
+                    SA_dump(SA[first..last], "before tr_heapsort");
                     tr_heapsort(ISAd, SA, first, (last - first));
-                    SA_dump!(&SA.range(first..last), "after tr_heapsort");
+                    SA_dump(SA[first..last], "after tr_heapsort");
 
                     // YOHAN
                     a = last - 1;
                     while (first < a)
                     {
                         // VINCENT
-                        x = ISAd!(SA[a]);
+                        x = SA[ISAd + SA[a]];
                         b = a - 1;
-                        while ((first <= b) && (ISAd!(SA[b])) == x)
+                        while ((first <= b) && (SA[ISAd + SA[b]]) == x)
                         {
-                            SA[b] = !SA[b];
+                            //!
+                            SA[b] = ~SA[b];
 
                             // iter (VINCENT)
                             b -= 1;
@@ -1028,41 +1029,44 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 // choose pivot
                 a = tr_pivot(SA, ISAd, first, last);
                 crosscheck("picked pivot {}", a);
-                SA.swap(first, a);
-                v = ISAd!(SA[first]);
+                SA.Swap(first, a);
+                v = SA[ISAd + (SA[first])];
 
                 // partition
-                tr_partition(SA, ISAd, first, first + 1, last, &mut a, &mut b, v);
-                if (last - first) != (b - a) {
+                tr_partition(SA, ISAd, first, first + 1, last, ref a, ref b, v);
+                if ((last - first) != (b - a))
+                {
                     crosscheck("pre-nolwenn");
-                    next = if ISA!(SA[a]) != v { tr_ilg(b - a) } else { -1 };
+                    next = SA[ISA + (SA[a])] != v ? tr_ilg(b - a) : -1;
 
                     // update ranks
                     // NOLWENN
                     c = first;
-                    v = (a - 1).0;
-                    while c < a {
+                    v = (a - 1);
+                    while (c < a)
+                    {
                         {
-                            let SAc = SA[c];
-                            ISA!(SAc) = v;
+                            SA[ISA + (SA[c])] = v;
                         }
                         c += 1;
                     }
-                    if b < last {
+                    if (b < last)
+                    {
                         // ARTHUR
                         c = a;
-                        v = (b - 1).0;
-                        while c < b {
+                        v = (b - 1);
+                        while (c < b)
+                        {
                             {
-                                let SAc = SA[c];
-                                ISA!(SAc) = v;
+                                SA[ISA + (SA[c])] = v;
                             }
                             c += 1;
                         }
                     }
 
                     // push
-                    if (1 < (b - a)) && budget.check(b - a) {
+                    if ((1 < (b - a)) && budget.Check(b - a))
+                    {
                         crosscheck("a");
                         if (a - first) <= (last - b) {
                             crosscheck("aa");
@@ -1182,7 +1186,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 limit = next;
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         crosscheck("b");
                         if (1 < (b - a)) && (0 <= trlink) {
@@ -1237,7 +1242,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             }
                         }
                     }
-                } else
+                }
+                else
                 {
                     crosscheck("c");
                     if budget.check(last - first) {
@@ -1262,6 +1268,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                 }
             } // end PASCAL
+        }
+
+        private void SA_dump(Span<int> span, string v)
+        {
+            throw new NotImplementedException();
         }
 
         private int tr_pivot(Span<int> sA, int iSAd, int first, int last)
