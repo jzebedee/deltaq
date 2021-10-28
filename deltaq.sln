@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30914.41
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31825.309
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ", "src\deltaq\DeltaQ.csproj", "{CE1513B6-2F66-4E62-BDD1-0C41D4433A51}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.Utility.Memory", "src\DeltaQ.Utility.Memory\DeltaQ.Utility.Memory.csproj", "{96F1E46E-53CB-4463-82E2-0F81BEB87080}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LibDivSufSort", "src\DeltaQ.SuffixSorting.LibDivSufSort\DeltaQ.SuffixSorting.LibDivSufSort.csproj", "{E89B007E-0BDE-4642-B40F-CCB7569F88B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.SuffixSorting.LivDivSufSort.Tests", "test\DeltaQ.SuffixSorting.LivDivSufSort.Tests\DeltaQ.SuffixSorting.LivDivSufSort.Tests.csproj", "{5486E391-BFF9-4ED9-8383-032AE249C588}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{E89B007E-0BDE-4642-B40F-CCB7569F88B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E89B007E-0BDE-4642-B40F-CCB7569F88B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E89B007E-0BDE-4642-B40F-CCB7569F88B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5486E391-BFF9-4ED9-8383-032AE249C588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5486E391-BFF9-4ED9-8383-032AE249C588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5486E391-BFF9-4ED9-8383-032AE249C588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5486E391-BFF9-4ED9-8383-032AE249C588}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +101,7 @@ Global
 		{2D37444E-3C89-4E1E-A0E6-C009F205EA84} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
 		{96F1E46E-53CB-4463-82E2-0F81BEB87080} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 		{E89B007E-0BDE-4642-B40F-CCB7569F88B8} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
+		{5486E391-BFF9-4ED9-8383-032AE249C588} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {595D8046-0D57-4408-A80A-777358A7E831}
