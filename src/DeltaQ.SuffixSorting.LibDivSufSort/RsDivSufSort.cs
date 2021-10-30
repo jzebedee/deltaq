@@ -1,24 +1,20 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SAPtr = System.Int32;
 using Idx = System.Int32;
+using SAPtr = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
-    public partial class DivSufSort
+    public static class DivSufSort
     {
         private const int ALPHABET_SIZE = byte.MaxValue + 1;
         private const int BUCKET_A_SIZE = ALPHABET_SIZE;
         private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
 
-        public void divsufsort(ReadOnlySpan<byte> T, Span<int> SA)
+        public static void divsufsort(ReadOnlySpan<byte> T, Span<int> SA)
         {
-            Debug.Assert(T.Length == SA.Length);
+            Trace.Assert(T.Length == SA.Length);
 
             var n = T.Length;
 
@@ -210,12 +206,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
 
         //fn sort_typeBstar(T: &Text, SA: &mut SuffixArray) -> SortTypeBstarResult {
-        public SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
+        public static SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
         {
             var n = T.Length;
 
-            using var owner_A = SpanOwner<int>.Allocate(BUCKET_A_SIZE);
-            using var owner_B = SpanOwner<int>.Allocate(BUCKET_B_SIZE);
+            //These MUST be zeroed first
+            using var owner_A = SpanOwner<int>.Allocate(BUCKET_A_SIZE, AllocationMode.Clear);
+            using var owner_B = SpanOwner<int>.Allocate(BUCKET_B_SIZE, AllocationMode.Clear);
 
             Span<int> A = owner_A.Span;
             Span<int> B = owner_B.Span;
@@ -358,7 +355,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                         if (1 < (j - i))
                         {
-                            Debugger.Break();
+                            throw new NotImplementedException();
                             //SA_dump!(&SA.range(i..j), "sssort(A)");
                             //sssort::sssort(
                             //    T,
@@ -607,7 +604,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public int IncVal;
             public int Count;
 
-            public Budget(int chance, int incVal) : this()
+            public Budget(int chance, int incVal)
             {
                 Chance = chance;
                 Remain = incVal;
@@ -636,7 +633,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
 
         /// Tandem repeat sort
-        private void trsort(SAPtr ISA, Span<int> SA, int n, int depth)
+        private static void trsort(SAPtr ISA, Span<int> SA, int n, int depth)
         {
             SAPtr ISAd;
             SAPtr first;
@@ -770,7 +767,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
 
         private const Idx TR_INSERTIONSORT_THRESHOLD = 8;
-        private void tr_introsort(SAPtr ISA, ref SAPtr ISAd, Span<int> SA, ref SAPtr first, ref SAPtr last, Budget budget)
+        private static void tr_introsort(SAPtr ISA, ref SAPtr ISAd, Span<int> SA, ref SAPtr first, ref SAPtr last, Budget budget)
         {
             SAPtr a = 0;
             SAPtr b = 0;
@@ -1427,42 +1424,42 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             } // end PASCAL
         }
 
-        private void SA_dump(Span<int> span, string v)
+        private static void SA_dump(Span<int> span, string v)
         {
             throw new NotImplementedException();
         }
 
-        private int tr_pivot(Span<int> sA, int iSAd, int first, int last)
+        private static int tr_pivot(Span<int> sA, int iSAd, int first, int last)
         {
             throw new NotImplementedException();
         }
 
-        private void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
+        private static void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
         {
             throw new NotImplementedException();
         }
 
-        private void tr_insertionsort(Span<int> sA, int iSAd, int first, int last)
+        private static void tr_insertionsort(Span<int> sA, int iSAd, int first, int last)
         {
             throw new NotImplementedException();
         }
 
-        private void tr_partialcopy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
+        private static void tr_partialcopy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
         {
             throw new NotImplementedException();
         }
 
-        private void tr_copy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
+        private static void tr_copy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
         {
             throw new NotImplementedException();
         }
 
-        private void crosscheck(string v, params object[] args)
+        private static void crosscheck(string v, params object[] args)
         {
             throw new NotImplementedException();
         }
 
-        private void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
+        private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
         {
             throw new NotImplementedException();
         }
