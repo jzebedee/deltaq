@@ -713,70 +713,105 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
+
+        private struct SsStackItem
+        {
+            public SAPtr a;
+            public SAPtr b;
+            public SAPtr c;
+            public Idx d;
+        }
+
+        private const int SS_STACK_SIZE = 16;
+        private ref struct SsStack
+        {
+            public readonly Span<SsStackItem> Items;
+            public int Size;
+
+            public SsStack(Span<SsStackItem> items)
+            {
+                Items = items;
+                Size = 0;
+            }
+
+            public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d)
+            {
+                Debug.Assert(Size < Items.Length);
+                ref SsStackItem item = ref Items[Size++];
+                item.a = a;
+                item.b = b;
+                item.c = c;
+                item.d = d;
+            }
+            public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d)
+            {
+                //Debug.Assert(Size > 0);
+                if (Size == 0) return false;
+
+                ref SsStackItem item = ref Items[--Size];
+                a = item.a;
+                b = item.b;
+                c = item.c;
+                d = item.d;
+                return true;
+            }
+        }
+
+        private const Idx SS_INSERTIONSORT_THRESHOLD = 8;
+
         /// <summary>
         /// Multikey introsort for medium size groups
         /// </summary>
         private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr PA, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
         {
-            macro_rules! PA {
-                ($x: expr) => {
-                    SA[PA + $x]
-                };
-            };
+            //PA($x) => SA[PA + $x]
 
-            let mut stack = Stack::new();
+            var stack = new SsStack();
 
-            let mut a: SAPtr;
-            let mut b: SAPtr;
-            let mut c: SAPtr;
-            let mut d: SAPtr;
-            let mut e: SAPtr;
-            let mut f: SAPtr;
+            SAPtr a;
+            SAPtr b;
+            SAPtr c;
+            SAPtr d;
+            SAPtr e;
+            SAPtr f;
 
-            let mut s: Idx;
-            let mut t: Idx;
+            Idx s;
+            Idx t;
 
-            let mut limit: Idx;
-            let mut v: Idx;
-            let mut x: Idx = 0;
+            Idx limit;
+            Idx v;
+            Idx x = 0;
 
             // RENEE
             limit = ss_ilg(last - first);
-            loop {
+            while (true)
+            {
                 if ((last - first) <= SS_INSERTIONSORT_THRESHOLD)
                 {
                     if (1 < (last - first))
                     {
                         ss_insertionsort(T, SA, PA, first, last, depth);
                     }
-                    if !stack
-                        .pop(&mut first, &mut last, &mut depth, &mut limit)
-                        .is_ok()
+                    if (!stack.Pop(ref first, ref last, ref depth, ref limit))
                     {
                         return;
                     }
                     continue;
                 }
 
-                let Td = depth;
-                macro_rules! Td {
-                    ($x: expr) => {
-                        T.get(Td + $x)
-                    };
-                }
-                macro_rules! TdPAStar {
-                    ($x: expr) => {
-                        Td!(PA!(SA[$x]))
-                    };
-                }
+                /*readonly*/
+                var Td = depth;
+                //Td!($x) => T[Td + $x]
+                //TdPAStar!($x) => Td!(PA!(SA[$x]))
 
-                let old_limit = limit;
+                /*readonly*/
+                var old_limit = limit;
                 limit -= 1;
                 if (old_limit == 0)
                 {
-                    SA_dump!(&SA.range(first..last), "before heapsort");
-                    ss_heapsort(T, Td, SA, PA, first, (last - first).into());
-                    SA_dump!(&SA.range(first..last), "after heapsort");
+                    //SA_dump!(&SA.range(first..last), "before heapsort");
+                    ss_heapsort(T, Td, SA, PA, first, (last - first));
+                    //SA_dump!(&SA.range(first..last), "after heapsort");
                 }
 
                 if (limit < 0)
@@ -801,12 +836,15 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         a += 1;
                     }
 
-                    if Td!(PA!(SA[first]) - 1) < v {
+                    if (Td!(PA!(SA[first]) - 1) < v)
+                    {
                         first = ss_partition(SA, PA, first, a, depth);
                     }
-                    if (a - first) <= (last - a) {
-                        if 1 < (a - first) {
-                            stack.push(a, last, depth, -1);
+                    if ((a - first) <= (last - a))
+                    {
+                        if (1 < (a - first))
+                        {
+                            stack.Push(a, last, depth, -1);
                             last = a;
                             depth += 1;
                             limit = ss_ilg(a - first);
@@ -816,10 +854,12 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             first = a;
                             limit = -1;
                         }
-                    } else
+                    }
+                    else
                     {
-                        if 1 < (last - a) {
-                            stack.push(first, a, depth + 1, ss_ilg(a - first));
+                        if (1 < (last - a))
+                        {
+                            stack.Push(first, a, depth + 1, ss_ilg(a - first));
                             first = a;
                             limit = -1;
                         }
@@ -836,37 +876,45 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 // choose pivot
                 a = ss_pivot(T, Td, SA, PA, first, last);
                 v = TdPAStar!(a);
-                SA.swap(first, a);
+                SA.Swap(first, a);
 
                 // partition
                 // NORA
                 b = first;
-                loop {
+                while (true)
+                {
                     b += 1;
-                    if !(b < last) {
+                    if (!(b < last))
+                    {
                         break;
                     }
                     x = TdPAStar!(b);
-                    if !(x == v) {
+                    if (!(x == v))
+                    {
                         break;
                     }
                     // body
                 }
                 a = b;
-                if (a < last) && (x < v) {
+                if ((a < last) && (x < v))
+                {
                     // STAN
-                    loop {
+                    while (true)
+                    {
                         b += 1;
-                        if !(b < last) {
+                        if (!(b < last))
+                        {
                             break;
                         }
                         x = TdPAStar!(b);
-                        if !(x <= v) {
+                        if (!(x <= v))
+                        {
                             break;
                         }
                         // body
-                        if x == v {
-                            SA.swap(b, a);
+                        if (x == v)
+                        {
+                            SA.Swap(b, a);
                             a += 1;
                         }
                     }
@@ -874,69 +922,86 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                 // NATHAN
                 c = last;
-                loop {
+                while (true)
+                {
                     c -= 1;
-                    if !(b < c) {
+                    if (!(b < c))
+                    {
                         break;
                     }
                     x = TdPAStar!(c);
-                    if !(x == v) {
+                    if (!(x == v))
+                    {
                         break;
                     }
                     // body
                 }
                 d = c;
-                if (b < d) && (x > v) {
+                if ((b < d) && (x > v))
+                {
                     // JACOB
-                    loop {
+                    while (true)
+                    {
                         c -= 1;
-                        if !(b < c) {
+                        if (!(b < c))
+                        {
                             break;
                         }
                         x = TdPAStar!(c);
-                        if !(x >= v) {
+                        if (!(x >= v))
+                        {
                             break;
                         }
                         // body
-                        if x == v {
-                            SA.swap(c, d);
+                        if (x == v)
+                        {
+                            SA.Swap(c, d);
                             d -= 1;
                         }
                     }
                 }
 
                 // RITA
-                while b < c {
-                    SA.swap(b, c);
+                while (b < c)
+                {
+                    SA.Swap(b, c);
                     // ROMEO
-                    loop {
+                    while (true)
+                    {
                         b += 1;
-                        if !(b < c) {
+                        if (!(b < c))
+                        {
                             break;
                         }
                         x = TdPAStar!(b);
-                        if !(x <= v) {
+                        if (!(x <= v))
+                        {
                             break;
                         }
                         // body
-                        if x == v {
-                            SA.swap(b, a);
+                        if (x == v)
+                        {
+                            SA.Swap(b, a);
                             a += 1;
                         }
                     }
                     // JULIET
-                    loop {
+                    while (true)
+                    {
                         c -= 1;
-                        if !(b < c) {
+                        if (!(b < c))
+                        {
                             break;
                         }
                         x = TdPAStar!(c);
-                        if !(x >= v) {
+                        if (!(x >= v))
+                        {
                             break;
                         }
                         // body
-                        if x == v {
-                            SA.swap(c, d);
+                        if (x == v)
+                        {
+                            SA.Swap(c, d);
                             d -= 1;
                         }
                     }
@@ -953,22 +1018,25 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     // JOSHUA
                     e = first;
                     f = b - s;
-                    while 0 < s {
-                        SA.swap(e, f);
+                    while (0 < s)
+                    {
+                        SA.Swap(e, f);
                         s -= 1;
                         e += 1;
                         f += 1;
                     }
                     s = (d - c).0;
                     t = (last - d - 1).0;
-                    if s > t {
+                    if (s > t)
+                    {
                         s = t;
                     }
                     // BERENICE
                     e = b;
                     f = last - s;
-                    while 0 < s {
-                        SA.swap(e, f);
+                    while (0 < s)
+                    {
+                        SA.Swap(e, f);
                         s -= 1;
                         e += 1;
                         f += 1;
@@ -976,47 +1044,50 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                     a = first + (b - a);
                     c = last - (d - c);
-                    b = if v <= Td!(PA!(SA[a]) - 1) {
-                        a
-                    }
-                    else
-                    {
-                        let res = ss_partition(SA, PA, a, c, depth);
-                        res
-                  };
+                    b = v <= Td!(PA!(SA[a]) - 1) ? a : ss_partition(SA, PA, a, c, depth);
 
-                    if (a - first) <= (last - c) {
-                        if (last - c) <= (c - b) {
-                            stack.push(b, c, depth + 1, ss_ilg(c - b));
-                            stack.push(c, last, depth, limit);
-                            last = a;
-                        } else if (a - first) <= (c - b) {
-                            stack.push(c, last, depth, limit);
-                            stack.push(b, c, depth + 1, ss_ilg(c - b));
-                            last = a;
-                        } else
+                    if ((a - first) <= (last - c))
+                    {
+                        if ((last - c) <= (c - b))
                         {
-                            stack.push(c, last, depth, limit);
-                            stack.push(first, a, depth, limit);
+                            stack.Push(b, c, depth + 1, ss_ilg(c - b));
+                            stack.Push(c, last, depth, limit);
+                            last = a;
+                        }
+                        else if ((a - first) <= (c - b))
+                        {
+                            stack.Push(c, last, depth, limit);
+                            stack.Push(b, c, depth + 1, ss_ilg(c - b));
+                            last = a;
+                        }
+                        else
+                        {
+                            stack.Push(c, last, depth, limit);
+                            stack.Push(first, a, depth, limit);
                             first = b;
                             last = c;
                             depth += 1;
                             limit = ss_ilg(c - b);
                         }
-                    } else
+                    }
+                    else
                     {
-                        if (a - first) <= (c - b) {
-                            stack.push(b, c, depth + 1, ss_ilg(c - b));
-                            stack.push(first, a, depth, limit);
-                            first = c;
-                        } else if (last - c) <= (c - b) {
-                            stack.push(first, a, depth, limit);
-                            stack.push(b, c, depth + 1, ss_ilg(c - b));
-                            first = c;
-                        } else
+                        if ((a - first) <= (c - b))
                         {
-                            stack.push(first, a, depth, limit);
-                            stack.push(c, last, depth, limit);
+                            stack.Push(b, c, depth + 1, ss_ilg(c - b));
+                            stack.Push(first, a, depth, limit);
+                            first = c;
+                        }
+                        else if ((last - c) <= (c - b))
+                        {
+                            stack.Push(first, a, depth, limit);
+                            stack.Push(b, c, depth + 1, ss_ilg(c - b));
+                            first = c;
+                        }
+                        else
+                        {
+                            stack.Push(first, a, depth, limit);
+                            stack.Push(c, last, depth, limit);
                             first = b;
                             last = c;
                             depth += 1;
@@ -1027,13 +1098,39 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 else
                 {
                     limit += 1;
-                    if Td!(PA!(SA[first]) - 1) < v {
+                    if (Td!(PA!(SA[first]) - 1) < v)
+                    {
                         first = ss_partition(SA, PA, first, last, depth);
                         limit = ss_ilg(last - first);
                     }
                     depth += 1;
                 }
             }
+        }
+
+        private static int ss_pivot(IntAccessor t, int td, Span<int> sA, int pA, int first, int last)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static int ss_partition(Span<int> sA, int pA, int first, int a, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ss_insertionsort(IntAccessor t, Span<int> sA, int pA, int first, int last, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static int ss_ilg(int v)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ss_heapsort(IntAccessor t, int td, Span<int> sA, int pA, int first, object p)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -1209,7 +1306,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
         }
 
-        private struct StackItem
+        private struct TrStackItem
         {
             public SAPtr a;
             public SAPtr b;
@@ -1218,13 +1315,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public Idx e;
         }
 
-        private const int STACK_SIZE = 64;
+        private const int TR_STACK_SIZE = 64;
         private ref struct TrStack
         {
-            public readonly Span<StackItem> Items;
+            public readonly Span<TrStackItem> Items;
             public int Size;
 
-            public TrStack(Span<StackItem> items)
+            public TrStack(Span<TrStackItem> items)
             {
                 Items = items;
                 Size = 0;
@@ -1233,7 +1330,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d, Idx e)
             {
                 Debug.Assert(Size < Items.Length);
-                ref StackItem item = ref Items[Size++];
+                ref TrStackItem item = ref Items[Size++];
                 item.a = a;
                 item.b = b;
                 item.c = c;
@@ -1245,7 +1342,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 //Debug.Assert(Size > 0);
                 if (Size == 0) return false;
 
-                ref StackItem item = ref Items[--Size];
+                ref TrStackItem item = ref Items[--Size];
                 a = item.a;
                 b = item.b;
                 c = item.c;
@@ -1266,7 +1363,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             Idx next;
             Idx trlink = -1;
 
-            TrStack stack = new(stackalloc StackItem[STACK_SIZE]);
+            TrStack stack = new(stackalloc TrStackItem[TR_STACK_SIZE]);
 
             /*
                macro_rules! ISA {
@@ -1432,7 +1529,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // end if limit == -1
 
                         // tandem repeat copy
-                        ref StackItem item = ref stack.Items[--stack.Size];
+                        ref TrStackItem item = ref stack.Items[--stack.Size];
                         a = item.b;
                         b = item.c;
                         if (item.d == 0)
