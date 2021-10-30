@@ -12,7 +12,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     public partial class DivSufSort
     {
-        private const int ALPHABET_SIZE = sizeof(byte) + 1;
+        private const int ALPHABET_SIZE = byte.MaxValue + 1;
         private const int BUCKET_A_SIZE = ALPHABET_SIZE;
         private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
 
@@ -36,13 +36,135 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     //    break;
             }
 
-            var result = sort_typeBstar(T, SA);
+            var result = sort_typeBstar(new IntAccessor(T), SA);
             construct_SA(T, SA, result.A, result.B, result.m);
         }
 
-        private void construct_SA(ReadOnlySpan<byte> t, Span<int> sA, Span<int> a, Span<int> b, int m)
+        private static void construct_SA(ReadOnlySpan<byte> T, Span<int> SA, Span<int> A, Span<int> B, int m)
         {
-            throw new NotImplementedException();
+            Idx n = T.Length;
+
+            BBucket Bb = new(B);
+            BStarBucket Bstar = new(B);
+
+            SAPtr i;
+            SAPtr j;
+            Idx k;
+            Idx s;
+            Idx c0;
+            Idx c2;
+            if (0 < m)
+            {
+                // Construct the sorted order of type B suffixes by using the
+                // sorted order of type B* suffixes
+                Idx c1 = ALPHABET_SIZE - 2;
+                while (0 <= c1)
+                {
+                    // Scan the suffix array from right to left
+                    i = Bstar[(c1, c1 + 1)];
+                    j = A[c1 + 1] - 1;
+                    k = 0;
+                    c2 = -1;
+
+                    while (i <= j)
+                    {
+                        s = SA[j];
+                        if (0 < s)
+                        {
+                            Trace.Assert(T[s] == c1);
+                            Trace.Assert((s + 1) < n);
+                            Trace.Assert(T[s] <= T[s + 1]);
+
+                            //TODO: check this
+                            //SA[j] = !s;
+                            SA[j] = ~s;
+                            s -= 1;
+                            c0 = T[s];
+                            if ((0 < s) && (T[s - 1] > c0))
+                            {
+                                //TODO: check this
+                                //s = !s;
+                                s = ~s;
+                            }
+                            if (c0 != c2)
+                            {
+                                if (0 <= c2)
+                                {
+                                    Bb[(c2, c1)] = k;
+                                }
+                                c2 = c0;
+                                k = Bb[(c2, c1)];
+                            }
+                            Trace.Assert(k < j);
+                            SA[k] = s;
+                            k -= 1;
+                        }
+                        else
+                        {
+                            Trace.Assert(((s == 0) && (T[s] == c1)) || (s < 0));
+                            //TODO: check this
+                            //SA[j] = !s;
+                            SA[j] = ~s;
+                        }
+
+                        // iter
+                        j -= 1;
+                    }
+
+                    // iter
+                    c1 -= 1;
+                }
+            }
+
+            // Construct the suffix array by using the sorted order of type B suffixes
+            c2 = T[n - 1];
+            k = A[c2];
+            //TODO: check this
+            //SA[k] = T[n - 2] < c2 ? !(n - 1) : n - 1;
+            SA[k] = T[n - 2] < c2 ? ~(n - 1) : n - 1;
+            k += 1;
+            // Scan the suffix array from left to right
+            {
+                // init
+                i = 0;
+                j = n;
+
+                while (i < j)
+                {
+                    s = SA[i];
+                    if (0 < s)
+                    {
+                        Trace.Assert(T[s - 1] >= T[s]);
+                        s -= 1;
+                        c0 = T[s];
+                        if ((s == 0) || (T[s - 1] < c0))
+                        {
+                            //TODO: check this
+                            //s = !s;
+                            s = ~s;
+                        }
+                        if (c0 != c2)
+                        {
+                            A[c2] = k;
+                            c2 = c0;
+                            k = A[c2];
+                        }
+                        Trace.Assert(i < k);
+                        SA[k] = s;
+                        k += 1;
+                    }
+                    else
+                    {
+                        Trace.Assert(s < 0);
+                        //TODO: check this
+                        //SA[i] = !s;
+                        SA[i] = ~s;
+                    }
+
+                    // iter
+                    i += 1;
+                }
+            }
         }
 
         public ref struct SortTypeBstarResult
@@ -78,8 +200,17 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         //    }
         //}
 
+        public ref struct IntAccessor
+        {
+            public readonly ReadOnlySpan<byte> span;
+            public IntAccessor(ReadOnlySpan<byte> span) => this.span = span;
+
+            public int this[Idx index] => span[index];
+            public int Length => span.Length;
+        }
+
         //fn sort_typeBstar(T: &Text, SA: &mut SuffixArray) -> SortTypeBstarResult {
-        public SortTypeBstarResult sort_typeBstar(in ReadOnlySpan<byte> T, Span<int> SA)
+        public SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
         {
             var n = T.Length;
 
@@ -161,6 +292,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
             m = n - m;
 
+            //JZ: so far, so good
+
             // Note: A type B* suffix is lexicographically smaller than a type B suffix
             // that beings with the same first two characters.
 
@@ -190,9 +323,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 SAPtr PAb = n - m;
                 SAPtr ISAb = m;
 
-                for (i = m - 2; i > 0; i--)
+                //for i in (0.. = (m - 2)).rev() {
+                //TODO: get rid of this Enumerable
+                //foreach(var ini in Enumerable.Range(0, m - 2).Reverse())
+                for(i = m - 2; i > 0; i--)
                 {
-                    //for i in (0.. = (m - 2)).rev() {
                     t = SA[PAb + i];
                     c0 = T[t];
                     c1 = T[t + 1];
@@ -475,7 +610,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public Budget(int chance, int incVal) : this()
             {
                 Chance = chance;
+                Remain = incVal;
                 IncVal = incVal;
+                Count = 0;
             }
 
             public bool Check(int size)
