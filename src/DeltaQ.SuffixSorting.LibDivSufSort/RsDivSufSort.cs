@@ -759,12 +759,43 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
         private const Idx SS_INSERTIONSORT_THRESHOLD = 8;
 
+        private ref struct SpanOffsetAccessor<T>
+        {
+            private readonly Span<T> _span;
+            private readonly int _offset;
+
+            public SpanOffsetAccessor(Span<T> span, int offset)
+            {
+                _span = span;
+                _offset = offset;
+            }
+
+            public ref T this[int index] => ref _span[_offset + index];
+        }
+
+        private ref struct TdPAStarAccessor
+        {
+            private readonly Span<int> _SA;
+            private readonly Span<int> _PA;
+            private readonly IntAccessor _TD;
+
+            public TdPAStarAccessor(ReadOnlySpan<byte> T, Span<int> SA, int partitionOffset, int tdOffset)
+            {
+                _SA = SA;
+                _PA = SA[partitionOffset..];
+                _TD = new(T[tdOffset..]);
+            }
+
+            public int this[int index] => _TD[_PA[_SA[index]]];
+        }
+
         /// <summary>
         /// Multikey introsort for medium size groups
         /// </summary>
-        private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr PA, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
+        private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr partitionOffset, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
         {
-            //PA($x) => SA[PA + $x]
+            //PA($x) => 
+            var PA = SA[partitionOffset..];//new SpanOffsetAccessor<int>(SA, PA);
 
             var stack = new SsStack();
 
@@ -790,7 +821,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 {
                     if (1 < (last - first))
                     {
-                        ss_insertionsort(T, SA, PA, first, last, depth);
+                        ss_insertionsort(T, SA, partitionOffset, first, last, depth);
                     }
                     if (!stack.Pop(ref first, ref last, ref depth, ref limit))
                     {
@@ -799,10 +830,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     continue;
                 }
 
-                /*readonly*/
-                var Td = depth;
                 //Td!($x) => T[Td + $x]
+                var tdOffset = depth;
+                var Td = T.span[tdOffset..];
+
                 //TdPAStar!($x) => Td!(PA!(SA[$x]))
+                //TdPAStar!($x) => T[Td + SA[PA + SA[$x]]]
+                //var TdPAStar = Td[PA[SA[$x]]];
+                var TdPAStar = new TdPAStarAccessor(T.span, SA, partitionOffset, tdOffset);
 
                 /*readonly*/
                 var old_limit = limit;
@@ -810,18 +845,19 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if (old_limit == 0)
                 {
                     //SA_dump!(&SA.range(first..last), "before heapsort");
-                    ss_heapsort(T, Td, SA, PA, first, (last - first));
+                    ss_heapsort(T, tdOffset, SA, partitionOffset, first, (last - first));
                     //SA_dump!(&SA.range(first..last), "after heapsort");
                 }
 
                 if (limit < 0)
                 {
                     a = first + 1;
-                    v = TdPAStar!(first);
+                    v = TdPAStar[first];
 
                     // DAVE
-                    while a < last {
-                        x = TdPAStar!(a);
+                    while (a < last)
+                    {
+                        x = TdPAStar[a];
                         if (x != v)
                         {
                             if (1 < (a - first))
@@ -836,9 +872,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         a += 1;
                     }
 
-                    if (Td!(PA!(SA[first]) - 1) < v)
+                    if (Td[PA[SA[first]] - 1] < v)
                     {
-                        first = ss_partition(SA, PA, first, a, depth);
+                        first = ss_partition(SA, partitionOffset, first, a, depth);
                     }
                     if ((a - first) <= (last - a))
                     {
@@ -874,8 +910,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
 
                 // choose pivot
-                a = ss_pivot(T, Td, SA, PA, first, last);
-                v = TdPAStar!(a);
+                a = ss_pivot(T, tdOffset, SA, partitionOffset, first, last);
+                v = TdPAStar[a];
                 SA.Swap(first, a);
 
                 // partition
@@ -888,7 +924,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     {
                         break;
                     }
-                    x = TdPAStar!(b);
+                    x = TdPAStar[b];
                     if (!(x == v))
                     {
                         break;
@@ -906,7 +942,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             break;
                         }
-                        x = TdPAStar!(b);
+                        x = TdPAStar[b];
                         if (!(x <= v))
                         {
                             break;
@@ -929,7 +965,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     {
                         break;
                     }
-                    x = TdPAStar!(c);
+                    x = TdPAStar[c];
                     if (!(x == v))
                     {
                         break;
@@ -947,7 +983,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             break;
                         }
-                        x = TdPAStar!(c);
+                        x = TdPAStar[c];
                         if (!(x >= v))
                         {
                             break;
@@ -973,7 +1009,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             break;
                         }
-                        x = TdPAStar!(b);
+                        x = TdPAStar[b];
                         if (!(x <= v))
                         {
                             break;
@@ -993,7 +1029,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             break;
                         }
-                        x = TdPAStar!(c);
+                        x = TdPAStar[c];
                         if (!(x >= v))
                         {
                             break;
@@ -1007,11 +1043,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                 }
 
-                if a <= d {
+                if (a <= d)
+                {
                     c = b - 1;
-                    s = (a - first).0;
-                    t = (b - a).0;
-                    if s > t {
+                    s = (a - first)/*.0*/;
+                    t = (b - a)/*.0*/;
+                    if (s > t)
+                    {
                         s = t;
                     }
 
@@ -1025,8 +1063,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         e += 1;
                         f += 1;
                     }
-                    s = (d - c).0;
-                    t = (last - d - 1).0;
+                    s = (d - c)/*.0*/;
+                    t = (last - d - 1)/*.0*/;
                     if (s > t)
                     {
                         s = t;
@@ -1044,7 +1082,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                     a = first + (b - a);
                     c = last - (d - c);
-                    b = v <= Td!(PA!(SA[a]) - 1) ? a : ss_partition(SA, PA, a, c, depth);
+                    b = v <= Td[PA[SA[a]] - 1] ? a : ss_partition(SA, partitionOffset, a, c, depth);
 
                     if ((a - first) <= (last - c))
                     {
@@ -1098,9 +1136,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 else
                 {
                     limit += 1;
-                    if (Td!(PA!(SA[first]) - 1) < v)
+                    if (Td[PA[SA[first]] - 1] < v)
                     {
-                        first = ss_partition(SA, PA, first, last, depth);
+                        first = ss_partition(SA, partitionOffset, first, last, depth);
                         limit = ss_ilg(last - first);
                     }
                     depth += 1;
