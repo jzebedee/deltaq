@@ -323,7 +323,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 //for i in (0.. = (m - 2)).rev() {
                 //TODO: get rid of this Enumerable
                 //foreach(var ini in Enumerable.Range(0, m - 2).Reverse())
-                for(i = m - 2; i > 0; i--)
+                for (i = m - 2; i > 0; i--)
                 {
                     t = SA[PAb + i];
                     c0 = T[t];
@@ -357,19 +357,17 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         {
                             throw new NotImplementedException();
                             //SA_dump!(&SA.range(i..j), "sssort(A)");
-                            //sssort::sssort(
-                            //    T,
-                            //    SA,
-                            //    PAb,
-                            //    SAPtr(i),
-                            //    SAPtr(j),
-                            //    buf,
-                            //    bufsize,
-                            //    2,
-                            //    n,
-                            //    SA[i] == (m - 1),
-
-                            //);
+                            sssort(
+                                T,
+                                SA,
+                                PAb,
+                                ref i,
+                                (SAPtr)j,
+                                ref buf,
+                                ref bufsize,
+                                2,
+                                n,
+                                SA[i] == (m - 1));
                             //SA_dump!(&SA.range(i..j), "sssort(B)");
                         }
 
@@ -556,7 +554,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
             return new SortTypeBstarResult { A = A, B = B, m = m };
         }
-        //}
+
+        /// <summary>
+        /// Substring sort
+        /// </summary>
+        private static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, ref SAPtr first, SAPtr last, ref SAPtr buf, ref Idx bufsize, Idx depth, Idx n, bool lastsuffix)
+        {
+            throw new NotImplementedException();
+        }
 
         private static readonly int[] lg_table_array = new[]
         {
