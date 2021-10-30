@@ -555,11 +555,496 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             return new SortTypeBstarResult { A = A, B = B, m = m };
         }
 
-        /// <summary>
+        private const Idx SS_BLOCKSIZE = 1024;
+
+       /// <summary>
         /// Substring sort
         /// </summary>
         private static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, ref SAPtr first, SAPtr last, ref SAPtr buf, ref Idx bufsize, Idx depth, Idx n, bool lastsuffix)
         {
+            // Note: in most of this file "PA" seems to mean "Partition Array" - we're
+            // working on a slice of SA. This is also why SA (or a mutable reference to it)
+            // is passed around, so we don't run into lifetime issues.
+
+            SAPtr a;
+            SAPtr b;
+            SAPtr middle;
+            SAPtr curbuf;
+            Idx j;
+            Idx k;
+            Idx curbufsize;
+            Idx limit;
+            Idx i;
+
+            if (lastsuffix)
+            {
+                first += 1;
+            }
+
+            limit = ss_isqrt(last - first);
+            if ((bufsize < SS_BLOCKSIZE) && (bufsize < (last - first)) && (bufsize < limit))
+            {
+                if (SS_BLOCKSIZE < limit)
+                {
+                    limit = SS_BLOCKSIZE;
+                }
+                middle = last - limit;
+                buf = middle;
+                bufsize = limit;
+            }
+            else
+            {
+                middle = last;
+                limit = 0;
+            }
+
+            // ESPRESSO
+            a = first;
+            i = 0;
+            while (SS_BLOCKSIZE < (middle - a))
+            {
+                crosscheck("ss_mintrosort (espresso) a={} depth={}", a - PA, depth);
+                ss_mintrosort(T, SA, PA, a, a + SS_BLOCKSIZE, depth);
+
+                curbufsize = (last - (a + SS_BLOCKSIZE));
+                curbuf = a + SS_BLOCKSIZE;
+                if (curbufsize <= bufsize)
+                {
+                    curbufsize = bufsize;
+                    curbuf = buf;
+                }
+
+                // FRESCO
+                b = a;
+                k = SS_BLOCKSIZE;
+                j = i;
+                while ((j & 1) > 0)
+                {
+                    crosscheck("ss_swapmerge {}", k);
+                    ss_swapmerge(T, SA, PA, b - k, b, b + k, curbuf, curbufsize, depth);
+
+                    // iter
+                    b -= k;
+                    k <<= 1;
+                    j >>= 1;
+                }
+
+                // iter
+                a += SS_BLOCKSIZE;
+                i += 1;
+            }
+
+            crosscheck("ss_mintrosort (pre-mariachi) a={} depth={}", a - PA, depth);
+            ss_mintrosort(T, SA, PA, a, middle, depth);
+
+            //SA_dump!(&SA.range(first..last), "pre-mariachi");
+
+            // MARIACHI
+            k = SS_BLOCKSIZE;
+            while (i != 0)
+            {
+                if ((i & 1) > 0)
+                {
+                    //SA_dump!(&SA.range(first..last), "in-mariachi pre-swap");
+                    crosscheck(
+                        "a={} middle={} bufsize={} depth={}",
+                        a - first,
+                        middle - first,
+                        bufsize,
+                        depth
+                    );
+                    ss_swapmerge(T, SA, PA, a - k, a, middle, buf, bufsize, depth);
+                    //SA_dump!(&SA.range(first..last), "in-mariachi post-swap");
+                    a -= k;
+                }
+
+                // iter
+                k <<= 1;
+                i >>= 1;
+            }
+            //SA_dump!(&SA.range(first..last), "post-mariachi");
+
+            if (limit != 0)
+            {
+                crosscheck("ss_mintrosort limit!=0");
+                ss_mintrosort(T, SA, PA, middle, last, depth);
+                //SA_dump!(&SA.range(first..last), "post-mintrosort limit!=0");
+                ss_inplacemerge(T, SA, PA, first, middle, last, depth);
+                //SA_dump!(&SA.range(first..last), "post-inplacemerge limit!=0");
+            }
+            //SA_dump!(&SA.range(first..last), "post-limit!=0");
+
+            if (lastsuffix)
+            {
+                crosscheck("lastsuffix!");
+
+                // Insert last type B* suffix
+                Span<Idx> PAi = stackalloc Idx[2] { SA[PA + SA[first - 1]], n - 2 };
+                //let mut PAi:[Idx; 2] = [SA[PA + SA[first - 1]], n - 2];
+                //let SAI = SuffixArray(&mut PAi);
+
+                a = first;
+                i = SA[first - 1];
+
+                // CELINE
+                while ((a < last) && ((SA[a] < 0) || (0 < ss_compare(T, PAi, (SAPtr)0, SA, PA + SA[a], depth))))
+                {
+                    // body
+                    SA[a - 1] = SA[a];
+
+                    // iter
+                    a += 1;
+                }
+                SA[a - 1] = i;
+            }
+        }
+
+        private static int ss_compare(IntAccessor t, Span<int> pAi, int v1, Span<int> sA, int v2, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ss_inplacemerge(IntAccessor t, Span<int> sA, int pA, int first, int middle, int last, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void ss_swapmerge(IntAccessor t, Span<int> sA, int pA, int v1, int b, int v2, int curbuf, int curbufsize, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Multikey introsort for medium size groups
+        /// </summary>
+        private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr PA, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
+        {
+            //macro_rules! PA {
+            //    ($x: expr) => {
+            //        SA[PA + $x]
+            //    };
+            //};
+
+            let mut stack = Stack::new();
+
+            let mut a: SAPtr;
+            let mut b: SAPtr;
+            let mut c: SAPtr;
+            let mut d: SAPtr;
+            let mut e: SAPtr;
+            let mut f: SAPtr;
+
+            let mut s: Idx;
+            let mut t: Idx;
+
+            let mut limit: Idx;
+            let mut v: Idx;
+            let mut x: Idx = 0;
+
+            // RENEE
+            limit = ss_ilg(last - first);
+            loop {
+                if ((last - first) <= SS_INSERTIONSORT_THRESHOLD)
+                {
+                    if (1 < (last - first))
+                    {
+                        ss_insertionsort(T, SA, PA, first, last, depth);
+                    }
+                    if !stack
+                        .pop(&mut first, &mut last, &mut depth, &mut limit)
+                        .is_ok()
+                    {
+                        return;
+                    }
+                    continue;
+                }
+
+                let Td = depth;
+                macro_rules! Td {
+                    ($x: expr) => {
+                        T.get(Td + $x)
+                    };
+                }
+                macro_rules! TdPAStar {
+                    ($x: expr) => {
+                        Td!(PA!(SA[$x]))
+                    };
+                }
+
+                let old_limit = limit;
+                limit -= 1;
+                if (old_limit == 0)
+                {
+                    SA_dump!(&SA.range(first..last), "before heapsort");
+                    ss_heapsort(T, Td, SA, PA, first, (last - first).into());
+                    SA_dump!(&SA.range(first..last), "after heapsort");
+                }
+
+                if (limit < 0)
+                {
+                    a = first + 1;
+                    v = TdPAStar!(first);
+
+                    // DAVE
+                    while a < last {
+                        x = TdPAStar!(a);
+                        if (x != v)
+                        {
+                            if (1 < (a - first))
+                            {
+                                break;
+                            }
+                            v = x;
+                            first = a;
+                        }
+
+                        // loop iter
+                        a += 1;
+                    }
+
+                    if Td!(PA!(SA[first]) - 1) < v {
+                        first = ss_partition(SA, PA, first, a, depth);
+                    }
+                    if (a - first) <= (last - a) {
+                        if 1 < (a - first) {
+                            stack.push(a, last, depth, -1);
+                            last = a;
+                            depth += 1;
+                            limit = ss_ilg(a - first);
+                        }
+                        else
+                        {
+                            first = a;
+                            limit = -1;
+                        }
+                    } else
+                    {
+                        if 1 < (last - a) {
+                            stack.push(first, a, depth + 1, ss_ilg(a - first));
+                            first = a;
+                            limit = -1;
+                        }
+                        else
+                        {
+                            last = a;
+                            depth += 1;
+                            limit = ss_ilg(a - first);
+                        }
+                    }
+                    continue;
+                }
+
+                // choose pivot
+                a = ss_pivot(T, Td, SA, PA, first, last);
+                v = TdPAStar!(a);
+                SA.swap(first, a);
+
+                // partition
+                // NORA
+                b = first;
+                loop {
+                    b += 1;
+                    if !(b < last) {
+                        break;
+                    }
+                    x = TdPAStar!(b);
+                    if !(x == v) {
+                        break;
+                    }
+                    // body
+                }
+                a = b;
+                if (a < last) && (x < v) {
+                    // STAN
+                    loop {
+                        b += 1;
+                        if !(b < last) {
+                            break;
+                        }
+                        x = TdPAStar!(b);
+                        if !(x <= v) {
+                            break;
+                        }
+                        // body
+                        if x == v {
+                            SA.swap(b, a);
+                            a += 1;
+                        }
+                    }
+                }
+
+                // NATHAN
+                c = last;
+                loop {
+                    c -= 1;
+                    if !(b < c) {
+                        break;
+                    }
+                    x = TdPAStar!(c);
+                    if !(x == v) {
+                        break;
+                    }
+                    // body
+                }
+                d = c;
+                if (b < d) && (x > v) {
+                    // JACOB
+                    loop {
+                        c -= 1;
+                        if !(b < c) {
+                            break;
+                        }
+                        x = TdPAStar!(c);
+                        if !(x >= v) {
+                            break;
+                        }
+                        // body
+                        if x == v {
+                            SA.swap(c, d);
+                            d -= 1;
+                        }
+                    }
+                }
+
+                // RITA
+                while b < c {
+                    SA.swap(b, c);
+                    // ROMEO
+                    loop {
+                        b += 1;
+                        if !(b < c) {
+                            break;
+                        }
+                        x = TdPAStar!(b);
+                        if !(x <= v) {
+                            break;
+                        }
+                        // body
+                        if x == v {
+                            SA.swap(b, a);
+                            a += 1;
+                        }
+                    }
+                    // JULIET
+                    loop {
+                        c -= 1;
+                        if !(b < c) {
+                            break;
+                        }
+                        x = TdPAStar!(c);
+                        if !(x >= v) {
+                            break;
+                        }
+                        // body
+                        if x == v {
+                            SA.swap(c, d);
+                            d -= 1;
+                        }
+                    }
+                }
+
+                if a <= d {
+                    c = b - 1;
+                    s = (a - first).0;
+                    t = (b - a).0;
+                    if s > t {
+                        s = t;
+                    }
+
+                    // JOSHUA
+                    e = first;
+                    f = b - s;
+                    while 0 < s {
+                        SA.swap(e, f);
+                        s -= 1;
+                        e += 1;
+                        f += 1;
+                    }
+                    s = (d - c).0;
+                    t = (last - d - 1).0;
+                    if s > t {
+                        s = t;
+                    }
+                    // BERENICE
+                    e = b;
+                    f = last - s;
+                    while 0 < s {
+                        SA.swap(e, f);
+                        s -= 1;
+                        e += 1;
+                        f += 1;
+                    }
+
+                    a = first + (b - a);
+                    c = last - (d - c);
+                    b = if v <= Td!(PA!(SA[a]) - 1) {
+                        a
+                    }
+                    else
+                    {
+                        let res = ss_partition(SA, PA, a, c, depth);
+                        res
+                  };
+
+                    if (a - first) <= (last - c) {
+                        if (last - c) <= (c - b) {
+                            stack.push(b, c, depth + 1, ss_ilg(c - b));
+                            stack.push(c, last, depth, limit);
+                            last = a;
+                        } else if (a - first) <= (c - b) {
+                            stack.push(c, last, depth, limit);
+                            stack.push(b, c, depth + 1, ss_ilg(c - b));
+                            last = a;
+                        } else
+                        {
+                            stack.push(c, last, depth, limit);
+                            stack.push(first, a, depth, limit);
+                            first = b;
+                            last = c;
+                            depth += 1;
+                            limit = ss_ilg(c - b);
+                        }
+                    } else
+                    {
+                        if (a - first) <= (c - b) {
+                            stack.push(b, c, depth + 1, ss_ilg(c - b));
+                            stack.push(first, a, depth, limit);
+                            first = c;
+                        } else if (last - c) <= (c - b) {
+                            stack.push(first, a, depth, limit);
+                            stack.push(b, c, depth + 1, ss_ilg(c - b));
+                            first = c;
+                        } else
+                        {
+                            stack.push(first, a, depth, limit);
+                            stack.push(c, last, depth, limit);
+                            first = b;
+                            last = c;
+                            depth += 1;
+                            limit = ss_ilg(c - b);
+                        }
+                    }
+                }
+                else
+                {
+                    limit += 1;
+                    if Td!(PA!(SA[first]) - 1) < v {
+                        first = ss_partition(SA, PA, first, last, depth);
+                        limit = ss_ilg(last - first);
+                    }
+                    depth += 1;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fast sqrt, using lookup tables
+        /// </summary>
+        private static int ss_isqrt(int v)
+        {
+            //TODO: implement me
+            return (Idx)Math.Sqrt(v);
+
             throw new NotImplementedException();
         }
 
@@ -737,8 +1222,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         private const int STACK_SIZE = 64;
         private ref struct TrStack
         {
-            public readonly Span<StackItem> Items;
-            public int Size;
+            private readonly Span<StackItem> Items;
+            private int Size;
 
             public TrStack(Span<StackItem> items)
             {
@@ -1459,9 +1944,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
+        [Conditional("DEBUG")]
         private static void crosscheck(string v, params object[] args)
         {
-            throw new NotImplementedException();
+            Debug.WriteLine(format: v, args: args);
         }
 
         private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
