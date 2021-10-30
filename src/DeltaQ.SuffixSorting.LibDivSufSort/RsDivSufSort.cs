@@ -355,7 +355,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                         if (1 < (j - i))
                         {
-                            throw new NotImplementedException();
                             //SA_dump!(&SA.range(i..j), "sssort(A)");
                             sssort(
                                 T,
@@ -557,7 +556,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
         private const Idx SS_BLOCKSIZE = 1024;
 
-       /// <summary>
+        /// <summary>
         /// Substring sort
         /// </summary>
         private static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, ref SAPtr first, SAPtr last, ref SAPtr buf, ref Idx bufsize, Idx depth, Idx n, bool lastsuffix)
@@ -719,11 +718,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         /// </summary>
         private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr PA, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
         {
-            //macro_rules! PA {
-            //    ($x: expr) => {
-            //        SA[PA + $x]
-            //    };
-            //};
+            macro_rules! PA {
+                ($x: expr) => {
+                    SA[PA + $x]
+                };
+            };
 
             let mut stack = Stack::new();
 
@@ -1222,8 +1221,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         private const int STACK_SIZE = 64;
         private ref struct TrStack
         {
-            private readonly Span<StackItem> Items;
-            private int Size;
+            public readonly Span<StackItem> Items;
+            public int Size;
 
             public TrStack(Span<StackItem> items)
             {
@@ -1947,7 +1946,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         [Conditional("DEBUG")]
         private static void crosscheck(string v, params object[] args)
         {
-            Debug.WriteLine(format: v, args: args);
+            //Debug.WriteLine(format: v, args: args);
         }
 
         private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
