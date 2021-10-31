@@ -1738,7 +1738,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (1 < (last - first))
                         {
                             budget.Count = 0;
-                            tr_introsort(ISA, ref ISAd, SA, ref first, ref last, budget);
+                            tr_introsort(ISA, ISAd, SA, first, last, ref budget);
                             if (budget.Count != 0)
                             {
                                 unsorted += budget.Count;
@@ -1823,13 +1823,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         }
 
         private const Idx TR_INSERTIONSORT_THRESHOLD = 8;
-        private static void tr_introsort(SAPtr ISA, ref SAPtr ISAd, Span<int> SA, ref SAPtr first, ref SAPtr last, Budget budget)
+        private static void tr_introsort(SAPtr isaOffset, SAPtr isadOffset, Span<int> SA, SAPtr first, SAPtr last, ref Budget budget)
         {
             SAPtr a = 0;
             SAPtr b = 0;
             SAPtr c;
             Idx t, v, x;
-            Idx incr = ISAd - ISA;
+            Idx incr = isadOffset - isaOffset;
             Idx next;
             Idx trlink = -1;
 
@@ -1847,13 +1847,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                    };
                }
             */
+            var ISA = SA[isaOffset..];
+            var ISAd = SA[isadOffset..];
 
-            Idx limit = tr_ilg(last - first);
+            var limit = tr_ilg(last - first);
 
             // PASCAL
             while (true)
             {
-                //TODO: crosscheck
                 crosscheck("pascal limit={} first={} last={}", limit, first, last);
                 if (limit < 0)
                 {
@@ -1862,7 +1863,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // tandem repeat partition
                         tr_partition(
                             SA,
-                            ISAd - incr,
+                            isadOffset - incr,
                             first,
                             first,
                             last,
@@ -1883,7 +1884,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             while (c < a)
                             {
                                 {
-                                    SA[ISA + SA[c]] = v;
+                                    ISA[SA[c]] = v;
                                 }
 
                                 // iter (JONAS)
@@ -1901,7 +1902,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             while (c < b)
                             {
                                 {
-                                    SA[ISA + (SA[c])] = v;
+                                    ISA[SA[c]] = v;
                                 }
 
                                 // iter (AHAB)
@@ -1912,47 +1913,42 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         // push
                         if (1 < (b - a))
                         {
-                            //TODO: crosscheck
                             crosscheck("1<(b-a)");
                             crosscheck("push NULL {} {} {} {}", a, b, 0, 0);
                             stack.Push(0, a, b, 0, 0);
-                            crosscheck("push {} {} {} {} {}", ISAd - incr, first, last, -2, trlink);
-                            stack.Push(ISAd - incr, first, last, -2, trlink);
+                            crosscheck("push {} {} {} {} {}", isadOffset - incr, first, last, -2, trlink);
+                            stack.Push(isadOffset - incr, first, last, -2, trlink);
                             trlink = stack.Size - 2;
                         }
 
                         if ((a - first) <= (last - b))
                         {
-                            //TODO: crosscheck
                             crosscheck("star");
                             if (1 < (a - first))
                             {
-                                //TODO: crosscheck
                                 crosscheck("board");
                                 crosscheck(
                                     "push {} {} {} {} {}",
-                                    ISAd,
+                                    isadOffset,
                                     b,
                                     last,
                                     tr_ilg(last - b),
                                     trlink
                                 );
-                                stack.Push(ISAd, b, last, tr_ilg(last - b), trlink);
+                                stack.Push(isadOffset, b, last, tr_ilg(last - b), trlink);
                                 last = a;
                                 limit = tr_ilg(a - first);
                             }
                             else if (1 < (last - b))
                             {
-                                //TODO: crosscheck
                                 crosscheck("north");
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
                             else
                             {
-                                //TODO: crosscheck
                                 crosscheck("denny");
-                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
@@ -1967,13 +1963,13 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 crosscheck("land");
                                 crosscheck(
                                     "push {} {} {} {} {}",
-                                    ISAd,
+                                    isadOffset,
                                     first,
                                     a,
                                     tr_ilg(a - first),
                                     trlink
                                 );
-                                stack.Push(ISAd, first, a, tr_ilg(a - first), trlink);
+                                stack.Push(isadOffset, first, a, tr_ilg(a - first), trlink);
                                 first = b;
                                 limit = tr_ilg(last - b);
                             }
@@ -1986,7 +1982,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("clap");
-                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
@@ -2004,7 +2000,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         b = item.c;
                         if (item.d == 0)
                         {
-                            tr_copy(ISA, SA, first, a, b, last, ISAd - ISA);
+                            tr_copy(isaOffset, SA, first, a, b, last, isadOffset - isaOffset);
                         }
                         else
                         {
@@ -2012,9 +2008,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             {
                                 stack.Items[trlink].d = -1;
                             }
-                            tr_partialcopy(ISA, SA, first, a, b, last, ISAd - ISA);
+                            tr_partialcopy(isaOffset, SA, first, a, b, last, isadOffset - isaOffset);
                         }
-                        if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                        if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                         {
                             return;
                         }
@@ -2032,7 +2028,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             while (true)
                             {
                                 {
-                                    SA[ISA + SA[a]] = a;
+                                    ISA[SA[a]] = a;
                                 }
 
                                 // cond (GEMINI)
@@ -2052,8 +2048,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             // MONSTRO
                             while (true)
                             {
-                                //TODO: checkme
-                                //SA[a] = !SA[a];
                                 SA[a] = ~SA[a];
 
                                 a += 1;
@@ -2063,7 +2057,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 }
                             }
 
-                            next = SA[ISA + SA[a]] != SA[ISAd + SA[a]] ? tr_ilg(a - first + 1) : -1;
+                            next = ISA[SA[a]] != ISAd[SA[a]] ? tr_ilg(a - first + 1) : -1;
                             a += 1;
                             if (a < last)
                             {
@@ -2074,7 +2068,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 while (b < a)
                                 {
                                     {
-                                        SA[ISA + SA[b]] = v;
+                                        ISA[SA[b]] = v;
                                     }
                                     b += 1;
                                 }
@@ -2086,9 +2080,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 crosscheck("budget pass");
                                 if ((a - first) <= (last - a))
                                 {
-                                    crosscheck("push {} {} {} {} {}", ISAd, a, last, -3, trlink);
-                                    stack.Push(ISAd, a, last, -3, trlink);
-                                    ISAd += incr;
+                                    crosscheck("push {} {} {} {} {}", isadOffset, a, last, -3, trlink);
+                                    stack.Push(isadOffset, a, last, -3, trlink);
+                                    isadOffset += incr;
                                     last = a;
                                     limit = next;
                                 }
@@ -2098,19 +2092,19 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                     {
                                         crosscheck(
                                             "push {} {} {} {} {}",
-                                            ISAd + incr,
+                                            isadOffset + incr,
                                             first,
                                             a,
                                             next,
                                             trlink
                                         );
-                                        stack.Push(ISAd + incr, first, a, next, trlink);
+                                        stack.Push(isadOffset + incr, first, a, next, trlink);
                                         first = a;
                                         limit = -3;
                                     }
                                     else
                                     {
-                                        ISAd += incr;
+                                        isadOffset += incr;
                                         last = a;
                                         limit = next;
                                     }
@@ -2133,14 +2127,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 else
                                 {
                                     crosscheck("1<(last-a) not");
-                                    if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                    if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                                     {
                                         return;
                                     }
                                     crosscheck("1<(last-a) not post");
                                     crosscheck(
                                         "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                                        ISAd,
+                                        isadOffset,
                                         first,
                                         last,
                                         limit,
@@ -2152,14 +2146,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         else
                         {
                             crosscheck("times pop");
-                            if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                            if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                             {
                                 return;
                             }
                             crosscheck("times pop-post");
                             crosscheck(
                                 "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                                ISAd,
+                                isadOffset,
                                 first,
                                 last,
                                 limit,
@@ -2173,7 +2167,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if ((last - first) <= TR_INSERTIONSORT_THRESHOLD)
                 {
                     crosscheck("insertionsort last-first={}", last - first);
-                    tr_insertionsort(SA, ISAd, first, last);
+                    tr_insertionsort(SA, isadOffset, first, last);
                     limit = -3;
                     continue;
                 }
@@ -2184,25 +2178,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 {
                     crosscheck(
                         "heapsort ISAd={} first={} last={} last-first={}",
-                        ISAd,
+                        isadOffset,
                         first,
                         last,
                         last - first
                     );
-                    SA_dump(SA[first..last], "before tr_heapsort");
-                    tr_heapsort(ISAd, SA, first, (last - first));
-                    SA_dump(SA[first..last], "after tr_heapsort");
+                    //SA_dump(SA[first..last], "before tr_heapsort");
+                    tr_heapsort(isadOffset, SA, first, (last - first));
+                    //SA_dump(SA[first..last], "after tr_heapsort");
 
                     // YOHAN
                     a = last - 1;
                     while (first < a)
                     {
                         // VINCENT
-                        x = SA[ISAd + SA[a]];
+                        x = ISAd[SA[a]];
                         b = a - 1;
-                        while ((first <= b) && (SA[ISAd + SA[b]]) == x)
+                        while ((first <= b) && (ISAd[SA[b]]) == x)
                         {
-                            //!
                             SA[b] = ~SA[b];
 
                             // iter (VINCENT)
@@ -2218,17 +2211,17 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
 
                 // choose pivot
-                a = tr_pivot(SA, ISAd, first, last);
+                a = tr_pivot(SA, isadOffset, first, last);
                 crosscheck("picked pivot {}", a);
                 SA.Swap(first, a);
-                v = SA[ISAd + (SA[first])];
+                v = ISAd[SA[first]];
 
                 // partition
-                tr_partition(SA, ISAd, first, first + 1, last, ref a, ref b, v);
+                tr_partition(SA, isadOffset, first, first + 1, last, ref a, ref b, v);
                 if ((last - first) != (b - a))
                 {
                     crosscheck("pre-nolwenn");
-                    next = SA[ISA + (SA[a])] != v ? tr_ilg(b - a) : -1;
+                    next = ISA[SA[a]] != v ? tr_ilg(b - a) : -1;
 
                     // update ranks
                     // NOLWENN
@@ -2237,7 +2230,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     while (c < a)
                     {
                         {
-                            SA[ISA + (SA[c])] = v;
+                            ISA[SA[c]] = v;
                         }
                         c += 1;
                     }
@@ -2249,7 +2242,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         while (c < b)
                         {
                             {
-                                SA[ISA + (SA[c])] = v;
+                                ISA[SA[c]] = v;
                             }
                             c += 1;
                         }
@@ -2268,23 +2261,23 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (a - first))
                                 {
                                     crosscheck("aaaa");
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
-                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                    stack.Push(ISAd, b, last, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    stack.Push(isadOffset, b, last, limit, trlink);
                                     last = a;
                                 }
                                 else if (1 < (last - b))
                                 {
                                     crosscheck("aaab");
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
                                     first = b;
                                 }
                                 else
                                 {
                                     crosscheck("aaac");
-                                    ISAd += incr;
+                                    isadOffset += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
@@ -2296,18 +2289,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (a - first))
                                 {
                                     crosscheck("aaba");
-                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                    stack.Push(ISAd, b, last, limit, trlink);
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    stack.Push(isadOffset, b, last, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
                                     last = a;
                                 }
                                 else
                                 {
                                     crosscheck("aabb");
-                                    crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                    stack.Push(ISAd, b, last, limit, trlink);
-                                    ISAd += incr;
+                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    stack.Push(isadOffset, b, last, limit, trlink);
+                                    isadOffset += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
@@ -2316,11 +2309,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("aac");
-                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                stack.Push(ISAd, b, last, limit, trlink);
-                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                stack.Push(ISAd, first, a, limit, trlink);
-                                ISAd += incr;
+                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                stack.Push(isadOffset, b, last, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                stack.Push(isadOffset, first, a, limit, trlink);
+                                isadOffset += incr;
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2335,23 +2328,23 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (last - b))
                                 {
                                     crosscheck("abaa");
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
-                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                    stack.Push(ISAd, first, a, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    stack.Push(isadOffset, first, a, limit, trlink);
                                     first = b;
                                 }
                                 else if (1 < (a - first))
                                 {
                                     crosscheck("abab");
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
                                     last = a;
                                 }
                                 else
                                 {
                                     crosscheck("abac");
-                                    ISAd += incr;
+                                    isadOffset += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
@@ -2363,18 +2356,18 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (last - b))
                                 {
                                     crosscheck("abba");
-                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                    stack.Push(ISAd, first, a, limit, trlink);
-                                    crosscheck("push {} {} {} {} {}", ISAd + incr, a, b, next, trlink);
-                                    stack.Push(ISAd + incr, a, b, next, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    stack.Push(isadOffset, first, a, limit, trlink);
+                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    stack.Push(isadOffset + incr, a, b, next, trlink);
                                     first = b;
                                 }
                                 else
                                 {
                                     crosscheck("abbb");
-                                    crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                    stack.Push(ISAd, first, a, limit, trlink);
-                                    ISAd += incr;
+                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    stack.Push(isadOffset, first, a, limit, trlink);
+                                    isadOffset += incr;
                                     first = a;
                                     last = b;
                                     limit = next;
@@ -2383,11 +2376,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("abc");
-                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                stack.Push(ISAd, first, a, limit, trlink);
-                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                stack.Push(ISAd, b, last, limit, trlink);
-                                ISAd += incr;
+                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                stack.Push(isadOffset, first, a, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                stack.Push(isadOffset, b, last, limit, trlink);
+                                isadOffset += incr;
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2408,8 +2401,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (a - first))
                             {
                                 crosscheck("bba");
-                                crosscheck("push {} {} {} {} {}", ISAd, b, last, limit, trlink);
-                                stack.Push(ISAd, b, last, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                stack.Push(isadOffset, b, last, limit, trlink);
                                 last = a;
                             }
                             else if (1 < (last - b))
@@ -2420,7 +2413,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("bbc");
-                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
@@ -2432,8 +2425,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (last - b))
                             {
                                 crosscheck("bca");
-                                crosscheck("push {} {} {} {} {}", ISAd, first, a, limit, trlink);
-                                stack.Push(ISAd, first, a, limit, trlink);
+                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                stack.Push(isadOffset, first, a, limit, trlink);
                                 first = b;
                             }
                             else if (1 < (a - first))
@@ -2444,7 +2437,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("bcc");
-                                if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                                if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                                 {
                                     return;
                                 }
@@ -2460,7 +2453,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     {
                         crosscheck("ca");
                         limit = tr_ilg(last - first);
-                        ISAd += incr;
+                        isadOffset += incr;
                     }
                     else
                     {
@@ -2470,7 +2463,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             crosscheck("cba");
                             stack.Items[trlink].d = -1;
                         }
-                        if (!stack.Pop(ref ISAd, ref first, ref last, ref limit, ref trlink))
+                        if (!stack.Pop(ref isadOffset, ref first, ref last, ref limit, ref trlink))
                         {
                             return;
                         }
