@@ -2451,7 +2451,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             } // end PASCAL
         }
 
-        [Conditional("SA_DUMP")]
+        [Conditional("DEBUG")]
         private static void SA_dump(ReadOnlySpan<int> span, string v)
         {
             Debug.Write($"{v} - {span.ToString()}: ");
@@ -2547,7 +2547,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         [Conditional("DEBUG")]
         private static void crosscheck(string v, params object[] args)
         {
-            //Debug.WriteLine(format: v, args: args);
+            Debug.WriteLine(v);
+            Debug.Indent();
+            foreach (var arg in args)
+                Debug.WriteLine(arg);
+            Debug.Unindent();
         }
 
         private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
