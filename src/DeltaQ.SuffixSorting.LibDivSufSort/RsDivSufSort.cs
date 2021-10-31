@@ -1156,9 +1156,61 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
-        private static void ss_insertionsort(IntAccessor t, Span<int> sA, int pA, int first, int last, int depth)
+        private static void ss_insertionsort(IntAccessor T, Span<int> SA, int PA, int first, int last, int depth)
         {
-            throw new NotImplementedException();
+            SAPtr i;
+            SAPtr j;
+            Idx t;
+            Idx r;
+
+            i = last - 2;
+            // for 1
+            while (first <= i)
+            {
+                t = SA[i];
+                j = i + 1;
+
+                // for 2
+                while (true)
+                {
+                    // cond for 2
+                    r = ss_compare(T, SA, PA + t, SA, PA + SA[j], depth);
+                    if (!(0 < r))
+                    {
+                        break;
+                    }
+
+                    // body for 2
+
+                    // do while
+                    while (true)
+                    {
+                        SA[j - 1] = SA[j];
+
+                        j += 1;
+                        if (!((j < last) && SA[j] < 0))
+                        {
+                            break;
+                        }
+                    }
+
+                    if (last <= j)
+                    {
+                        break;
+                    }
+
+                    // iter for 2 (empty)
+                }
+
+                if (r == 0)
+                {
+                    SA[j] = ~SA[j];
+                }
+                SA[j - 1] = t;
+
+                // iter
+                i -= 1;
+            }
         }
 
         /// <summary>
