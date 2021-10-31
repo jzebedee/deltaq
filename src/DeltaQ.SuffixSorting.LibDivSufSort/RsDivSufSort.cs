@@ -1161,9 +1161,19 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
-        private static int ss_ilg(int v)
+        /// <summary>
+        /// Fast log2, using lookup tables
+        /// </summary>
+        private static int ss_ilg(int n)
         {
-            throw new NotImplementedException();
+            if ((n & 0xff00) > 0)
+            {
+                return 8 + lg_table[((n >> 8) & 0xff)];
+            }
+            else
+            {
+                return 0 + lg_table[((n >> 0) & 0xff)];
+            }
         }
 
         private static void ss_heapsort(IntAccessor t, int td, Span<int> sA, int pA, int first, object p)
