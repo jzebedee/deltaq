@@ -740,9 +740,193 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
         }
 
-        private static void ss_inplacemerge(IntAccessor t, Span<int> sA, int pA, int first, int middle, int last, int depth)
+        private static void ss_inplacemerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, Idx depth)
         {
-            throw new NotImplementedException();
+            SAPtr p;
+            SAPtr a;
+            SAPtr b;
+            Idx len;
+            Idx half;
+            Idx q;
+            Idx r;
+            Idx x;
+
+            var original_first = first;
+            var original_last = last;
+
+            //SA_dump!(
+            //    &SA.range(original_first..original_last),
+            //    "inplacemerge start"
+            //);
+
+            // FERRIS
+            while (true)
+            {
+                if (SA[last - 1] < 0)
+                {
+                    x = 1;
+                    p = PA + ~SA[last - 1];
+                }
+                else
+                {
+                    x = 0;
+                    p = PA + SA[last - 1];
+                }
+
+                // LOIS
+                a = first;
+                len = (middle - first)/*.0*/;
+                half = len >> 1;
+                r = -1;
+                while (0 < len)
+                {
+                    b = a + half;
+                    q = ss_compare(T, SA, PA + (0 <= SA[b] ? SA[b] : ~SA[b]), SA, p, depth);
+                    if (q < 0)
+                    {
+                        a = b + 1;
+                        half -= (len & 1) ^ 1;
+                    }
+                    else
+                    {
+                        r = q;
+                    }
+
+                    // iter
+                    len = half;
+                    half >>= 1;
+                }
+                //SA_dump!(&SA.range(original_first..original_last), "post-lois");
+
+                if (a < middle)
+                {
+                    if (r == 0)
+                    {
+                        SA[a] = ~SA[a];
+                    }
+                    ss_rotate(SA, a, middle, last);
+                    //SA_dump!(&SA.range(original_first..original_last), "post-rotate");
+                    last -= middle - a;
+                    middle = a;
+                    if (first == middle)
+                    {
+                        break;
+                    }
+                }
+
+                last -= 1;
+                if (x != 0)
+                {
+                    // TIMMY
+                    last -= 1;
+                    while (SA[last] < 0)
+                    {
+                        last -= 1;
+                    }
+                    //SA_dump!(&SA.range(original_first..original_last), "post-timmy");
+                }
+                if (middle == last)
+                {
+                    break;
+                }
+
+                //SA_dump!(&SA.range(original_first..original_last), "ferris-wrap");
+            }
+        }
+
+        private static void ss_rotate(Span<int> SA, SAPtr first, SAPtr middle, SAPtr last)
+        {
+            SAPtr a;
+            SAPtr b;
+            Idx t;
+            Idx l;
+            Idx r;
+
+            var original_first = first;
+            var original_last = last;
+
+            l = (middle - first)/*.0*/;
+            r = (last - middle)/*.0*/;
+
+            //SA_dump!(&SA.range(original_first..original_last), "pre-brendan");
+
+            // BRENDAN
+            while ((0 < l) && (0 < r))
+            {
+                if (l == r)
+                {
+                    ss_blockswap(SA, first, middle, l);
+                    //SA_dump!(&SA.range(original_first..original_last), "post-blockswap");
+                    break;
+                }
+
+                if (l < r)
+                {
+                    a = last - 1;
+                    b = middle - 1;
+                    t = SA[a];
+
+                    // ALICE
+                    while (true)
+                    {
+                        SA[a] = SA[b];
+                        a -= 1;
+                        SA[b] = SA[a];
+                        b -= 1;
+                        if (b < first)
+                        {
+                            SA[a] = t;
+                            last = a;
+                            r -= l + 1;
+                            if (r <= l)
+                            {
+                                break;
+                            }
+                            a -= 1;
+                            b = middle - 1;
+                            t = SA[a];
+                        }
+                    }
+                    //SA_dump!(&SA.range(original_first..original_last), "post-alice");
+                }
+                else
+                {
+                    a = first;
+                    b = middle;
+                    t = SA[a];
+                    // ROBERT
+                    while (true)
+                    {
+                        SA[a] = SA[b];
+                        a += 1;
+                        SA[b] = SA[a];
+                        b += 1;
+                        if (last <= b)
+                        {
+                            SA[a] = t;
+                            first = a + 1;
+
+                            l -= r + 1;
+                            if (l <= r)
+                            {
+                                break;
+                            }
+                            a += 1;
+                            b = middle;
+                            t = SA[a];
+                        }
+                    }
+                    //SA_dump!(&SA.range(original_first..original_last), "post-robert");
+                }
+            }
+        }
+
+        private static void ss_blockswap(Span<int> SA, SAPtr a, SAPtr b, Idx n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                SA.Swap(a + i, b + i);
+            }
         }
 
         private static void ss_swapmerge(IntAccessor t, Span<int> sA, int pA, int v1, int b, int v2, int curbuf, int curbufsize, int depth)
@@ -834,7 +1018,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             //PA($x) => 
             var PA = SA[partitionOffset..];//new SpanOffsetAccessor<int>(SA, PA);
 
-            var stack = new SsStack();
+            var stack = new SsStack(stackalloc SsStackItem[SS_STACK_SIZE]);
 
             SAPtr a;
             SAPtr b;
@@ -1183,9 +1367,85 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
         }
 
-        private static int ss_pivot(IntAccessor t, int td, Span<int> sA, int pA, int first, int last)
+        /// <summary>
+        /// Returns the pivot element
+        /// </summary>
+        private static SAPtr ss_pivot(IntAccessor T, Idx Td, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last)
+        {
+            Idx t = (last - first)/*.0*/;
+            SAPtr middle = first + (t / 2);
+
+            if (t <= 512)
+            {
+                if (t <= 32)
+                {
+                    return ss_median3(T, Td, SA, PA, first, middle, last - 1);
+                }
+                else
+                {
+                    t >>= 2;
+                    return ss_median5(
+                        T,
+                        Td,
+                        SA,
+                        PA,
+                        first,
+                        first + t,
+                        middle,
+                        last - 1 - t,
+                        last - 1);
+                }
+            }
+
+            t >>= 3;
+            first = ss_median3(T, Td, SA, PA, first, first + t, first + (t << 1));
+            middle = ss_median3(T, Td, SA, PA, middle - t, middle, middle + t);
+            last = ss_median3(T, Td, SA, PA, last - 1 - (t << 1), last - 1 - t, last - 1);
+
+            return ss_median3(T, Td, SA, PA, first, middle, last);
+        }
+
+        private static int ss_median5(IntAccessor t, int td, Span<int> sA, int pA, int first, int v1, int middle, int v2, int v3)
         {
             throw new NotImplementedException();
+        }
+
+        static void Swap<T>(ref T lhs, ref T rhs)
+        {
+            T temp;
+            temp = lhs;
+            lhs = rhs;
+            rhs = temp;
+        }
+
+        /// <summary>
+        /// Returns the median of three elements
+        /// </summary>
+        private static int ss_median3(IntAccessor T, Idx Td, Span<int> SA, SAPtr PA, SAPtr v1, SAPtr v2, SAPtr v3)
+        {
+            //int get(int x) => T[Td + SA[PA + SA[x]]]
+            var get = new TdPAStarAccessor(T.span, SA, PA, Td);
+
+            if (get[v1] > get[v2])
+            {
+                Swap(ref v1, ref v2);
+            }
+
+            if (get[v2] > get[v3])
+            {
+                if (get[v1] > get[v3])
+                {
+                    return v1;
+                }
+                else
+                {
+                    return v3;
+                }
+            }
+            else
+            {
+                return v2;
+            }
         }
 
         private static int ss_partition(Span<int> sA, int pA, int first, int a, int depth)
