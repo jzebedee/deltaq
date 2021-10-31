@@ -355,9 +355,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                         if (1 < (j - i))
                         {
-                            //SA_dump!(&SA.range(i..j), "sssort(A)");
+                            SA_dump(SA[i..j], "sssort(A)");
                             sssort(T, SA, PAb, i, j, buf, bufsize, 2, n, SA[i] == (m - 1));
-                            //SA_dump!(&SA.range(i..j), "sssort(B)");
+                            SA_dump(SA[i..j], "sssort(B)");
                         }
 
                         // iter (inner)
@@ -618,7 +618,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             crosscheck("ss_mintrosort (pre-mariachi) a={} depth={}", a - PA, depth);
             ss_mintrosort(T, SA, PA, a, middle, depth);
 
-            //SA_dump!(&SA.range(first..last), "pre-mariachi");
+            SA_dump(SA[first..last], "pre-mariachi");
 
             // MARIACHI
             k = SS_BLOCKSIZE;
@@ -626,7 +626,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             {
                 if ((i & 1) > 0)
                 {
-                    //SA_dump!(&SA.range(first..last), "in-mariachi pre-swap");
+                    SA_dump(SA[first..last], "in-mariachi pre-swap");
                     crosscheck(
                         "a={} middle={} bufsize={} depth={}",
                         a - first,
@@ -635,7 +635,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         depth
                     );
                     ss_swapmerge(T, SA, PA, a - k, a, middle, buf, bufsize, depth);
-                    //SA_dump!(&SA.range(first..last), "in-mariachi post-swap");
+                    SA_dump(SA[first..last], "in-mariachi post-swap");
                     a -= k;
                 }
 
@@ -643,17 +643,17 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 k <<= 1;
                 i >>= 1;
             }
-            //SA_dump!(&SA.range(first..last), "post-mariachi");
+            SA_dump(SA[first..last], "post-mariachi");
 
             if (limit != 0)
             {
                 crosscheck("ss_mintrosort limit!=0");
                 ss_mintrosort(T, SA, PA, middle, last, depth);
-                //SA_dump!(&SA.range(first..last), "post-mintrosort limit!=0");
+                SA_dump(SA[first..last], "post-mintrosort limit!=0");
                 ss_inplacemerge(T, SA, PA, first, middle, last, depth);
-                //SA_dump!(&SA.range(first..last), "post-inplacemerge limit!=0");
+                SA_dump(SA[first..last], "post-inplacemerge limit!=0");
             }
-            //SA_dump!(&SA.range(first..last), "post-limit!=0");
+            SA_dump(SA[first..last], "post-limit!=0");
 
             if (lastsuffix)
             {
@@ -736,10 +736,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             var original_first = first;
             var original_last = last;
 
-            //SA_dump!(
-            //    &SA.range(original_first..original_last),
-            //    "inplacemerge start"
-            //);
+            SA_dump(SA[original_first..original_last], "inplacemerge start");
 
             // FERRIS
             while (true)
@@ -778,7 +775,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     len = half;
                     half >>= 1;
                 }
-                //SA_dump!(&SA.range(original_first..original_last), "post-lois");
+                SA_dump(SA[original_first..original_last], "post-lois");
 
                 if (a < middle)
                 {
@@ -787,7 +784,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         SA[a] = ~SA[a];
                     }
                     ss_rotate(SA, a, middle, last);
-                    //SA_dump!(&SA.range(original_first..original_last), "post-rotate");
+                    SA_dump(SA[original_first..original_last], "post-rotate");
                     last -= middle - a;
                     middle = a;
                     if (first == middle)
@@ -805,14 +802,14 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     {
                         last -= 1;
                     }
-                    //SA_dump!(&SA.range(original_first..original_last), "post-timmy");
+                    SA_dump(SA[original_first..original_last], "post-timmy");
                 }
                 if (middle == last)
                 {
                     break;
                 }
 
-                //SA_dump!(&SA.range(original_first..original_last), "ferris-wrap");
+                SA_dump(SA[original_first..original_last], "ferris-wrap");
             }
         }
 
@@ -830,7 +827,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             l = (middle - first)/*.0*/;
             r = (last - middle)/*.0*/;
 
-            //SA_dump!(&SA.range(original_first..original_last), "pre-brendan");
+            SA_dump(SA[original_first..original_last], "pre-brendan");
 
             // BRENDAN
             while ((0 < l) && (0 < r))
@@ -838,7 +835,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if (l == r)
                 {
                     ss_blockswap(SA, first, middle, l);
-                    //SA_dump!(&SA.range(original_first..original_last), "post-blockswap");
+                    SA_dump(SA[original_first..original_last], "post-blockswap");
                     break;
                 }
 
@@ -869,7 +866,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             t = SA[a];
                         }
                     }
-                    //SA_dump!(&SA.range(original_first..original_last), "post-alice");
+                    SA_dump(SA[original_first..original_last], "post-alice");
                 }
                 else
                 {
@@ -898,7 +895,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             t = SA[a];
                         }
                     }
-                    //SA_dump!(&SA.range(original_first..original_last), "post-robert");
+                    SA_dump(SA[original_first..original_last], "post-robert");
                 }
             }
         }
@@ -1047,9 +1044,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 limit -= 1;
                 if (old_limit == 0)
                 {
-                    //SA_dump!(&SA.range(first..last), "before heapsort");
+                    SA_dump(SA[first..last], "before heapsort");
                     ss_heapsort(T, tdOffset, SA, partitionOffset, first, (last - first));
-                    //SA_dump!(&SA.range(first..last), "after heapsort");
+                    SA_dump(SA[first..last], "after heapsort");
                 }
 
                 if (limit < 0)
@@ -2454,9 +2451,20 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             } // end PASCAL
         }
 
-        private static void SA_dump(Span<int> span, string v)
+        [Conditional("SA_DUMP")]
+        private static void SA_dump(ReadOnlySpan<int> span, string v)
         {
-            throw new NotImplementedException();
+            Debug.Write($"{v} - {span.ToString()}: ");
+            Debug.Write("[");
+            for(int i = 0; i < span.Length; i++)
+            {
+                Debug.Write($"{i}");
+                if(i != span.Length - 1)
+                {
+                    Debug.Write(",");
+                }
+            }
+            Debug.WriteLine("]");
         }
 
         private static int tr_pivot(Span<int> sA, int iSAd, int first, int last)
