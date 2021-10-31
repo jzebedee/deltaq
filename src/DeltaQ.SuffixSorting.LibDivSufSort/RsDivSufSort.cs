@@ -2161,9 +2161,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         last,
                         last - first
                     );
-                    //SA_dump(SA[first..last], "before tr_heapsort");
+                    SA_dump(SA[first..last], "before tr_heapsort");
                     tr_heapsort(isadOffset, SA, first, (last - first));
-                    //SA_dump(SA[first..last], "after tr_heapsort");
+                    SA_dump(SA[first..last], "after tr_heapsort");
 
                     // YOHAN
                     a = last - 1;
