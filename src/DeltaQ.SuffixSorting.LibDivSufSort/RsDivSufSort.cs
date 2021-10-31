@@ -2027,9 +2027,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             // GEMINI
                             while (true)
                             {
-                                {
-                                    ISA[SA[a]] = a;
-                                }
+                                ISA[SA[a]] = a;
 
                                 // cond (GEMINI)
                                 a += 1;
@@ -2067,9 +2065,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 v = a - 1;
                                 while (b < a)
                                 {
-                                    {
-                                        ISA[SA[b]] = v;
-                                    }
+                                    ISA[SA[b]] = v;
                                     b += 1;
                                 }
                             }
@@ -2083,6 +2079,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                     crosscheck("push {} {} {} {} {}", isadOffset, a, last, -3, trlink);
                                     stack.Push(isadOffset, a, last, -3, trlink);
                                     isadOffset += incr;
+                                    ISAd = ISAd[incr..];
                                     last = a;
                                     limit = next;
                                 }
@@ -2105,6 +2102,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                     else
                                     {
                                         isadOffset += incr;
+                                        ISAd = ISAd[incr..];
                                         last = a;
                                         limit = next;
                                     }
@@ -2167,7 +2165,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if ((last - first) <= TR_INSERTIONSORT_THRESHOLD)
                 {
                     crosscheck("insertionsort last-first={}", last - first);
-                    tr_insertionsort(SA, isadOffset, first, last);
+                    tr_insertionsort(SA, ISAd, first, last);
                     limit = -3;
                     continue;
                 }
@@ -2491,14 +2489,12 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         /// <summary>
         /// Simple insertionsort for small size groups
         /// </summary>
-        private static void tr_insertionsort(Span<int> SA, SAPtr isadOffset, SAPtr first, SAPtr last)
+        private static void tr_insertionsort(Span<int> SA, ReadOnlySpan<int> ISAd, SAPtr first, SAPtr last)
         {
             SAPtr a;
             SAPtr b;
             Idx t;
             Idx r;
-
-            var ISAd = SA[isadOffset..];
 
             a = first + 1;
             // KAREN
