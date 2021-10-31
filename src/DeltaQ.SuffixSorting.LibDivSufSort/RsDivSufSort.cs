@@ -2488,9 +2488,63 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
-        private static void tr_insertionsort(Span<int> sA, int iSAd, int first, int last)
+        /// <summary>
+        /// Simple insertionsort for small size groups
+        /// </summary>
+        private static void tr_insertionsort(Span<int> SA, SAPtr isadOffset, SAPtr first, SAPtr last)
         {
-            throw new NotImplementedException();
+            SAPtr a;
+            SAPtr b;
+            Idx t;
+            Idx r;
+
+            var ISAd = SA[isadOffset..];
+
+            a = first + 1;
+            // KAREN
+            while (a < last)
+            {
+                // JEZEBEL
+                t = SA[a];
+                b = a - 1;
+                while (true)
+                {
+                    // cond (JEZEBEL)
+                    r = ISAd[t] - ISAd[SA[b]];
+                    if (!(0 > r))
+                    {
+                        break;
+                    }
+
+                    // LILITH
+                    while (true)
+                    {
+                        SA[b + 1] = SA[b];
+
+                        // cond (LILITH)
+                        b -= 1;
+                        if (!((first <= b) && (SA[b] < 0)))
+                        {
+                            break;
+                        }
+                    }
+
+                    // body (JEZEBEL)
+                    if (b < first)
+                    {
+                        break;
+                    }
+                }
+
+                if (r == 0)
+                {
+                    SA[b] = ~SA[b];
+                }
+                SA[b + 1] = t;
+
+                // iter
+                a += 1;
+            }
         }
 
         private static void tr_partialcopy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
