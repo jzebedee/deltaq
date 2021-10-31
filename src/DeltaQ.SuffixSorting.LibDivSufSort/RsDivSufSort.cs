@@ -356,17 +356,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (1 < (j - i))
                         {
                             //SA_dump!(&SA.range(i..j), "sssort(A)");
-                            sssort(
-                                T,
-                                SA,
-                                PAb,
-                                ref i,
-                                (SAPtr)j,
-                                ref buf,
-                                ref bufsize,
-                                2,
-                                n,
-                                SA[i] == (m - 1));
+                            sssort(T, SA, PAb, i, j, buf, bufsize, 2, n, SA[i] == (m - 1));
                             //SA_dump!(&SA.range(i..j), "sssort(B)");
                         }
 
@@ -409,13 +399,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     j = i;
                     while (true)
                     {
-                        //TODO: check this
-                        //SA[i] = !SA[i];
                         SA[i] = ~SA[i];
-                        {
-                            var idx = ISAb + SA[i];
-                            SA[idx] = j;
-                        }
+                        SA[ISAb + SA[i]] = j;
 
                         i -= 1;
                         if (!(SA[i] < 0))
@@ -423,11 +408,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             break;
                         }
                     }
-                    {
-                        var idx = ISAb + SA[i];
-                        SA[idx] = j;
-                    }
 
+                    SA[ISAb + SA[i]] = j;
                     i -= 1;
                 }
 
@@ -559,7 +541,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         /// <summary>
         /// Substring sort
         /// </summary>
-        private static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, ref SAPtr first, SAPtr last, ref SAPtr buf, ref Idx bufsize, Idx depth, Idx n, bool lastsuffix)
+        private static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, SAPtr buf, Idx bufsize, Idx depth, Idx n, bool lastsuffix)
         {
             // Note: in most of this file "PA" seems to mean "Partition Array" - we're
             // working on a slice of SA. This is also why SA (or a mutable reference to it)
@@ -2027,6 +2009,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             // GEMINI
                             while (true)
                             {
+                                //Debug.Assert(SA[isaOffset..] == ISA);
                                 ISA[SA[a]] = a;
 
                                 // cond (GEMINI)
