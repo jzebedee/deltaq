@@ -698,9 +698,46 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
         }
 
-        private static int ss_compare(IntAccessor t, Span<int> pAi, int v1, Span<int> sA, int v2, int depth)
+        /// <summary>
+        /// Compare two suffixes
+        /// </summary>
+        private static int ss_compare(IntAccessor T, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
         {
-            throw new NotImplementedException();
+            //TODO: possible perf improvement - JZ
+
+            var U1 = depth + SAp1[p1];
+            var U2 = depth + SAp2[p2];
+            var U1n = SAp1[p1 + 1] + 2;
+            var U2n = SAp2[p2 + 1] + 2;
+
+            while ((U1 < U1n) && (U2 < U2n) && (T[U1] == T[U2]))
+            {
+                U1 += 1;
+                U2 += 1;
+            }
+
+            if (U1 < U1n)
+            {
+                if (U2 < U2n)
+                {
+                    return T[U1] - T[U2];
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else
+            {
+                if (U2 < U2n)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
         }
 
         private static void ss_inplacemerge(IntAccessor t, Span<int> sA, int pA, int first, int middle, int last, int depth)
