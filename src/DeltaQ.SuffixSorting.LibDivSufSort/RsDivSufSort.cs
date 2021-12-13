@@ -321,9 +321,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 SAPtr ISAb = m;
 
                 //for i in (0.. = (m - 2)).rev() {
-                //TODO: get rid of this Enumerable
-                //foreach(var ini in Enumerable.Range(0, m - 2).Reverse())
-                for (i = m - 2; i > 0; i--)
+                for (i = m - 2; i >= 0; i--)
                 {
                     t = SA[PAb + i];
                     c0 = T[t];
@@ -592,7 +590,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             i = 0;
             while (SS_BLOCKSIZE < (middle - a))
             {
-                crosscheck("ss_mintrosort (espresso) a={a} depth={depth}", a - PA, depth);
+                crosscheck($"ss_mintrosort (espresso) a={a - PA} depth={depth}");
                 ss_mintrosort(T, SA, PA, a, a + SS_BLOCKSIZE, depth);
 
                 curbufsize = (last - (a + SS_BLOCKSIZE));
@@ -609,7 +607,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 j = i;
                 while ((j & 1) > 0)
                 {
-                    crosscheck("ss_swapmerge {k}", k);
+                    crosscheck($"ss_swapmerge {k}");
                     ss_swapmerge(T, SA, PA, b - k, b, b + k, curbuf, curbufsize, depth);
 
                     // iter
