@@ -2470,52 +2470,61 @@ public static class DivSufSort
     /// </summary>
     private static void tr_partition(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
     {
-        let mut a: SAPtr;
-        let mut b: SAPtr;
-        let mut c: SAPtr;
-        let mut d: SAPtr;
-        let mut e: SAPtr;
-        let mut f: SAPtr;
-        let mut t: Idx;
-        let mut s: Idx;
-        let mut x: Idx = 0;
+        SAPtr a;
+        SAPtr b;
+        SAPtr c;
+        SAPtr d;
+        SAPtr e;
+        SAPtr f;
+        Idx t;
+        Idx s;
+        Idx x = 0;
 
-        macro_rules! get {
-            ($x: expr) => {
-                SA[ISAd + SA[$x]]
-            };
-        }
+        //ref int get(int x) => ref SA[ISAd + SA[x]];
+
+        //macro_rules! get {
+        //    ($x: expr) => {
+        //        SA[ISAd + SA[$x]]
+        //    };
+        //}
 
         // JOSEPH
         b = middle - 1;
-        loop {
+        while (true)
+        {
             // cond
             b += 1;
-            if !(b < last) {
+            if (!(b < last))
+            {
                 break;
             }
             x = get!(b);
-            if !(x == v) {
+            if (!(x == v))
+            {
                 break;
             }
         }
         a = b;
-        if (a < last) && (x < v) {
+        if ((a < last) && (x < v))
+        {
             // MARY
-            loop {
+            while (true)
+            {
                 b += 1;
-                if !(b < last) {
+                if (!(b < last))
+                {
                     break;
                 }
                 x = get!(b);
-                if !(x <= v) {
+                if (!(x <= v))
+                {
                     break;
                 }
 
                 // body
                 if (x == v)
                 {
-                    SA.swap(b, a);
+                    SA.Swap(b, a);
                     a += 1;
                 }
             }
@@ -2523,110 +2532,131 @@ public static class DivSufSort
 
         // JEREMIAH
         c = last;
-        loop {
+        while (true)
+        {
             c -= 1;
-            if !(b < c) {
+            if (!(b < c))
+            {
                 break;
             }
             x = get!(c);
-            if !(x == v) {
+            if (!(x == v))
+            {
                 break;
             }
         }
         d = c;
-        if (b < d) && (x > v) {
+        if ((b < d) && (x > v))
+        {
             // BEDELIA
-            loop {
+            while (true)
+            {
                 c -= 1;
-                if !(b < c) {
+                if (!(b < c))
+                {
                     break;
                 }
                 x = get!(c);
-                if !(x >= v) {
+                if (!(x >= v))
+                {
                     break;
                 }
-                if x == v {
-                    SA.swap(c, d);
+                if (x == v)
+                {
+                    SA.Swap(c, d);
                     d -= 1;
                 }
             }
         }
 
         // ALEX
-        while b < c {
-            SA.swap(b, c);
+        while (b < c)
+        {
+            SA.Swap(b, c);
             // SIMON
-            loop {
+            while (true)
+            {
                 b += 1;
-                if !(b < c) {
+                if (!(b < c))
+                {
                     break;
                 }
                 x = get!(b);
-                if !(x <= v) {
+                if (!(x <= v))
+                {
                     break;
                 }
-                if x == v {
-                    SA.swap(b, a);
+                if (x == v)
+                {
+                    SA.Swap(b, a);
                     a += 1;
                 }
             }
 
             // GREGORY
-            loop {
+            while (true)
+            {
                 c -= 1;
-                if !(b < c) {
+                if (!(b < c))
+                {
                     break;
                 }
                 x = get!(c);
-                if !(x >= v) {
+                if (!(x >= v))
+                {
                     break;
                 }
-                if x == v {
-                    SA.swap(c, d);
+                if (x == v)
+                {
+                    SA.Swap(c, d);
                     d -= 1;
                 }
             }
         } // end ALEX
 
-        if a <= d {
+        if (a <= d)
+        {
             c = b - 1;
 
-            s = (a - first).0;
-            t = (b - a).0;
+            s = (a - first);
+            t = (b - a);
             if (s > t)
             {
-                s = t
+                s = t;
             }
 
             // GENEVIEVE
             e = first;
             f = b - s;
-            while 0 < s {
-                SA.swap(e, f);
+            while (0 < s)
+            {
+                SA.Swap(e, f);
                 s -= 1;
                 e += 1;
                 f += 1;
             }
-            s = (d - c).0;
-            t = (last - d - 1).0;
-            if s > t {
+            s = (d - c);
+            t = (last - d - 1);
+            if (s > t)
+            {
                 s = t;
             }
 
             // MARISSA
             e = b;
             f = last - s;
-            while 0 < s {
-                SA.swap(e, f);
+            while (0 < s)
+            {
+                SA.Swap(e, f);
                 s -= 1;
                 e += 1;
                 f += 1;
             }
             first += (b - a);
-            last -= (d - c).0;
+            last -= (d - c);
         }
-        pa.0 = first.0;
-        pb.0 = last.0;
+        pa = first;
+        pb = last;
     }
 
     [Conditional("DEBUG")]
