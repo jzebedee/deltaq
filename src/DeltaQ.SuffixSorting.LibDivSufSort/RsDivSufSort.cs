@@ -1827,16 +1827,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     if (limit == -1)
                     {
                         // tandem repeat partition
-                        tr_partition(
-                            SA,
-                            isadOffset - incr,
-                            first,
-                            first,
-                            last,
-                            ref a,
-                            ref b,
-                            (last - 1)
-                        );
+                        tr_partition(SA, isadOffset - incr, first, first, last, ref a, ref b, last - 1);
 
                         // update ranks
                         if (a < last)
