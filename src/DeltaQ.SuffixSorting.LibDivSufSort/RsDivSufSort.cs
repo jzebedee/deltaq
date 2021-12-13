@@ -414,7 +414,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
 
                 // Construct the inverse suffix array of type B* suffixes using trsort.
+                SA_dump(SA, "trsort(A)");
                 trsort(ISAb, SA, m, 1);
+                SA_dump(SA, "trsort(B)");
 
                 // Set the sorted order of type B* suffixes
                 {
@@ -486,6 +488,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     }
                 } // End: Set the sorted order of type B* suffixes
 
+                SA_dump(SA, "JZ-post-sortOrderBstar");
+
                 // Calculate the index of start/end point of each bucket
                 {
                     Bb[(ALPHABET_SIZE - 1, ALPHABET_SIZE - 1)] = n; // end point
@@ -531,6 +535,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         c0 -= 1;
                     }
                 } // End: Calculate the index of start/end point of each bucket
+
+                SA_dump(SA, "JZ-final-bStar");
             }
 
             return new SortTypeBstarResult { A = A, B = B, m = m };
