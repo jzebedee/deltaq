@@ -1920,14 +1920,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (last - b))
                             {
                                 crosscheck("land");
-                                crosscheck(
-                                    "push {} {} {} {} {}",
-                                    isadOffset,
-                                    first,
-                                    a,
-                                    tr_ilg(a - first),
-                                    trlink
-                                );
+                                crosscheck($"push {isadOffset} {first} {a} {tr_ilg(a - first)} {trlink}");
                                 stack.Push(isadOffset, first, a, tr_ilg(a - first), trlink);
                                 first = b;
                                 limit = tr_ilg(last - b);
@@ -2036,7 +2029,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 crosscheck("budget pass");
                                 if ((a - first) <= (last - a))
                                 {
-                                    crosscheck("push {} {} {} {} {}", isadOffset, a, last, -3, trlink);
+                                    crosscheck($"push {isadOffset} {a} {last} {-3} {trlink}");
                                     stack.Push(isadOffset, a, last, -3, trlink);
                                     isadOffset += incr;
                                     ISAd = ISAd[incr..];
@@ -2047,14 +2040,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 {
                                     if (1 < (last - a))
                                     {
-                                        crosscheck(
-                                            "push {} {} {} {} {}",
-                                            isadOffset + incr,
-                                            first,
-                                            a,
-                                            next,
-                                            trlink
-                                        );
+                                        crosscheck($"push {isadOffset + incr} {first} {a} {next} {trlink}");
                                         stack.Push(isadOffset + incr, first, a, next, trlink);
                                         first = a;
                                         limit = -3;
@@ -2090,14 +2076,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                         return;
                                     }
                                     crosscheck("1<(last-a) not post");
-                                    crosscheck(
-                                        "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                                        isadOffset,
-                                        first,
-                                        last,
-                                        limit,
-                                        trlink
-                                    );
+                                    crosscheck($"were popped: ISAd={isadOffset} first={first} last={last} limit={limit} trlink={trlink}");
                                 }
                             }
                         }
@@ -2109,14 +2088,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 return;
                             }
                             crosscheck("times pop-post");
-                            crosscheck(
-                                "were popped: ISAd={} first={} last={} limit={} trlink={}",
-                                isadOffset,
-                                first,
-                                last,
-                                limit,
-                                trlink
-                            );
+                            crosscheck($"were popped: ISAd={isadOffset} first={first} last={last} limit={limit} trlink={trlink}");
                         } // end if first < last
                     } // end if limit == -1, -2, or something else
                     continue;
@@ -2164,7 +2136,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                 // choose pivot
                 a = tr_pivot(SA, isadOffset, first, last);
-                crosscheck("picked pivot {}", a);
+                crosscheck($"picked pivot {a}");
                 SA.Swap(first, a);
                 v = ISAd[SA[first]];
 
@@ -2213,16 +2185,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (a - first))
                                 {
                                     crosscheck("aaaa");
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
-                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                     stack.Push(isadOffset, b, last, limit, trlink);
                                     last = a;
                                 }
                                 else if (1 < (last - b))
                                 {
                                     crosscheck("aaab");
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
                                     first = b;
                                 }
@@ -2241,16 +2213,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (a - first))
                                 {
                                     crosscheck("aaba");
-                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                     stack.Push(isadOffset, b, last, limit, trlink);
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
                                     last = a;
                                 }
                                 else
                                 {
                                     crosscheck("aabb");
-                                    crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                    crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                     stack.Push(isadOffset, b, last, limit, trlink);
                                     isadOffset += incr;
                                     first = a;
@@ -2261,9 +2233,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("aac");
-                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                 stack.Push(isadOffset, b, last, limit, trlink);
-                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                 stack.Push(isadOffset, first, a, limit, trlink);
                                 isadOffset += incr;
                                 first = a;
@@ -2280,16 +2252,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (last - b))
                                 {
                                     crosscheck("abaa");
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
-                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                     stack.Push(isadOffset, first, a, limit, trlink);
                                     first = b;
                                 }
                                 else if (1 < (a - first))
                                 {
                                     crosscheck("abab");
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
                                     last = a;
                                 }
@@ -2308,16 +2280,16 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                                 if (1 < (last - b))
                                 {
                                     crosscheck("abba");
-                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                     stack.Push(isadOffset, first, a, limit, trlink);
-                                    crosscheck("push {} {} {} {} {}", isadOffset + incr, a, b, next, trlink);
+                                    crosscheck($"push {isadOffset + incr} {a} {b} {next} {trlink}");
                                     stack.Push(isadOffset + incr, a, b, next, trlink);
                                     first = b;
                                 }
                                 else
                                 {
                                     crosscheck("abbb");
-                                    crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                    crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                     stack.Push(isadOffset, first, a, limit, trlink);
                                     isadOffset += incr;
                                     first = a;
@@ -2328,9 +2300,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             else
                             {
                                 crosscheck("abc");
-                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                 stack.Push(isadOffset, first, a, limit, trlink);
-                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                 stack.Push(isadOffset, b, last, limit, trlink);
                                 isadOffset += incr;
                                 first = a;
@@ -2353,7 +2325,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (a - first))
                             {
                                 crosscheck("bba");
-                                crosscheck("push {} {} {} {} {}", isadOffset, b, last, limit, trlink);
+                                crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                 stack.Push(isadOffset, b, last, limit, trlink);
                                 last = a;
                             }
@@ -2377,7 +2349,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (last - b))
                             {
                                 crosscheck("bca");
-                                crosscheck("push {} {} {} {} {}", isadOffset, first, a, limit, trlink);
+                                crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                 stack.Push(isadOffset, first, a, limit, trlink);
                                 first = b;
                             }
