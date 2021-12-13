@@ -473,10 +473,6 @@ public static class DivSufSort
                 }
             } // End: Set the sorted order of type B* suffixes
 
-            SA_dump(SA, "JZ-post-sortOrderBstar");
-            SA_dump(A, "JZ-A");
-            SA_dump(B, "JZ-B");
-
             // Calculate the index of start/end point of each bucket
             {
                 Bb[(ALPHABET_SIZE - 1, ALPHABET_SIZE - 1)] = n; // end point
@@ -522,8 +518,6 @@ public static class DivSufSort
                     c0 -= 1;
                 }
             } // End: Calculate the index of start/end point of each bucket
-
-            SA_dump(SA, "JZ-final-bStar");
         }
 
         return new SortTypeBstarResult { A = A, B = B, m = m };
