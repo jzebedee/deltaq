@@ -2465,7 +2465,10 @@ public static class DivSufSort
         throw new NotImplementedException();
     }
 
-    private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
+    /// <summary>
+    /// Tandem repeat partition
+    /// </summary>
+    private static void tr_partition(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
     {
         throw new NotImplementedException();
     }
