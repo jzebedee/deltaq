@@ -2468,7 +2468,7 @@ public static class DivSufSort
     /// <summary>
     /// Tandem repeat partition
     /// </summary>
-    private static void tr_partition(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
+    private static void tr_partition(Span<int> SA, SAPtr isadOffset, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
     {
         SAPtr a;
         SAPtr b;
@@ -2481,6 +2481,7 @@ public static class DivSufSort
         Idx x = 0;
 
         //ref int get(int x) => ref SA[ISAd + SA[x]];
+        Span<int> ISAd = SA[isadOffset..];
 
         //macro_rules! get {
         //    ($x: expr) => {
@@ -2498,7 +2499,7 @@ public static class DivSufSort
             {
                 break;
             }
-            x = get!(b);
+            x = ISAd[SA[b]];
             if (!(x == v))
             {
                 break;
@@ -2515,7 +2516,7 @@ public static class DivSufSort
                 {
                     break;
                 }
-                x = get!(b);
+                x = ISAd[SA[b]];
                 if (!(x <= v))
                 {
                     break;
@@ -2539,7 +2540,7 @@ public static class DivSufSort
             {
                 break;
             }
-            x = get!(c);
+            x = ISAd[SA[c]];
             if (!(x == v))
             {
                 break;
@@ -2556,7 +2557,7 @@ public static class DivSufSort
                 {
                     break;
                 }
-                x = get!(c);
+                x = ISAd[SA[c]];
                 if (!(x >= v))
                 {
                     break;
@@ -2581,7 +2582,7 @@ public static class DivSufSort
                 {
                     break;
                 }
-                x = get!(b);
+                x = ISAd[SA[b]];
                 if (!(x <= v))
                 {
                     break;
@@ -2601,7 +2602,7 @@ public static class DivSufSort
                 {
                     break;
                 }
-                x = get!(c);
+                x = ISAd[SA[c]];
                 if (!(x >= v))
                 {
                     break;
