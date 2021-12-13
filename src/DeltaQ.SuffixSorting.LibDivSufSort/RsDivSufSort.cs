@@ -584,7 +584,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             i = 0;
             while (SS_BLOCKSIZE < (middle - a))
             {
-                crosscheck("ss_mintrosort (espresso) a={} depth={}", a - PA, depth);
+                crosscheck("ss_mintrosort (espresso) a={a} depth={depth}", a - PA, depth);
                 ss_mintrosort(T, SA, PA, a, a + SS_BLOCKSIZE, depth);
 
                 curbufsize = (last - (a + SS_BLOCKSIZE));
@@ -601,7 +601,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 j = i;
                 while ((j & 1) > 0)
                 {
-                    crosscheck("ss_swapmerge {}", k);
+                    crosscheck("ss_swapmerge {k}", k);
                     ss_swapmerge(T, SA, PA, b - k, b, b + k, curbuf, curbufsize, depth);
 
                     // iter
@@ -615,7 +615,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 i += 1;
             }
 
-            crosscheck("ss_mintrosort (pre-mariachi) a={} depth={}", a - PA, depth);
+            crosscheck($"ss_mintrosort (pre-mariachi) a={a - PA} depth={depth}");
             ss_mintrosort(T, SA, PA, a, middle, depth);
 
             SA_dump(SA[first..last], "pre-mariachi");
@@ -627,13 +627,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 if ((i & 1) > 0)
                 {
                     SA_dump(SA[first..last], "in-mariachi pre-swap");
-                    crosscheck(
-                        "a={} middle={} bufsize={} depth={}",
-                        a - first,
-                        middle - first,
-                        bufsize,
-                        depth
-                    );
+                    crosscheck($"a={a - first} middle={middle - first} bufsize={bufsize} depth={depth}");
                     ss_swapmerge(T, SA, PA, a - k, a, middle, buf, bufsize, depth);
                     SA_dump(SA[first..last], "in-mariachi post-swap");
                     a -= k;
@@ -1834,7 +1828,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             // PASCAL
             while (true)
             {
-                crosscheck("pascal limit={} first={} last={}", limit, first, last);
+                crosscheck($"pascal limit={limit} first={first} last={last}");
                 if (limit < 0)
                 {
                     if (limit == -1)
@@ -1893,9 +1887,9 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         if (1 < (b - a))
                         {
                             crosscheck("1<(b-a)");
-                            crosscheck("push NULL {} {} {} {}", a, b, 0, 0);
+                            crosscheck($"push NULL {a} {b} {0} {0}");
                             stack.Push(0, a, b, 0, 0);
-                            crosscheck("push {} {} {} {} {}", isadOffset - incr, first, last, -2, trlink);
+                            crosscheck($"push {isadOffset - incr} {first} {last} {-2} {trlink}");
                             stack.Push(isadOffset - incr, first, last, -2, trlink);
                             trlink = stack.Size - 2;
                         }
@@ -1906,14 +1900,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             if (1 < (a - first))
                             {
                                 crosscheck("board");
-                                crosscheck(
-                                    "push {} {} {} {} {}",
-                                    isadOffset,
-                                    b,
-                                    last,
-                                    tr_ilg(last - b),
-                                    trlink
-                                );
+                                crosscheck($"push {isadOffset} {b} {last} {tr_ilg(last - b)} {trlink}");
                                 stack.Push(isadOffset, b, last, tr_ilg(last - b), trlink);
                                 last = a;
                                 limit = tr_ilg(a - first);
@@ -2144,7 +2131,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 
                 if ((last - first) <= TR_INSERTIONSORT_THRESHOLD)
                 {
-                    crosscheck("insertionsort last-first={}", last - first);
+                    crosscheck($"insertionsort last-first={last - first}");
                     tr_insertionsort(SA, ISAd, first, last);
                     limit = -3;
                     continue;
@@ -2154,13 +2141,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 limit -= 1;
                 if (old_limit == 0)
                 {
-                    crosscheck(
-                        "heapsort ISAd={} first={} last={} last-first={}",
-                        isadOffset,
-                        first,
-                        last,
-                        last - first
-                    );
+                    crosscheck($"heapsort ISAd={isadOffset} first={first} last={last} last-first={last - first}");
                     SA_dump(SA[first..last], "before tr_heapsort");
                     tr_heapsort(isadOffset, SA, first, (last - first));
                     SA_dump(SA[first..last], "after tr_heapsort");
@@ -2454,17 +2435,12 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         [Conditional("DEBUG")]
         private static void SA_dump(ReadOnlySpan<int> span, string v)
         {
-            Debug.Write($"{v} - {span.ToString()}: ");
-            Debug.Write("[");
-            for(int i = 0; i < span.Length; i++)
+            Debug.WriteLine($":: {v}");
+            foreach(var i in span)
             {
-                Debug.Write($"{i}");
-                if(i != span.Length - 1)
-                {
-                    Debug.Write(",");
-                }
+                Debug.Write($"{i} ");
             }
-            Debug.WriteLine("]");
+            Debug.WriteLine("");
         }
 
         private static int tr_pivot(Span<int> sA, int iSAd, int first, int last)
@@ -2547,11 +2523,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         [Conditional("DEBUG")]
         private static void crosscheck(string v, params object[] args)
         {
-            Debug.WriteLine(v);
-            Debug.Indent();
-            foreach (var arg in args)
-                Debug.WriteLine(arg);
-            Debug.Unindent();
+            Debug.WriteLine(v, args);
         }
 
         private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
