@@ -400,6 +400,7 @@ public static class DivSufSort
 
             // Construct the inverse suffix array of type B* suffixes using trsort.
             SA_dump(SA, "trsort(A)");
+            crosscheck($"enter trsort: ISAb={ISAb} m={m} depth={1}");
             trsort(ISAb, SA, m, 1);
             SA_dump(SA, "trsort(B)");
 
@@ -1698,7 +1699,13 @@ public static class DivSufSort
                     if (1 < (last - first))
                     {
                         budget.Count = 0;
+                        crosscheck($"enter tr_introsort: ISA={ISA} ISAd={ISAd} first={first} last={last}");
+                        crosscheck($"  budget: count={budget.Count} chance={budget.Chance} incval={budget.IncVal} remain={budget.Remain}");
+                        SA_dump(SA, "tr_introsort(A)");
                         tr_introsort(ISA, ISAd, SA, first, last, ref budget);
+                        SA_dump(SA, "tr_introsort(B)");
+                        crosscheck($"exit tr_introsort");
+                        crosscheck($"  budget: count={budget.Count} chance={budget.Chance} incval={budget.IncVal} remain={budget.Remain}");
                         if (budget.Count != 0)
                         {
                             unsorted += budget.Count;
