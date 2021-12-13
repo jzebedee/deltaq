@@ -2470,7 +2470,163 @@ public static class DivSufSort
     /// </summary>
     private static void tr_partition(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
     {
-        throw new NotImplementedException();
+        let mut a: SAPtr;
+        let mut b: SAPtr;
+        let mut c: SAPtr;
+        let mut d: SAPtr;
+        let mut e: SAPtr;
+        let mut f: SAPtr;
+        let mut t: Idx;
+        let mut s: Idx;
+        let mut x: Idx = 0;
+
+        macro_rules! get {
+            ($x: expr) => {
+                SA[ISAd + SA[$x]]
+            };
+        }
+
+        // JOSEPH
+        b = middle - 1;
+        loop {
+            // cond
+            b += 1;
+            if !(b < last) {
+                break;
+            }
+            x = get!(b);
+            if !(x == v) {
+                break;
+            }
+        }
+        a = b;
+        if (a < last) && (x < v) {
+            // MARY
+            loop {
+                b += 1;
+                if !(b < last) {
+                    break;
+                }
+                x = get!(b);
+                if !(x <= v) {
+                    break;
+                }
+
+                // body
+                if (x == v)
+                {
+                    SA.swap(b, a);
+                    a += 1;
+                }
+            }
+        }
+
+        // JEREMIAH
+        c = last;
+        loop {
+            c -= 1;
+            if !(b < c) {
+                break;
+            }
+            x = get!(c);
+            if !(x == v) {
+                break;
+            }
+        }
+        d = c;
+        if (b < d) && (x > v) {
+            // BEDELIA
+            loop {
+                c -= 1;
+                if !(b < c) {
+                    break;
+                }
+                x = get!(c);
+                if !(x >= v) {
+                    break;
+                }
+                if x == v {
+                    SA.swap(c, d);
+                    d -= 1;
+                }
+            }
+        }
+
+        // ALEX
+        while b < c {
+            SA.swap(b, c);
+            // SIMON
+            loop {
+                b += 1;
+                if !(b < c) {
+                    break;
+                }
+                x = get!(b);
+                if !(x <= v) {
+                    break;
+                }
+                if x == v {
+                    SA.swap(b, a);
+                    a += 1;
+                }
+            }
+
+            // GREGORY
+            loop {
+                c -= 1;
+                if !(b < c) {
+                    break;
+                }
+                x = get!(c);
+                if !(x >= v) {
+                    break;
+                }
+                if x == v {
+                    SA.swap(c, d);
+                    d -= 1;
+                }
+            }
+        } // end ALEX
+
+        if a <= d {
+            c = b - 1;
+
+            s = (a - first).0;
+            t = (b - a).0;
+            if (s > t)
+            {
+                s = t
+            }
+
+            // GENEVIEVE
+            e = first;
+            f = b - s;
+            while 0 < s {
+                SA.swap(e, f);
+                s -= 1;
+                e += 1;
+                f += 1;
+            }
+            s = (d - c).0;
+            t = (last - d - 1).0;
+            if s > t {
+                s = t;
+            }
+
+            // MARISSA
+            e = b;
+            f = last - s;
+            while 0 < s {
+                SA.swap(e, f);
+                s -= 1;
+                e += 1;
+                f += 1;
+            }
+            first += (b - a);
+            last -= (d - c).0;
+        }
+        pa.0 = first.0;
+        pb.0 = last.0;
     }
 
     [Conditional("DEBUG")]
