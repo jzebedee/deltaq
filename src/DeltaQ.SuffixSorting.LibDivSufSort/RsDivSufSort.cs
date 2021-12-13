@@ -489,6 +489,8 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 } // End: Set the sorted order of type B* suffixes
 
                 SA_dump(SA, "JZ-post-sortOrderBstar");
+                SA_dump(A, "JZ-A");
+                SA_dump(B, "JZ-B");
 
                 // Calculate the index of start/end point of each bucket
                 {
@@ -2442,9 +2444,10 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         private static void SA_dump(ReadOnlySpan<int> span, string v)
         {
             Debug.WriteLine($":: {v}");
-            foreach(var i in span)
+            for (int i = 0; i < span.Length; i++)
             {
-                Debug.Write($"{i} ");
+                Debug.Write($"{span[i]} ");
+                Debug.WriteLineIf((i + 1) % 25 == 0, "");
             }
             Debug.WriteLine("");
         }
