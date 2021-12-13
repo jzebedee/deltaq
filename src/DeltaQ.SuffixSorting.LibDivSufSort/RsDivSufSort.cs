@@ -71,15 +71,11 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                             Trace.Assert((s + 1) < n);
                             Trace.Assert(T[s] <= T[s + 1]);
 
-                            //TODO: check this
-                            //SA[j] = !s;
                             SA[j] = ~s;
                             s -= 1;
                             c0 = T[s];
                             if ((0 < s) && (T[s - 1] > c0))
                             {
-                                //TODO: check this
-                                //s = !s;
                                 s = ~s;
                             }
                             if (c0 != c2)
@@ -98,8 +94,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         else
                         {
                             Trace.Assert(((s == 0) && (T[s] == c1)) || (s < 0));
-                            //TODO: check this
-                            //SA[j] = !s;
                             SA[j] = ~s;
                         }
 
@@ -135,8 +129,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                         c0 = T[s];
                         if ((s == 0) || (T[s - 1] < c0))
                         {
-                            //TODO: check this
-                            //s = !s;
                             s = ~s;
                         }
                         if (c0 != c2)
@@ -152,8 +144,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                     else
                     {
                         Trace.Assert(s < 0);
-                        //TODO: check this
-                        //SA[i] = !s;
                         SA[i] = ~s;
                     }
 
@@ -205,7 +195,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             public int Length => span.Length;
         }
 
-        //fn sort_typeBstar(T: &Text, SA: &mut SuffixArray) -> SortTypeBstarResult {
         public static SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
         {
             var n = T.Length;
@@ -288,8 +277,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 }
             }
             m = n - m;
-
-            //JZ: so far, so good
 
             // Note: A type B* suffix is lexicographically smaller than a type B suffix
             // that beings with the same first two characters.
@@ -2438,18 +2425,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             } // end PASCAL
         }
 
-        [Conditional("DEBUG")]
-        private static void SA_dump(ReadOnlySpan<int> span, string v)
-        {
-            Debug.WriteLine($":: {v}");
-            for (int i = 0; i < span.Length; i++)
-            {
-                Debug.Write($"{span[i]} ");
-                Debug.WriteLineIf((i + 1) % 25 == 0, "");
-            }
-            Debug.WriteLine("");
-        }
-
         private static int tr_pivot(Span<int> sA, int iSAd, int first, int last)
         {
             throw new NotImplementedException();
@@ -2527,15 +2502,24 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             throw new NotImplementedException();
         }
 
-        [Conditional("DEBUG")]
-        private static void crosscheck(string v, params object[] args)
-        {
-            Debug.WriteLine(v, args);
-        }
-
         private static void tr_partition(Span<int> sA, int v1, int first1, int first2, int last, ref int a, ref int b, int v2)
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("DEBUG")]
+        private static void SA_dump(ReadOnlySpan<int> span, string v)
+        {
+            Debug.WriteLine($":: {v}");
+            for (int i = 0; i < span.Length; i++)
+            {
+                Debug.Write($"{span[i]} ");
+                Debug.WriteLineIf((i + 1) % 25 == 0, "");
+            }
+            Debug.WriteLine("");
+        }
+
+        [Conditional("DEBUG")]
+        private static void crosscheck(string v, params object[] args) => Debug.WriteLine(v, args);
     }
 }
