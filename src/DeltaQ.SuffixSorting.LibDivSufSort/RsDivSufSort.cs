@@ -1085,9 +1085,221 @@ public static class DivSufSort
         }
     }
 
-    private static void ss_mergebackward(IntAccessor t, Span<int> sA, int pA, int first, int middle, int last, int buf, int depth)
+    /// Merge-backward with internal buffer
+    private static void ss_mergebackward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
-        throw new NotImplementedException();
+        SAPtr p1;
+        SAPtr p2;
+        SAPtr a;
+        SAPtr b;
+        SAPtr c;
+        SAPtr bufend;
+
+        Idx t;
+        Idx r;
+        Idx x;
+
+        bufend = buf + (last - middle) - 1;
+        ss_blockswap(SA, buf, middle, (last - middle));
+
+        x = 0;
+        if (SA[bufend] < 0)
+        {
+            p1 = PA + ~SA[bufend];
+            x |= 1;
+        }
+        else
+        {
+            p1 = PA + SA[bufend];
+        }
+        if (SA[middle - 1] < 0)
+        {
+            p2 = PA + ~SA[middle - 1];
+            x |= 2;
+        }
+        else
+        {
+            p2 = PA + SA[middle - 1];
+        }
+
+        // MARTIN
+        a = last - 1;
+        t = SA[a];
+        b = bufend;
+        c = middle - 1;
+        while (true)
+        {
+            r = ss_compare(T, SA, p1, SA, p2, depth);
+            if (0 < r)
+            {
+                if ((x & 1) > 0)
+                {
+                    // BAPTIST
+                    while (true)
+                    {
+                        SA[a] = SA[b];
+                        a -= 1;
+                        SA[b] = SA[a];
+                        b -= 1;
+
+                        // cond
+                        if (!(SA[b] < 0))
+                        {
+                            break;
+                        }
+                    }
+                    x ^= 1;
+                }
+                SA[a] = SA[b];
+                a -= 1;
+                if (b <= buf)
+                {
+                    SA[buf] = t;
+                    break;
+                }
+                SA[b] = SA[a];
+                b -= 1;
+                if (SA[b] < 0)
+                {
+                    p1 = PA + ~SA[b];
+                    x |= 1;
+                }
+                else
+                {
+                    p1 = PA + SA[b];
+                }
+            }
+            else if (r < 0)
+            {
+                if ((x & 2) > 0)
+                {
+                    // JULES
+                    while (true)
+                    {
+                        SA[a] = SA[c];
+                        a -= 1;
+                        SA[c] = SA[a];
+                        c -= 1;
+
+                        // cond
+                        if (~SA[c] < 0)
+                        {
+                            break;
+                        }
+                    }
+                    x ^= 2;
+                }
+                SA[a] = SA[c];
+                a -= 1;
+                SA[c] = SA[a];
+                c -= 1;
+                if (c < first)
+                {
+                    // GARAMOND
+                    while (buf < b)
+                    {
+                        SA[a] = SA[b];
+                        a -= 1;
+                        SA[b] = SA[a];
+                        b -= 1;
+                    }
+                    SA[a] = SA[b];
+                    SA[b] = t;
+                    break;
+                }
+                if (SA[c] < 0)
+                {
+                    p2 = PA + ~SA[c];
+                    x |= 2;
+                }
+                else
+                {
+                    p2 = PA + SA[c];
+                }
+            }
+            else
+            {
+                if ((x & 1) > 0)
+                {
+                    // XAVIER
+                    while (true)
+                    {
+                        SA[a] = SA[b];
+                        a -= 1;
+                        SA[b] = SA[a];
+                        b -= 1;
+                        if (!(SA[b] < 0))
+                        {
+                            break;
+                        }
+                    }
+                    x ^= 1;
+                }
+                SA[a] = ~SA[b];
+                a -= 1;
+                if (b <= buf)
+                {
+                    SA[buf] = t;
+                    break;
+                }
+                SA[b] = SA[a];
+                b -= 1;
+                if ((x & 2) > 0)
+                {
+                    // WALTER
+                    while (true)
+                    {
+                        SA[a] = SA[c];
+                        a -= 1;
+                        SA[c] = SA[a];
+                        c -= 1;
+
+                        // cond
+                        if (!(SA[c] < 0))
+                        {
+                            break;
+                        }
+                    }
+                    x ^= 2;
+                }
+                SA[a] = SA[c];
+                a -= 1;
+                SA[c] = SA[a];
+                c -= 1;
+                if (c < first)
+                {
+                    // ZENITH
+                    while (buf < b)
+                    {
+                        SA[a] = SA[b];
+                        a -= 1;
+                        SA[b] = SA[a];
+                        b -= 1;
+                    }
+                    SA[a] = SA[b];
+                    SA[b] = t;
+                    break;
+                }
+                if (SA[b] < 0)
+                {
+                    p1 = PA + ~SA[b];
+                    x |= 1;
+                }
+                else
+                {
+                    p1 = PA + SA[b];
+                }
+                if (SA[c] < 0)
+                {
+                    p2 = PA + ~SA[c];
+                    x |= 2;
+                }
+                else
+                {
+                    p2 = PA + SA[c];
+                }
+            }
+        }
     }
 
     /// Merge-forward with internal buffer
