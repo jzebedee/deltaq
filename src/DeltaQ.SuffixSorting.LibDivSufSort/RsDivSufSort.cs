@@ -1057,7 +1057,7 @@ public static class DivSufSort
 
                 if (Td[PA[SA[first]] - 1] < v)
                 {
-                    first = ss_partition(SA, SA[partitionOffset..], first, a, depth);
+                    first = ss_partition(SA, partitionOffset, first, a, depth);
                 }
                 if ((a - first) <= (last - a))
                 {
@@ -1265,7 +1265,7 @@ public static class DivSufSort
 
                 a = first + (b - a);
                 c = last - (d - c);
-                b = v <= Td[PA[SA[a]] - 1] ? a : ss_partition(SA, SA[partitionOffset..], a, c, depth);
+                b = v <= Td[PA[SA[a]] - 1] ? a : ss_partition(SA, partitionOffset, a, c, depth);
 
                 if ((a - first) <= (last - c))
                 {
@@ -1321,7 +1321,7 @@ public static class DivSufSort
                 limit += 1;
                 if (Td[PA[SA[first]] - 1] < v)
                 {
-                    first = ss_partition(SA, SA[partitionOffset..], first, last, depth);
+                    first = ss_partition(SA, partitionOffset, first, last, depth);
                     limit = ss_ilg(last - first);
                 }
                 depth += 1;
@@ -1412,8 +1412,10 @@ public static class DivSufSort
 
     /// Binary partition for substrings.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static SAPtr ss_partition(Span<int> SA, Span<int> PA, SAPtr first, SAPtr last, Idx depth)
+    private static SAPtr ss_partition(Span<int> SA, SAPtr paOffset, SAPtr first, SAPtr last, Idx depth)
     {
+        Span<int> PA = SA[paOffset..];
+
         // JIMMY
         var a = first - 1;
         var b = last;
