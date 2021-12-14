@@ -3214,9 +3214,57 @@ public static class DivSufSort
         throw new NotImplementedException();
     }
 
-    private static void tr_copy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
+    /// Tandem repeat copy
+    private static void tr_copy(SAPtr ISA, Span<int> SA, SAPtr first, SAPtr a, SAPtr b, SAPtr last, Idx depth)
     {
-        throw new NotImplementedException();
+        // sort suffixes of middle partition
+        // by using sorted order of suffixes of left and right partition.
+        let mut c: SAPtr;
+        let mut d: SAPtr;
+        let mut e: SAPtr;
+        let mut s: Idx;
+        let mut v: Idx;
+
+        crosscheck!("tr_copy first={} a={} b={} last={}", first, a, b, last);
+
+        v = (b - 1).0;
+
+        macro_rules! ISA {
+            ($x: expr) => {
+                SA[ISA + $x]
+            };
+        }
+
+        // JACK
+        c = first;
+        d = a - 1;
+        while c <= d {
+            s = SA[c] - depth;
+            if (0 <= s) && (ISA!(s) == v) {
+                d += 1;
+                SA[d] = s;
+                ISA!(s) = d.0;
+            }
+
+            // iter (JACK)
+            c += 1;
+        }
+
+        // JILL
+        c = last - 1;
+        e = d + 1;
+        d = b;
+        while e < d {
+            s = SA[c] - depth;
+            if (0 <= s) && (ISA!(s) == v) {
+                d -= 1;
+                SA[d] = s;
+                ISA!(s) = d.0;
+            }
+
+            // iter (JILL)
+            c -= 1;
+        }
     }
 
     /// <summary>
