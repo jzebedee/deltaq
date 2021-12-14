@@ -1414,33 +1414,37 @@ public static class DivSufSort
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr ss_partition(Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, Idx depth)
     {
-        macro_rules! PA {
-            ($x: expr) => {
-                SA[PA + $x]
-            };
-        }
+        //macro_rules! PA {
+        //    ($x: expr) => {
+        //        SA[PA + $x]
+        //    };
+        //}
         // JIMMY
-        let mut a = first - 1;
-        let mut b = last;
-        macro_rules! a {
-            () => {
-                SA[a]
-            };
-        }
-        macro_rules! b {
-            () => {
-                SA[b]
-            };
-        }
+        var a = first - 1;
+        var b = last;
+        //macro_rules! a {
+        //    () => {
+        //        SA[a]
+        //    };
+        //}
+        //macro_rules! b {
+        //    () => {
+        //        SA[b]
+        //    };
+        //}
 
-        loop {
+        while (true)
+        {
             // JANINE
-            loop {
+            while (true)
+            {
                 a += 1;
-                if !(a < b) {
+                if (!(a < b))
+                {
                     break;
                 }
-                if !((PA!(a!()) + depth) >= (PA!(a!() + 1) + 1)) {
+                if (!((PA!(a!()) + depth) >= (PA!(a!() + 1) + 1)))
+                {
                     break;
                 }
 
@@ -1449,31 +1453,36 @@ public static class DivSufSort
             }
 
             // GEORGIO
-            loop {
+            while (true)
+            {
                 b -= 1;
-                if !(a < b) {
+                if (!(a < b))
+                {
                     break;
                 }
-                if !((PA!(b!()) + depth) < (PA!(b!() + 1) + 1)) {
+                if (!((PA!(b!()) + depth) < (PA!(b!() + 1) + 1)))
+                {
                     break;
                 }
 
                 // loop body is empty
             }
 
-            if b <= a {
+            if (b <= a)
+            {
                 break;
             }
 
-            let t = !b!();
+            var t = !b!();
             b!() = a!();
             a!() = t;
         }
 
-        if (first < a) {
-            SA[first] = !SA[first];
+        if (first < a)
+        {
+            SA[first] = ~SA[first];
         }
-        a
+        return a;
     }
 
     private static void ss_insertionsort(IntAccessor T, Span<int> SA, int PA, int first, int last, int depth)
