@@ -896,6 +896,21 @@ public static class DivSufSort
     {
         static Idx get_idx(Idx a) => 0 <= a ? a : ~a;
 
+        void merge_check(int a, int b, int c)
+        {
+            crosscheck($"mc c={c}");
+            if (((c & 1) > 0) || (((c & 2) > 0) && (ss_compare(T, SA, PA + get_idx(SA[a - 1]), SA, PA + SA[a], depth) == 0)))
+            {
+                crosscheck($"swapping a-first={a - first}");
+                SA[a] = ~SA[a];
+            }
+            if (((c & 4) > 0) && (ss_compare(T, SA, PA + get_idx(SA[b - 1]), SA, PA + SA[b], depth) == 0))
+            {
+                crosscheck($"swapping b-first={b - first}");
+                SA[b] = ~SA[b];
+            }
+        }
+
         //macro_rules! merge_check {
         //    ($a: expr, $b: expr, $c: expr) => {
         //        crosscheck!("mc c={}", $c);
