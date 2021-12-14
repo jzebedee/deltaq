@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
 
@@ -1409,9 +1410,70 @@ public static class DivSufSort
         }
     }
 
-    private static int ss_partition(Span<int> sA, int pA, int first, int a, int depth)
+    /// Binary partition for substrings.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static SAPtr ss_partition(Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, Idx depth)
     {
-        throw new NotImplementedException();
+        macro_rules! PA {
+            ($x: expr) => {
+                SA[PA + $x]
+            };
+        }
+        // JIMMY
+        let mut a = first - 1;
+        let mut b = last;
+        macro_rules! a {
+            () => {
+                SA[a]
+            };
+        }
+        macro_rules! b {
+            () => {
+                SA[b]
+            };
+        }
+
+        loop {
+            // JANINE
+            loop {
+                a += 1;
+                if !(a < b) {
+                    break;
+                }
+                if !((PA!(a!()) + depth) >= (PA!(a!() + 1) + 1)) {
+                    break;
+                }
+
+                // loop body
+                a!() = !a!();
+            }
+
+            // GEORGIO
+            loop {
+                b -= 1;
+                if !(a < b) {
+                    break;
+                }
+                if !((PA!(b!()) + depth) < (PA!(b!() + 1) + 1)) {
+                    break;
+                }
+
+                // loop body is empty
+            }
+
+            if b <= a {
+                break;
+            }
+
+            let t = !b!();
+            b!() = a!();
+            a!() = t;
+        }
+
+        if (first < a) {
+            SA[first] = !SA[first];
+        }
+        a
     }
 
     private static void ss_insertionsort(IntAccessor T, Span<int> SA, int PA, int first, int last, int depth)
