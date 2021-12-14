@@ -3147,9 +3147,54 @@ public static class DivSufSort
         }
     }
 
-    private static void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
+    /// Simple top-down heapsort
+    private static void tr_heapsort(SAPtr ISAd, Span<int> SA_top, SAPtr first, Idx size)
     {
-        throw new NotImplementedException();
+        let mut i: Idx;
+        let mut m: Idx;
+        let mut t: Idx;
+
+        macro_rules! ISAd {
+            ($x: expr) => {
+                SA_top[ISAd + $x]
+            };
+        }
+        macro_rules! SA {
+            ($x: expr) => {
+                SA_top[first + $x]
+            };
+        }
+        macro_rules! SA_swap {
+            ($a: expr, $b: expr) => {
+                SA_top.swap(first + $a, first + $b);
+            };
+        }
+
+        m = size;
+        if (size % 2) == 0 {
+            m -= 1;
+            if ISAd!(SA!(m / 2)) < ISAd!(SA!(m)) {
+                SA_swap!(m, (m / 2));
+            }
+        }
+
+        // LISA
+        for i in (0..(m / 2)).rev() {
+            crosscheck!("LISA i={}", i);
+            tr_fixdown(ISAd, SA_top, first, i, m);
+        }
+        if (size % 2) == 0 {
+            SA_swap!(0, m);
+            tr_fixdown(ISAd, SA_top, first, 0, m);
+        }
+        // MARK
+        for i in (1..m).rev() {
+            crosscheck!("MARK i={}", i);
+            t = SA!(0);
+            SA!(0) = SA!(i);
+            tr_fixdown(ISAd, SA_top, first, 0, i);
+            SA!(i) = t;
+        }
     }
 
     /// <summary>
