@@ -1800,7 +1800,8 @@ public static class DivSufSort
         Idx next;
         Idx trlink = -1;
 
-        TrStack stack = new(stackalloc TrStackItem[TR_STACK_SIZE]);
+        using var stackOwner = SpanOwner<TrStackItem>.Allocate(TR_STACK_SIZE, AllocationMode.Clear);
+        TrStack stack = new(stackOwner.Span);
 
         /*
            macro_rules! ISA {
@@ -1903,6 +1904,8 @@ public static class DivSufSort
                             {
                                 return;
                             }
+                            //JZ: ISAd update point
+                            ISAd = SA[isadOffset..];
                             crosscheck("denny-post");
                         }
                     }
@@ -1930,6 +1933,8 @@ public static class DivSufSort
                             {
                                 return;
                             }
+                            //JZ: ISAd update point
+                            ISAd = SA[isadOffset..];
                             crosscheck("clap-post");
                         }
                     }
@@ -1958,6 +1963,8 @@ public static class DivSufSort
                     {
                         return;
                     }
+                    //JZ: ISAd update point
+                    ISAd = SA[isadOffset..];
                 }
                 else
                 {
@@ -2024,6 +2031,7 @@ public static class DivSufSort
                                 crosscheck($"push {isadOffset} {a} {last} {-3} {trlink}");
                                 stack.Push(isadOffset, a, last, -3, trlink);
                                 isadOffset += incr;
+                                //JZ: ISAd update point
                                 ISAd = ISAd[incr..];
                                 last = a;
                                 limit = next;
@@ -2040,6 +2048,7 @@ public static class DivSufSort
                                 else
                                 {
                                     isadOffset += incr;
+                                    //JZ: ISAd update point
                                     ISAd = ISAd[incr..];
                                     last = a;
                                     limit = next;
@@ -2067,6 +2076,8 @@ public static class DivSufSort
                                 {
                                     return;
                                 }
+                                //JZ: ISAd update point
+                                ISAd = SA[isadOffset..];
                                 crosscheck("1<(last-a) not post");
                                 crosscheck($"were popped: ISAd={isadOffset} first={first} last={last} limit={limit} trlink={trlink}");
                             }
@@ -2079,6 +2090,8 @@ public static class DivSufSort
                         {
                             return;
                         }
+                        //JZ: ISAd update point
+                        ISAd = SA[isadOffset..];
                         crosscheck("times pop-post");
                         crosscheck($"were popped: ISAd={isadOffset} first={first} last={last} limit={limit} trlink={trlink}");
                     } // end if first < last
@@ -2089,7 +2102,9 @@ public static class DivSufSort
             if ((last - first) <= TR_INSERTIONSORT_THRESHOLD)
             {
                 crosscheck($"insertionsort last-first={last - first}");
+                SA_dump(SA, "tr_insertionsort(A)");
                 tr_insertionsort(SA, ISAd, first, last);
+                SA_dump(SA, "tr_insertionsort(B)");
                 limit = -3;
                 continue;
             }
@@ -2194,6 +2209,8 @@ public static class DivSufSort
                             {
                                 crosscheck("aaac");
                                 isadOffset += incr;
+                                //JZ: ISAd update point
+                                ISAd = ISAd[incr..];
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2217,6 +2234,8 @@ public static class DivSufSort
                                 crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                                 stack.Push(isadOffset, b, last, limit, trlink);
                                 isadOffset += incr;
+                                //JZ: ISAd update point
+                                ISAd = ISAd[incr..];
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2230,6 +2249,8 @@ public static class DivSufSort
                             crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                             stack.Push(isadOffset, first, a, limit, trlink);
                             isadOffset += incr;
+                            //JZ: ISAd update point
+                            ISAd = ISAd[incr..];
                             first = a;
                             last = b;
                             limit = next;
@@ -2261,6 +2282,8 @@ public static class DivSufSort
                             {
                                 crosscheck("abac");
                                 isadOffset += incr;
+                                //JZ: ISAd update point
+                                ISAd = ISAd[incr..];
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2284,6 +2307,8 @@ public static class DivSufSort
                                 crosscheck($"push {isadOffset} {first} {a} {limit} {trlink}");
                                 stack.Push(isadOffset, first, a, limit, trlink);
                                 isadOffset += incr;
+                                //JZ: ISAd update point
+                                ISAd = ISAd[incr..];
                                 first = a;
                                 last = b;
                                 limit = next;
@@ -2297,6 +2322,8 @@ public static class DivSufSort
                             crosscheck($"push {isadOffset} {b} {last} {limit} {trlink}");
                             stack.Push(isadOffset, b, last, limit, trlink);
                             isadOffset += incr;
+                            //JZ: ISAd update point
+                            ISAd = ISAd[incr..];
                             first = a;
                             last = b;
                             limit = next;
@@ -2333,6 +2360,8 @@ public static class DivSufSort
                             {
                                 return;
                             }
+                            //JZ: ISAd update point
+                            ISAd = SA[isadOffset..];
                         }
                     }
                     else
@@ -2357,6 +2386,8 @@ public static class DivSufSort
                             {
                                 return;
                             }
+                            //JZ: ISAd update point
+                            ISAd = SA[isadOffset..];
                             crosscheck("bcc post");
                         }
                     }
@@ -2370,6 +2401,8 @@ public static class DivSufSort
                     crosscheck("ca");
                     limit = tr_ilg(last - first);
                     isadOffset += incr;
+                    //JZ: ISAd update point
+                    ISAd = ISAd[incr..];
                 }
                 else
                 {
@@ -2383,6 +2416,8 @@ public static class DivSufSort
                     {
                         return;
                     }
+                    //JZ: ISAd update point
+                    ISAd = SA[isadOffset..];
                     crosscheck("cb post");
                 }
             }
