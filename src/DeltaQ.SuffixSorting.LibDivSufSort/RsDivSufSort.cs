@@ -923,7 +923,10 @@ public static class DivSufSort
         //    };
         //}
 
-        var stack = MergeStack::new();
+        //MergeStack is the same as SsStack
+        using var stackOwner = SpanOwner<SsStackItem>.Allocate(MERGE_STACK_SIZE, AllocationMode.Clear);
+        var stack = new SsStack(stackOwner.Span);
+
         SAPtr l;
         SAPtr r;
         SAPtr lm;
@@ -954,14 +957,12 @@ public static class DivSufSort
                 }
                 merge_check!(first, last, check);
 
-                SA_dump!(&SA.range(first..last), "ss_swapmerge pop 1");
-                if !stack
-                    .pop(&mut first, &mut middle, &mut last, &mut check)
-                    .is_ok()
+                SA_dump(SA[first..last], "ss_swapmerge pop 1");
+                if (!stack.Pop(ref first, ref middle, ref last, ref check))
                 {
                     return;
                 }
-                SA_dump!(&SA.range(first..last), "ss_swapmerge pop 1 survived");
+                SA_dump(SA[first..last], "ss_swapmerge pop 1 survived");
                 continue;
             }
 
@@ -1099,6 +1100,7 @@ public static class DivSufSort
     }
 
     private const int SS_STACK_SIZE = 16;
+    private const int MERGE_STACK_SIZE = 32;
     private ref struct SsStack
     {
         public readonly Span<SsStackItem> Items;
