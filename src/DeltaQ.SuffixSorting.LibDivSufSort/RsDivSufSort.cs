@@ -3055,13 +3055,17 @@ public static class DivSufSort
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr tr_pivot(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr last)
     {
-        let mut t: Idx = (last - first).0;
-        let mut middle: SAPtr = first + t / 2;
+        Idx t = last - first;
+        SAPtr middle = first + t / 2;
 
-        if t <= 512 {
-            if t <= 32 {
+        if (t <= 512)
+        {
+            if (t <= 32)
+            {
                 return tr_median3(SA, ISAd, first, middle, last - 1);
-            } else {
+            }
+            else
+            {
                 t >>= 2;
                 return tr_median5(SA, ISAd, first, first + t, middle, last - 1 - t, last - 1);
             }
@@ -3070,7 +3074,17 @@ public static class DivSufSort
         first = tr_median3(SA, ISAd, first, first + t, first + (t << 1));
         middle = tr_median3(SA, ISAd, middle - t, middle, middle + t);
         last = tr_median3(SA, ISAd, last - 1 - (t << 1), last - 1 - t, last - 1);
-        tr_median3(SA, ISAd, first, middle, last)
+        return tr_median3(SA, ISAd, first, middle, last);
+    }
+
+    private static int tr_median5(Span<int> sA, int iSAd, int first, int v1, int middle, int v2, int v3)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static int tr_median3(Span<int> sA, int iSAd, int first, int middle, int v)
+    {
+        throw new NotImplementedException();
     }
 
     private static void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
