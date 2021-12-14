@@ -1367,9 +1367,38 @@ public static class DivSufSort
         return ss_median3(T, Td, SA, PA, first, middle, last);
     }
 
-    private static int ss_median5(IntAccessor t, int td, Span<int> sA, int pA, int first, int v1, int middle, int v2, int v3)
+    /// Returns the median of five elements
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static SAPtr ss_median5(IntAccessor T, Idx Td, ReadOnlySpan<int> SA, SAPtr PA, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
     {
-        throw new NotImplementedException();
+        let mut t: SAPtr;
+        macro_rules! get {
+            ($x: expr) => {
+                T[Td + SA[PA + SA[$x]]]
+            };
+        }
+        if get!(v2) > get!(v3) {
+            mem::swap(&mut v2, &mut v3);
+        }
+        if get!(v4) > get!(v5) {
+            mem::swap(&mut v4, &mut v5);
+        }
+        if get!(v2) > get!(v4) {
+            mem::swap(&mut v2, &mut v4);
+            mem::swap(&mut v3, &mut v5);
+        }
+        if get!(v1) > get!(v3) {
+            mem::swap(&mut v1, &mut v3);
+        }
+        if get!(v1) > get!(v4) {
+            mem::swap(&mut v1, &mut v4);
+            mem::swap(&mut v3, &mut v5);
+        }
+        if get!(v3) > get!(v4) {
+            v4
+        } else {
+            v3
+        }
     }
 
     static void Swap<T>(ref T lhs, ref T rhs)
