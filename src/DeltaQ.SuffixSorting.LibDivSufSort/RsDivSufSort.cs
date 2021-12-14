@@ -3084,25 +3084,30 @@ public static class DivSufSort
 
     /// Returns the median of three elements
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static SAPtr tr_median3(Span<int> SA, SAPtr ISAd, SAPtr v1, SAPtr v2, SAPtr v3)
+    private static SAPtr tr_median3(Span<int> SA, SAPtr isadOffset, SAPtr v1, SAPtr v2, SAPtr v3)
     {
-        macro_rules! get {
-            ($x: expr) => {
-                SA[ISAd + SA[$x]]
-            };
-        }
+        Span<int> ISAd = SA[isadOffset..];
 
-        if get!(v1) > get!(v2) {
-            mem::swap(&mut v1, &mut v2);
+        //get(x) => ISAd[SA[x]]
+
+        if (ISAd[SA[v1]] > ISAd[SA[v2]])
+        {
+            Swap(ref v1, ref v2);
         }
-        if get!(v2) > get!(v3) {
-            if get!(v1) > get!(v3) {
-                v1
-            } else {
-                v3
+        if (ISAd[SA[v2]] > ISAd[SA[v3]])
+        {
+            if (ISAd[SA[v1]] > ISAd[SA[v3]])
+            {
+                return v1;
             }
-        } else {
-            v2
+            else
+            {
+                return v3;
+            }
+        }
+        else
+        {
+            return v2;
         }
     }
 
