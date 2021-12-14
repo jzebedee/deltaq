@@ -3082,9 +3082,28 @@ public static class DivSufSort
         throw new NotImplementedException();
     }
 
-    private static int tr_median3(Span<int> sA, int iSAd, int first, int middle, int v)
+    /// Returns the median of three elements
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static SAPtr tr_median3(Span<int> SA, SAPtr ISAd, SAPtr v1, SAPtr v2, SAPtr v3)
     {
-        throw new NotImplementedException();
+        macro_rules! get {
+            ($x: expr) => {
+                SA[ISAd + SA[$x]]
+            };
+        }
+
+        if get!(v1) > get!(v2) {
+            mem::swap(&mut v1, &mut v2);
+        }
+        if get!(v2) > get!(v3) {
+            if get!(v1) > get!(v3) {
+                v1
+            } else {
+                v3
+            }
+        } else {
+            v2
+        }
     }
 
     private static void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
