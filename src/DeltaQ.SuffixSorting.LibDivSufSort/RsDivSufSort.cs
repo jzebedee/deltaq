@@ -192,8 +192,8 @@ public static class DivSufSort
         public readonly ReadOnlySpan<byte> span;
         public IntAccessor(ReadOnlySpan<byte> span) => this.span = span;
 
-        public int this[Idx index] => span[index];
-        public int Length => span.Length;
+        public readonly int this[Idx index] => span[index];
+        public readonly int Length => span.Length;
     }
 
     public static SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
