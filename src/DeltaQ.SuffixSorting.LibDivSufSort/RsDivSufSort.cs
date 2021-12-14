@@ -2422,7 +2422,7 @@ public static class DivSufSort
         SAPtr a = 0;
         SAPtr b = 0;
         SAPtr c;
-        Idx t, v, x;
+        Idx v, x;
         Idx incr = isadOffset - isaOffset;
         Idx next;
         Idx trlink = -1;
