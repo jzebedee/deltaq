@@ -894,61 +894,63 @@ public static class DivSufSort
     /// D&C based merge
     private static void ss_swapmerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
     {
-        macro_rules! get_idx {
-            ($a: expr) => {
-                if 0 <= $a {
-                    $a
-                } else {
-                    !$a
-                }
-            };
-        }
-        macro_rules! merge_check {
-            ($a: expr, $b: expr, $c: expr) => {
-                crosscheck!("mc c={}", $c);
-                if ($c & 1 > 0)
-                    || (($c & 2 > 0)
-                        && (ss_compare(T, SA, PA + get_idx!(SA[$a - 1]), SA, PA + SA[$a], depth) == 0))
-                {
-                    crosscheck!("swapping a-first={}", $a - first);
-                    SA[$a] = !SA[$a];
-                }
-                if ($c & 4 > 0)
-                    && (ss_compare(T, SA, PA + get_idx!(SA[$b - 1]), SA, PA + SA[$b], depth) == 0)
-                {
-                    crosscheck!("swapping b-first={}", $b - first);
-                    SA[$b] = !SA[$b];
-                }
-            };
-        }
+        //macro_rules! get_idx {
+        //    ($a: expr) => {
+        //        if 0 <= $a {
+        //            $a
+        //        } else {
+        //            !$a
+        //        }
+        //    };
+        //}
 
-        let mut stack = MergeStack::new();
-        let mut l: SAPtr;
-        let mut r: SAPtr;
-        let mut lm: SAPtr;
-        let mut rm: SAPtr;
-        let mut m: Idx;
-        let mut len: Idx;
-        let mut half: Idx;
-        let mut check: Idx;
-        let mut next: Idx;
+        //macro_rules! merge_check {
+        //    ($a: expr, $b: expr, $c: expr) => {
+        //        crosscheck!("mc c={}", $c);
+        //        if ($c & 1 > 0)
+        //            || (($c & 2 > 0)
+        //                && (ss_compare(T, SA, PA + get_idx!(SA[$a - 1]), SA, PA + SA[$a], depth) == 0))
+        //        {
+        //            crosscheck!("swapping a-first={}", $a - first);
+        //            SA[$a] = !SA[$a];
+        //        }
+        //        if ($c & 4 > 0)
+        //            && (ss_compare(T, SA, PA + get_idx!(SA[$b - 1]), SA, PA + SA[$b], depth) == 0)
+        //        {
+        //            crosscheck!("swapping b-first={}", $b - first);
+        //            SA[$b] = !SA[$b];
+        //        }
+        //    };
+        //}
+
+        var stack = MergeStack::new();
+        SAPtr l;
+        SAPtr r;
+        SAPtr lm;
+        SAPtr rm;
+
+        Idx m;
+        Idx len;
+        Idx half;
+        Idx check;
+        Idx next;
 
         // BARBARIAN
         check = 0;
-        loop {
-            crosscheck!("barbarian check={}", check);
-            SA_dump!(&SA.range(first..last), "ss_swapmerge barbarian");
-            SA_dump!(&SA.range(buf..buf + bufsize), "ss_swapmerge barbarian buf");
-            if (last - middle) <= bufsize {
-                crosscheck!("<=bufsize");
-                if (first < middle) && (middle < last) {
-                    crosscheck!("f<m&&m<l");
+        while (true)
+        {
+            crosscheck($"barbarian check={check}");
+            SA_dump(SA[first..last], "ss_swapmerge barbarian");
+            SA_dump(SA[buf..(buf + bufsize)], "ss_swapmerge barbarian buf");
+            if ((last - middle) <= bufsize)
+            {
+                crosscheck("<=bufsize");
+                if ((first < middle) && (middle < last))
+                {
+                    crosscheck("f<m&&m<l");
                     ss_mergebackward(T, SA, PA, first, middle, last, buf, depth);
-                    SA_dump!(&SA.range(first..last), "ss_swapmerge post-mergebackward");
-                    SA_dump!(
-                        &SA.range(buf..buf + bufsize),
-                        "ss_swapmerge post-mergebackward buf"
-                    );
+                    SA_dump(SA[first..last], "ss_swapmerge post-mergebackward");
+                    SA_dump(SA[buf..(buf + bufsize)], "ss_swapmerge post-mergebackward buf");
                 }
                 merge_check!(first, last, check);
 
@@ -1027,7 +1029,8 @@ public static class DivSufSort
                             crosscheck!("post-koopa next={}", next);
                         }
                         next |= 1;
-                    } else if first < lm {
+                    }
+                    else if first < lm {
                         // MUNCHER
                         while SA[r] < 0 {
                             r += 1;
@@ -1045,7 +1048,8 @@ public static class DivSufSort
                     crosscheck!("post-muncher check was={} next was={}", check, next);
                     check = (check & 3) | (next & 4);
                     crosscheck!("post-muncher check  is={} next  is={}", check, next);
-                } else {
+                } else
+                {
                     crosscheck!("post-muncher not l-f<l-r");
                     if (next & 2 > 0) && (r == middle) {
                         crosscheck!("post-muncher next ^= 6 old={}", next);
@@ -1059,7 +1063,9 @@ public static class DivSufSort
                     check = (next & 3) | (check & 4);
                     crosscheck!("post-muncher not, check  is={} next  is={}", check, next);
                 }
-            } else {
+            }
+            else
+            {
                 if ss_compare(
                     T,
                     SA,
