@@ -7,7 +7,7 @@ namespace DeltaQ.Tests
 {
     public class BsPatchTests
     {
-        private static RNGCryptoServiceProvider _cryptoRNG = new RNGCryptoServiceProvider();
+        private static RandomNumberGenerator _cryptoRNG = RandomNumberGenerator.Create();
         private static byte[] GetRandomFilledBuffer(int count)
         {
             var buffer = new byte[count];
