@@ -966,18 +966,18 @@ public static class DivSufSort
                 continue;
             }
 
-            if (middle - first) <= bufsize {
-                crosscheck!("m-f<=bufsize");
-                if first < middle {
-                    crosscheck!("f<m");
+            if ((middle - first) <= bufsize)
+            {
+                crosscheck("m-f<=bufsize");
+                if (first < middle)
+                {
+                    crosscheck("f<m");
                     ss_mergeforward(T, SA, PA, first, middle, last, buf, depth);
-                    SA_dump!(&SA.range(first..last), "after mergeforward");
+                    SA_dump(SA[first..last], "after mergeforward");
                 }
                 merge_check!(first, last, check);
-                SA_dump!(&SA.range(first..last), "ss_swapmerge pop 2");
-                if !stack
-                    .pop(&mut first, &mut middle, &mut last, &mut check)
-                    .is_ok()
+                SA_dump(SA[first..last], "ss_swapmerge pop 2");
+                if (!stack.Pop(ref first, ref middle, ref last, ref check))
                 {
                     return;
                 }
