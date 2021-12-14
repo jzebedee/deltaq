@@ -3148,53 +3148,72 @@ public static class DivSufSort
     }
 
     /// Simple top-down heapsort
-    private static void tr_heapsort(SAPtr ISAd, Span<int> SA_top, SAPtr first, Idx size)
+    private static void tr_heapsort(SAPtr isadOffset, Span<int> SA_top, SAPtr first, Idx size)
     {
-        let mut i: Idx;
-        let mut m: Idx;
-        let mut t: Idx;
+        Idx i;
+        Idx m;
+        Idx t;
 
-        macro_rules! ISAd {
-            ($x: expr) => {
-                SA_top[ISAd + $x]
-            };
-        }
-        macro_rules! SA {
-            ($x: expr) => {
-                SA_top[first + $x]
-            };
-        }
-        macro_rules! SA_swap {
-            ($a: expr, $b: expr) => {
-                SA_top.swap(first + $a, first + $b);
-            };
-        }
+        Span<int> ISAd = SA_top[isadOffset..];
+        //macro_rules! ISAd {
+        //    ($x: expr) => {
+        //        SA_top[ISAd + $x]
+        //    };
+        //}
+
+        Span<int> SA = SA_top[first..];
+        //macro_rules! SA {
+        //    ($x: expr) => {
+        //        SA_top[first + $x]
+        //    };
+        //}
+
+        //void SA_swap(int a, int b) => SA_top.Swap(first + a, first + b);
+        //macro_rules! SA_swap {
+        //    ($a: expr, $b: expr) => {
+        //        SA_top.swap(first + $a, first + $b);
+        //    };
+        //}
 
         m = size;
-        if (size % 2) == 0 {
+        if ((size % 2) == 0)
+        {
             m -= 1;
-            if ISAd!(SA!(m / 2)) < ISAd!(SA!(m)) {
-                SA_swap!(m, (m / 2));
+            if (ISAd[SA[m / 2]] < ISAd[SA[m]])
+            {
+                SA_top.Swap(first + m, first + (m / 2));
             }
         }
 
         // LISA
-        for i in (0..(m / 2)).rev() {
-            crosscheck!("LISA i={}", i);
+        //TODO: checkme
+        //for i in (0..(m / 2)).rev() {
+        for (i = (m / 2) - 1; i >= 0; i--)
+        {
+            crosscheck($"LISA i={i}");
             tr_fixdown(ISAd, SA_top, first, i, m);
         }
-        if (size % 2) == 0 {
-            SA_swap!(0, m);
+        if ((size % 2) == 0)
+        {
+            SA_top.Swap(first + 0, first + m);
             tr_fixdown(ISAd, SA_top, first, 0, m);
         }
         // MARK
-        for i in (1..m).rev() {
-            crosscheck!("MARK i={}", i);
-            t = SA!(0);
-            SA!(0) = SA!(i);
+        //TODO: checkme
+        //for i in (1..m).rev() {
+        for (i = m - 1; i > 0; i--)
+        {
+            crosscheck($"MARK i={i}");
+            t = SA[0];
+            SA[0] = SA[i];
             tr_fixdown(ISAd, SA_top, first, 0, i);
-            SA!(i) = t;
+            SA[i] = t;
         }
+    }
+
+    private static void tr_fixdown(Span<int> iSAd, Span<int> sA_top, int first, int i, int m)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
