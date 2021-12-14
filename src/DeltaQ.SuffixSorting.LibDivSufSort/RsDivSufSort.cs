@@ -894,15 +894,7 @@ public static class DivSufSort
     /// D&C based merge
     private static void ss_swapmerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
     {
-        //macro_rules! get_idx {
-        //    ($a: expr) => {
-        //        if 0 <= $a {
-        //            $a
-        //        } else {
-        //            !$a
-        //        }
-        //    };
-        //}
+        static Idx get_idx(Idx a) => 0 <= a ? a : ~a;
 
         //macro_rules! merge_check {
         //    ($a: expr, $b: expr, $c: expr) => {
@@ -994,9 +986,9 @@ public static class DivSufSort
                 if (ss_compare(
                     T,
                     SA,
-                    PA + get_idx!(SA[middle + m + half]),
+                    PA + get_idx(SA[middle + m + half]),
                     SA,
-                    PA + get_idx!(SA[middle - m - half - 1]),
+                    PA + get_idx(SA[middle - m - half - 1]),
                     depth) < 0)
                 {
                     m += half + 1;
@@ -1080,7 +1072,7 @@ public static class DivSufSort
                 if (ss_compare(
                     T,
                     SA,
-                    PA + get_idx!(SA[middle - 1]),
+                    PA + get_idx(SA[middle - 1]),
                     SA,
                     PA + SA[middle],
                     depth) == 0)
