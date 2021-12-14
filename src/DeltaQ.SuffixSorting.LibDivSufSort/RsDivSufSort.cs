@@ -1371,35 +1371,36 @@ public static class DivSufSort
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr ss_median5(IntAccessor T, Idx Td, ReadOnlySpan<int> SA, SAPtr PA, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
     {
-        let mut t: SAPtr;
-        macro_rules! get {
-            ($x: expr) => {
-                T[Td + SA[PA + SA[$x]]]
-            };
+        var get = new TdPAStarAccessor(T.span, SA, PA, Td);
+        if (get[v2] > get[v3])
+        {
+            Swap(ref v2, ref v3);
         }
-        if get!(v2) > get!(v3) {
-            mem::swap(&mut v2, &mut v3);
+        if (get[v4] > get[v5])
+        {
+            Swap(ref v4, ref v5);
         }
-        if get!(v4) > get!(v5) {
-            mem::swap(&mut v4, &mut v5);
+        if (get[v2] > get[v4])
+        {
+            Swap(ref v2, ref v4);
+            Swap(ref v3, ref v5);
         }
-        if get!(v2) > get!(v4) {
-            mem::swap(&mut v2, &mut v4);
-            mem::swap(&mut v3, &mut v5);
+        if (get[v1] > get[v3])
+        {
+            Swap(ref v1, ref v3);
         }
-        if get!(v1) > get!(v3) {
-            mem::swap(&mut v1, &mut v3);
+        if (get[v1] > get[v4])
+        {
+            Swap(ref v1, ref v4);
+            Swap(ref v3, ref v5);
         }
-        if get!(v1) > get!(v4) {
-            mem::swap(&mut v1, &mut v4);
-            mem::swap(&mut v3, &mut v5);
-        }
-        if get!(v3) > get!(v4) {
-            v4
+        if (get[v3] > get[v4])
+        {
+            return v4;
         }
         else
         {
-            v3
+            return v3;
         }
     }
 
