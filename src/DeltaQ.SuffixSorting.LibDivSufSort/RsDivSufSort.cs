@@ -1090,9 +1090,115 @@ public static class DivSufSort
         throw new NotImplementedException();
     }
 
-    private static void ss_mergeforward(IntAccessor t, Span<int> sA, int pA, int first, int middle, int last, int buf, int depth)
+    /// Merge-forward with internal buffer
+    private static void ss_mergeforward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
     {
-        throw new NotImplementedException();
+        let mut a: SAPtr;
+        let mut b: SAPtr;
+        let mut c: SAPtr;
+        let mut bufend: SAPtr;
+        let mut t: Idx;
+        let mut r: Idx;
+
+        SA_dump!(&SA.range(first..last), "ss_mergeforward start");
+
+        bufend = buf + (middle - first) - 1;
+        ss_blockswap(SA, buf, first, (middle - first).0);
+
+        // IGNACE
+        a = first;
+        t = SA[a];
+        b = buf;
+        c = middle;
+        loop {
+            r = ss_compare(T, SA, PA + SA[b], SA, PA + SA[c], depth);
+            if r < 0 {
+                // RONALD
+                loop {
+                    SA[a] = SA[b];
+                    a += 1;
+                    if bufend <= b {
+                        SA[bufend] = t;
+                        return;
+                    }
+                    SA[b] = SA[a];
+                    b += 1;
+
+                    // cond
+                    if !(SA[b] < 0) {
+                        break;
+                    }
+                }
+            } else if r > 0 {
+                // JEREMY
+                loop {
+                    SA[a] = SA[c];
+                    a += 1;
+                    SA[c] = SA[a];
+                    c += 1;
+                    if last <= c {
+                        // TONY
+                        while b < bufend {
+                            SA[a] = SA[b];
+                            a += 1;
+                            SA[b] = SA[a];
+                            b += 1;
+                        }
+                        SA[a] = SA[b];
+                        SA[b] = t;
+                        return;
+                    }
+
+                    // cond (JEMERY)
+                    if !(SA[c] < 0) {
+                        break;
+                    }
+                }
+            } else {
+                SA[c] = !SA[c];
+                // JENS
+                loop {
+                    SA[a] = SA[b];
+                    a += 1;
+                    if bufend <= b {
+                        SA[bufend] = t;
+                        return;
+                    }
+                    SA[b] = SA[a];
+                    b += 1;
+
+                    // cond (JENS)
+                    if !(SA[b] < 0) {
+                        break;
+                    }
+                }
+
+                // DIMITER
+                loop {
+                    SA[a] = SA[c];
+                    a += 1;
+                    SA[c] = SA[a];
+                    c += 1;
+                    if last <= c {
+                        // MIDORI
+                        while b < bufend {
+                            SA[a] = SA[b];
+                            a += 1;
+                            SA[b] = SA[a];
+                            b += 1;
+                        }
+                        SA[a] = SA[b];
+                        SA[b] = t;
+                        return;
+                    }
+
+                    // cond (DIMITER)
+                    if !(SA[c] < 0) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private struct SsStackItem
