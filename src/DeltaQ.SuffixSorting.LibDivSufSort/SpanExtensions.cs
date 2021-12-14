@@ -1,15 +1,12 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     public static class SpanExtensions
     {
-        public static void Swap<T>(this Span<T> span, int indexA, int indexB)
-        {
-            ref var itemA = ref span[indexA];
-            ref var itemB = ref span[indexB];
-            span[indexA] = itemB;
-            span[indexB] = itemA;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Swap<T>(this Span<T> span, int i, int j)
+            => (span[j], span[i]) = (span[i], span[j]);
     }
 }
