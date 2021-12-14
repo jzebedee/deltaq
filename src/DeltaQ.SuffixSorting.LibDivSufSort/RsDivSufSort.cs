@@ -3051,9 +3051,26 @@ public static class DivSufSort
         } // end PASCAL
     }
 
-    private static int tr_pivot(Span<int> sA, int iSAd, int first, int last)
+    /// Returns the pivot element
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static SAPtr tr_pivot(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr last)
     {
-        throw new NotImplementedException();
+        let mut t: Idx = (last - first).0;
+        let mut middle: SAPtr = first + t / 2;
+
+        if t <= 512 {
+            if t <= 32 {
+                return tr_median3(SA, ISAd, first, middle, last - 1);
+            } else {
+                t >>= 2;
+                return tr_median5(SA, ISAd, first, first + t, middle, last - 1 - t, last - 1);
+            }
+        }
+        t >>= 3;
+        first = tr_median3(SA, ISAd, first, first + t, first + (t << 1));
+        middle = tr_median3(SA, ISAd, middle - t, middle, middle + t);
+        last = tr_median3(SA, ISAd, last - 1 - (t << 1), last - 1 - t, last - 1);
+        tr_median3(SA, ISAd, first, middle, last)
     }
 
     private static void tr_heapsort(int iSAd, Span<int> sA, int first, int v)
