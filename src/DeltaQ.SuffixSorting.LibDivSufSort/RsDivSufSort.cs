@@ -986,18 +986,18 @@ public static class DivSufSort
 
             // OLANNA
             m = 0;
-            len = cmp::min((middle - first).0, (last - middle).0);
+            len = Math.Min(middle - first, last - middle);
             half = len >> 1;
-            while 0 < len {
-                crosscheck!("in-olanna len={} half={}", len, half);
-                if ss_compare(
+            while (0 < len)
+            {
+                crosscheck($"in-olanna len={len} half={half}");
+                if (ss_compare(
                     T,
                     SA,
                     PA + get_idx!(SA[middle + m + half]),
                     SA,
                     PA + get_idx!(SA[middle - m - half - 1]),
-                    depth,
-                ) < 0
+                    depth) < 0)
                 {
                     m += half + 1;
                     half -= (len & 1) ^ 1;
@@ -1008,81 +1008,88 @@ public static class DivSufSort
                 half >>= 1;
             }
 
-            if 0 < m {
-                crosscheck!("0 < m, m={}", m);
+            if (0 < m)
+            {
+                crosscheck($"0 < m, m={m}");
                 lm = middle - m;
                 rm = middle + m;
                 ss_blockswap(SA, lm, middle, m);
                 r = middle;
                 l = middle;
                 next = 0;
-                if rm < last {
-                    if SA[rm] < 0 {
-                        SA[rm] = !SA[rm];
-                        if first < lm {
+                if (rm < last)
+                {
+                    if (SA[rm] < 0)
+                    {
+                        SA[rm] = ~SA[rm];
+                        if (first < lm)
+                        {
                             // KOOPA
                             l -= 1;
-                            while SA[l] < 0 {
+                            while (SA[l] < 0)
+                            {
                                 l -= 1;
                             }
-                            crosscheck!("post-koopa l-first={}", l - first);
+                            crosscheck($"post-koopa l-first={l - first}");
                             next |= 4;
-                            crosscheck!("post-koopa next={}", next);
+                            crosscheck($"post-koopa next={next}");
                         }
                         next |= 1;
                     }
-                    else if first < lm {
+                    else if (first < lm)
+                    {
                         // MUNCHER
-                        while SA[r] < 0 {
+                        while (SA[r] < 0)
+                        {
                             r += 1;
                         }
-                        crosscheck!("post-muncher r-first={}", r - first);
+                        crosscheck($"post-muncher r-first={r - first}");
                         next |= 2;
                     }
                 }
 
-                if (l - first) <= (last - r) {
-                    crosscheck!("post-muncher l-f<l-r");
-                    stack.push(r, rm, last, (next & 3) | (check & 4));
+                if ((l - first) <= (last - r))
+                {
+                    crosscheck("post-muncher l-f<l-r");
+                    stack.Push(r, rm, last, (next & 3) | (check & 4));
                     middle = lm;
                     last = l;
-                    crosscheck!("post-muncher check was={} next was={}", check, next);
+                    crosscheck($"post-muncher check was={check} next was={next}");
                     check = (check & 3) | (next & 4);
-                    crosscheck!("post-muncher check  is={} next  is={}", check, next);
-                } else
+                    crosscheck($"post-muncher check  is={check} next  is={next}");
+                }
+                else
                 {
-                    crosscheck!("post-muncher not l-f<l-r");
-                    if (next & 2 > 0) && (r == middle) {
-                        crosscheck!("post-muncher next ^= 6 old={}", next);
+                    crosscheck("post-muncher not l-f<l-r");
+                    if (((next & 2) > 0) && (r == middle))
+                    {
+                        crosscheck($"post-muncher next ^= 6 old={next}");
                         next ^= 6;
-                        crosscheck!("post-muncher next ^= 6 new={}", next);
+                        crosscheck($"post-muncher next ^= 6 new={next}");
                     }
-                    stack.push(first, lm, l, (check & 3) | (next & 4));
+                    stack.Push(first, lm, l, (check & 3) | (next & 4));
                     first = r;
                     middle = rm;
-                    crosscheck!("post-muncher not, check was={} next was={}", check, next);
+                    crosscheck($"post-muncher not, check was={check} next was={next}");
                     check = (next & 3) | (check & 4);
-                    crosscheck!("post-muncher not, check  is={} next  is={}", check, next);
+                    crosscheck($"post-muncher not, check  is={check} next  is={next}");
                 }
             }
             else
             {
-                if ss_compare(
+                if (ss_compare(
                     T,
                     SA,
                     PA + get_idx!(SA[middle - 1]),
                     SA,
                     PA + SA[middle],
-                    depth,
-                ) == 0
+                    depth) == 0)
                 {
-                    SA[middle] = !SA[middle];
+                    SA[middle] = ~SA[middle];
                 }
                 merge_check!(first, last, check);
-                SA_dump!(&SA.range(first..last), "ss_swapmerge pop 3");
-                if !stack
-                    .pop(&mut first, &mut middle, &mut last, &mut check)
-                    .is_ok()
+                SA_dump(SA[first..last], "ss_swapmerge pop 3");
+                if (!stack.Pop(ref first, ref middle, ref last, ref check))
                 {
                     return;
                 }
