@@ -958,18 +958,18 @@ public static class DivSufSort
 
     private ref struct TdPAStarAccessor
     {
-        private readonly Span<int> _SA;
-        private readonly Span<int> _PA;
+        private readonly ReadOnlySpan<int> _SA;
+        private readonly ReadOnlySpan<int> _PA;
         private readonly IntAccessor _TD;
 
-        public TdPAStarAccessor(ReadOnlySpan<byte> T, Span<int> SA, int partitionOffset, int tdOffset)
+        public TdPAStarAccessor(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA, int partitionOffset, int tdOffset)
         {
             _SA = SA;
             _PA = SA[partitionOffset..];
             _TD = new(T[tdOffset..]);
         }
 
-        public int this[int index] => _TD[_PA[_SA[index]]];
+        public readonly int this[int index] => _TD[_PA[_SA[index]]];
     }
 
     /// <summary>
@@ -1396,7 +1396,9 @@ public static class DivSufSort
         }
         if get!(v3) > get!(v4) {
             v4
-        } else {
+        }
+        else
+        {
             v3
         }
     }
