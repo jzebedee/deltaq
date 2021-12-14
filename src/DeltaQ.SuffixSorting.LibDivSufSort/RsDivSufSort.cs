@@ -1091,33 +1091,37 @@ public static class DivSufSort
     }
 
     /// Merge-forward with internal buffer
-    private static void ss_mergeforward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
+    private static void ss_mergeforward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
-        let mut a: SAPtr;
-        let mut b: SAPtr;
-        let mut c: SAPtr;
-        let mut bufend: SAPtr;
-        let mut t: Idx;
-        let mut r: Idx;
+        SAPtr a;
+        SAPtr b;
+        SAPtr c;
+        SAPtr bufend;
+        Idx t;
+        Idx r;
 
-        SA_dump!(&SA.range(first..last), "ss_mergeforward start");
+        SA_dump(SA[first..last], "ss_mergeforward start");
 
         bufend = buf + (middle - first) - 1;
-        ss_blockswap(SA, buf, first, (middle - first).0);
+        ss_blockswap(SA, buf, first, middle - first);
 
         // IGNACE
         a = first;
         t = SA[a];
         b = buf;
         c = middle;
-        loop {
+        while (true)
+        {
             r = ss_compare(T, SA, PA + SA[b], SA, PA + SA[c], depth);
-            if r < 0 {
+            if (r < 0)
+            {
                 // RONALD
-                loop {
+                while (true)
+                {
                     SA[a] = SA[b];
                     a += 1;
-                    if bufend <= b {
+                    if (bufend <= b)
+                    {
                         SA[bufend] = t;
                         return;
                     }
@@ -1125,20 +1129,26 @@ public static class DivSufSort
                     b += 1;
 
                     // cond
-                    if !(SA[b] < 0) {
+                    if (!(SA[b] < 0))
+                    {
                         break;
                     }
                 }
-            } else if r > 0 {
+            }
+            else if (r > 0)
+            {
                 // JEREMY
-                loop {
+                while (true)
+                {
                     SA[a] = SA[c];
                     a += 1;
                     SA[c] = SA[a];
                     c += 1;
-                    if last <= c {
+                    if (last <= c)
+                    {
                         // TONY
-                        while b < bufend {
+                        while (b < bufend)
+                        {
                             SA[a] = SA[b];
                             a += 1;
                             SA[b] = SA[a];
@@ -1150,17 +1160,22 @@ public static class DivSufSort
                     }
 
                     // cond (JEMERY)
-                    if !(SA[c] < 0) {
+                    if (!(SA[c] < 0))
+                    {
                         break;
                     }
                 }
-            } else {
-                SA[c] = !SA[c];
+            }
+            else
+            {
+                SA[c] = ~SA[c];
                 // JENS
-                loop {
+                while (true)
+                {
                     SA[a] = SA[b];
                     a += 1;
-                    if bufend <= b {
+                    if (bufend <= b)
+                    {
                         SA[bufend] = t;
                         return;
                     }
@@ -1168,20 +1183,24 @@ public static class DivSufSort
                     b += 1;
 
                     // cond (JENS)
-                    if !(SA[b] < 0) {
+                    if (!(SA[b] < 0))
+                    {
                         break;
                     }
                 }
 
                 // DIMITER
-                loop {
+                while (true)
+                {
                     SA[a] = SA[c];
                     a += 1;
                     SA[c] = SA[a];
                     c += 1;
-                    if last <= c {
+                    if (last <= c)
+                    {
                         // MIDORI
-                        while b < bufend {
+                        while (b < bufend)
+                        {
                             SA[a] = SA[b];
                             a += 1;
                             SA[b] = SA[a];
@@ -1193,7 +1212,8 @@ public static class DivSufSort
                     }
 
                     // cond (DIMITER)
-                    if !(SA[c] < 0) {
+                    if (!(SA[c] < 0))
+                    {
                         break;
                     }
                 }
