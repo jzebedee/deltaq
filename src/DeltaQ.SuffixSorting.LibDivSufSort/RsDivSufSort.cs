@@ -1941,6 +1941,7 @@ public static class DivSufSort
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void Swap<T>(ref T lhs, ref T rhs)
     {
         T temp;
