@@ -896,7 +896,7 @@ public static class DivSufSort
     {
         static Idx get_idx(Idx a) => 0 <= a ? a : ~a;
 
-        void merge_check(Idx a, Idx b, Idx c)
+        void merge_check(IntAccessor T, Span<int> SA, Idx a, Idx b, Idx c)
         {
             crosscheck($"mc c={c}");
             if (((c & 1) > 0) || (((c & 2) > 0) && (ss_compare(T, SA, PA + get_idx(SA[a - 1]), SA, PA + SA[a], depth) == 0)))
@@ -943,7 +943,7 @@ public static class DivSufSort
                     SA_dump(SA[first..last], "ss_swapmerge post-mergebackward");
                     SA_dump(SA[buf..(buf + bufsize)], "ss_swapmerge post-mergebackward buf");
                 }
-                merge_check(first, last, check);
+                merge_check(T, SA, first, last, check);
 
                 SA_dump(SA[first..last], "ss_swapmerge pop 1");
                 if (!stack.Pop(ref first, ref middle, ref last, ref check))
@@ -963,7 +963,7 @@ public static class DivSufSort
                     ss_mergeforward(T, SA, PA, first, middle, last, buf, depth);
                     SA_dump(SA[first..last], "after mergeforward");
                 }
-                merge_check(first, last, check);
+                merge_check(T, SA, first, last, check);
                 SA_dump(SA[first..last], "ss_swapmerge pop 2");
                 if (!stack.Pop(ref first, ref middle, ref last, ref check))
                 {
@@ -1075,7 +1075,7 @@ public static class DivSufSort
                 {
                     SA[middle] = ~SA[middle];
                 }
-                merge_check(first, last, check);
+                merge_check(T, SA, first, last, check);
                 SA_dump(SA[first..last], "ss_swapmerge pop 3");
                 if (!stack.Pop(ref first, ref middle, ref last, ref check))
                 {
