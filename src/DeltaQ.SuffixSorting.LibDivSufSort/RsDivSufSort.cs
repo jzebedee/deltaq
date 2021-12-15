@@ -2127,9 +2127,58 @@ internal static class DivSufSort
         }
     }
 
-    private static void ss_heapsort(IntAccessor t, int td, Span<int> sA, int pA, int first, object p)
+    /// Simple top-down heapsort.
+    private static void ss_heapsort(IntAccessor T, Idx Td, Span<int> SA_top, SAPtr PA, SAPtr first, Idx size)
     {
-        throw new NotImplementedException();
+        let mut i: Idx;
+        let mut m = size;
+        let mut t: Idx;
+
+        macro_rules! Td {
+            ($x: expr) => {
+                T[Td + $x]
+            };
+        };
+        macro_rules! PA {
+            ($x: expr) => {
+                SA_top[PA + $x]
+            };
+        };
+        macro_rules! SA {
+            ($x: expr) => {
+                SA_top[first + $x]
+            };
+        }
+        macro_rules! SA_swap {
+            ($x: expr, $y: expr) => {
+                SA_top.swap($x + first, $y + first)
+            };
+        }
+
+        if (size % 2) == 0 {
+            m -= 1;
+            if Td!(PA!(SA!(m / 2))) < Td!(PA!(SA!(m))) {
+                SA_swap!(SAPtr(m), SAPtr(m / 2));
+            }
+        }
+
+        // LADY
+        for i in (0..(m / 2)).rev() {
+            ss_fixdown(T, Td, PA, SA_top, first, i, m);
+        }
+
+        if (size % 2) == 0 {
+            SA_swap!(SAPtr(0), SAPtr(m));
+            ss_fixdown(T, Td, PA, SA_top, first, 0, m);
+        }
+
+        // TRUMPET
+        for i in (1..m).rev() {
+            t = SA!(0);
+            SA!(0) = SA!(i);
+            ss_fixdown(T, Td, PA, SA_top, first, 0, i);
+            SA!(i) = t;
+        }
     }
 
     private static readonly Idx[] sqq_table_array = new[]
