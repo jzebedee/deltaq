@@ -5,7 +5,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
     internal static class Crosscheck
     {
-        [Conditional("DEBUG")]
+        [Conditional("CROSSCHECK")]
         internal static void SA_dump(ReadOnlySpan<int> span, string v)
         {
             Debug.WriteLine($":: {v}");
@@ -17,7 +17,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             Debug.WriteLine("");
         }
 
-        [Conditional("DEBUG")]
+        [Conditional("CROSSCHECK")]
         internal static void crosscheck(string v, params object[] args) => Debug.WriteLine(v, args);
     }
 }

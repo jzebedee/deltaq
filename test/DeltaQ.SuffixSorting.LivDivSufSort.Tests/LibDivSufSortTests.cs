@@ -1,9 +1,7 @@
 using DeltaQ.SuffixSorting.LibDivSufSort;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,31 +9,19 @@ using Xunit;
 
 namespace DeltaQ.Tests
 {
-    public class LibDivSufSortTests
+    using static Crosscheck;
+
+    public class LibDivSufSortTests : IDisposable
     {
         private const string FuzzFilesBasePath = "assets/";
 
-        [Conditional("DEBUG")]
-        private void SetupCrosscheckListeners()
+        public LibDivSufSortTests()
         {
-            const string crosscheckFilename = "crosscheck/csharp";
-            try
-            {
-                Directory.CreateDirectory(crosscheckFilename);
-                File.Create(crosscheckFilename).Dispose();
-            }
-            catch (IOException) { }
-            //var dtl = Trace.Listeners[0] as DefaultTraceListener;
-            //dtl!.LogFileName = "crosscheck/csharp";
-            var lflistener = new TextWriterTraceListener(crosscheckFilename);
-            Trace.Listeners.Clear();
-            Trace.Listeners.Add(lflistener);
+            SetupCrosscheckListeners();
         }
-
-        [Conditional("DEBUG")]
-        private void FinalizeCrosscheck()
+        public void Dispose()
         {
-            Trace.Flush();
+            FinalizeCrosscheck();
         }
 
 #if NET461
