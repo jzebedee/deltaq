@@ -1493,31 +1493,50 @@ internal static class DivSufSort
         public ref T this[int index] => ref _span[_offset + index];
     }
 
+    private ref struct ReadOnlySpanOffsetAccessor<T>
+    {
+        private readonly ReadOnlySpan<T> _span;
+        private readonly int _offset;
+
+        public ReadOnlySpanOffsetAccessor(ReadOnlySpan<T> span, int offset)
+        {
+            _span = span;
+            _offset = offset;
+        }
+
+        public ref readonly T this[int index] => ref _span[_offset + index];
+    }
+
     private ref struct TdPAStarAccessor
     {
+        private readonly ReadOnlySpanOffsetAccessor<byte> _TO;
         private readonly ReadOnlySpan<int> _SA;
         private readonly ReadOnlySpan<int> _PA;
         private readonly IntAccessor _TD;
 
         public TdPAStarAccessor(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA, int partitionOffset, int tdOffset)
         {
+            _TO = new ReadOnlySpanOffsetAccessor<byte>(T, tdOffset);
+
             _SA = SA;
             _PA = SA[partitionOffset..];
             _TD = new(T[tdOffset..]);
         }
 
         public readonly int this[int index] => _TD[_PA[_SA[index]]];
+
+        public readonly int AsOffset(int index) => _TO[index];
     }
 
     /// <summary>
     /// Multikey introsort for medium size groups
     /// </summary>
-    private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr partitionOffset, /*ref*/ SAPtr first, /*ref*/ SAPtr last, /*ref*/ Idx depth)
+    private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr partitionOffset, SAPtr first, SAPtr last, Idx depth)
     {
-        //PA($x) => 
-        var PA = SA[partitionOffset..];//new SpanOffsetAccessor<int>(SA, PA);
+        var PA = SA[partitionOffset..];
 
-        var stack = new SsStack(stackalloc SsStackItem[SS_STACK_SIZE]);
+        using var stackOwner = SpanOwner<SsStackItem>.Allocate(SS_STACK_SIZE);
+        var stack = new SsStack(stackOwner.Span);
 
         SAPtr a;
         SAPtr b;
@@ -1550,13 +1569,7 @@ internal static class DivSufSort
                 continue;
             }
 
-            //Td!($x) => T[Td + $x]
             var tdOffset = depth;
-            var Td = T.span[tdOffset..];
-
-            //TdPAStar!($x) => Td!(PA!(SA[$x]))
-            //TdPAStar!($x) => T[Td + SA[PA + SA[$x]]]
-            //var TdPAStar = Td[PA[SA[$x]]];
             var TdPAStar = new TdPAStarAccessor(T.span, SA, partitionOffset, tdOffset);
 
             /*readonly*/
@@ -1592,7 +1605,7 @@ internal static class DivSufSort
                     a += 1;
                 }
 
-                if (Td[PA[SA[first]] - 1] < v)
+                if (TdPAStar.AsOffset(PA[SA[first]] - 1) < v)
                 {
                     first = ss_partition(SA, partitionOffset, first, a, depth);
                 }
@@ -1802,7 +1815,7 @@ internal static class DivSufSort
 
                 a = first + (b - a);
                 c = last - (d - c);
-                b = v <= Td[PA[SA[a]] - 1] ? a : ss_partition(SA, partitionOffset, a, c, depth);
+                b = v <= TdPAStar.AsOffset(PA[SA[a]] - 1) ? a : ss_partition(SA, partitionOffset, a, c, depth);
 
                 if ((a - first) <= (last - c))
                 {
@@ -1856,7 +1869,7 @@ internal static class DivSufSort
             else
             {
                 limit += 1;
-                if (Td[PA[SA[first]] - 1] < v)
+                if (TdPAStar.AsOffset(PA[SA[first]] - 1) < v)
                 {
                     first = ss_partition(SA, partitionOffset, first, last, depth);
                     limit = ss_ilg(last - first);
