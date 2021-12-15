@@ -2135,32 +2135,8 @@ internal static class DivSufSort
         Idx t;
 
         var Td = new IntAccessor(T.span[tdOffset..]);
-        //macro_rules! Td {
-        //    ($x: expr) => {
-        //        T[Td + $x]
-        //    };
-        //};
-
         var PA = SA_top[paOffset..];
-        //macro_rules! PA {
-        //    ($x: expr) => {
-        //        SA_top[PA + $x]
-        //    };
-        //};
-
         var SA = SA_top[first..];
-        //macro_rules! SA {
-        //    ($x: expr) => {
-        //        SA_top[first + $x]
-        //    };
-        //}
-
-
-        //macro_rules! SA_swap {
-        //    ($x: expr, $y: expr) => {
-        //        SA_top.swap($x + first, $y + first)
-        //    };
-        //}
 
         if ((size % 2) == 0)
         {
@@ -2195,9 +2171,61 @@ internal static class DivSufSort
         }
     }
 
-    private static void ss_fixdown(IntAccessor t, int td, int pA, Span<int> sA_top, int first, int v, int m)
+    private static void ss_fixdown(IntAccessor T, Idx Td, SAPtr PA, Span<int> SA_top, SAPtr first, Idx i, Idx size)
     {
-        throw new NotImplementedException();
+        let mut j: Idx;
+        let mut v: Idx;
+        let mut c: Idx;
+        let mut d: Idx;
+        let mut e: Idx;
+        let mut k: Idx;
+
+        macro_rules! Td {
+            ($x: expr) => {
+                T.get(Td + $x)
+            };
+        }
+        macro_rules! PA {
+            ($x: expr) => {
+                SA_top[PA + $x]
+            };
+        }
+        macro_rules! SA {
+            ($x: expr) => {
+                SA_top[first + $x]
+            };
+        }
+
+        v = SA!(i);
+        c = Td!(PA!(v));
+
+        // BEAST
+        loop {
+            // cond
+            j = 2 * i + 1;
+            if !(j < size) {
+                break;
+            }
+
+            // body
+            k = j;
+            j += 1;
+
+            d = Td!(PA!(SA!(k)));
+            e = Td!(PA!(SA!(j)));
+            if (d < e) {
+                k = j;
+                d = e;
+            }
+            if (d <= c) {
+                break;
+            }
+
+            // iter
+            SA!(i) = SA!(k);
+            i = k;
+        }
+        SA!(i) = v;
     }
 
     private static readonly Idx[] sqq_table_array = new[]
