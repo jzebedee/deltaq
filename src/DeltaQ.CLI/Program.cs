@@ -1,24 +1,54 @@
 ﻿using System;
-using System.IO;
+using Microsoft.Extensions.CommandLineUtils;
 
-namespace DeltaQ.CLI
+const string HelpOptions = "-?|-h|--help";
+
+// Description of the application
+var app = new CommandLineApplication()
 {
-    class Program
+    Name = "dq",
+    FullName = "DeltaQ",
+    Description = "DeltaQ binary diff and patch tool"
+};
+
+app.HelpOption(HelpOptions);
+app.VersionOption("--version", "0.1.0");
+
+//No args
+app.OnExecute(() =>
+{
+    app.ShowRootCommandFullNameAndVersion();
+    app.ShowHint();
+    return 0;
+});
+
+app.Command("diff", command =>
+{
+    command.Description = "Diff two files";
+    command.HelpOption(HelpOptions);
+
+    var oldFileArg = command.Argument("[oldfile]", "");
+    var newFileArg = command.Argument("[newfile]", "");
+    var deltaFileArg = command.Argument("[deltafile]", "");
+
+    command.OnExecute(() =>
     {
-        static void Main(string[] args)
-        {
-            var f1 = args[1];
-            var f2 = args[2];
-            var o = args[3];
-            switch(args[0])
-            {
-                case "diff":
-                    BsDiff.BsDiff.Create(File.ReadAllBytes(f1), File.ReadAllBytes(f2), File.OpenWrite(o));
-                    break;
-                case "patch":
-                    BsDiff.BsPatch.Apply(File.ReadAllBytes(f1), File.ReadAllBytes(f2), File.OpenWrite(o));
-                    break;
-            }
-        }
-    }
+        var oldFile = oldFileArg.Value;
+        var newFile = newFileArg.Value;
+        var deltaFile = deltaFileArg.Value;
+        Console.WriteLine($"Diff: old:{oldFile} new:{newFile} delta:{deltaFile}");
+        return 0;
+    });
+});
+
+try
+{
+    return app.Execute(args);
+}
+catch (CommandParsingException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    Console.Error.WriteLine();
+    app.ShowHelp();
+    return -1;
 }
