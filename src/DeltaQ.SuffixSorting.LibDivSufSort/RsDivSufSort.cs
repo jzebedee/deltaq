@@ -3404,9 +3404,86 @@ internal static class DivSufSort
         }
     }
 
-    private static void tr_partialcopy(int iSA, Span<int> sA, int first, int a, int b, int last, int v)
+    private static void tr_partialcopy(SAPtr ISA, Span<int> SA, SAPtr first, SAPtr a, SAPtr b, SAPtr last, Idx depth)
     {
-        throw new NotImplementedException();
+        let mut c: SAPtr;
+        let mut d: SAPtr;
+        let mut e: SAPtr;
+        let mut s: Idx;
+        let mut v: Idx;
+        let mut rank: Idx;
+        let mut lastrank: Idx;
+        let mut newrank: Idx = -1;
+
+        macro_rules! ISA {
+            ($x: expr) => {
+                SA[ISA + $x]
+            };
+        }
+
+        v = (b - 1).0;
+        lastrank = -1;
+        // JETHRO
+        c = first;
+        d = a - 1;
+        while c <= d {
+            s = SA[c] - depth;
+            if (0 <= s) && (ISA!(s) == v) {
+                d += 1;
+                SA[d] = s;
+                rank = ISA!(s + depth);
+                if lastrank != rank {
+                    lastrank = rank;
+                    newrank = d.0;
+                }
+                ISA!(s) = newrank;
+            }
+
+            // iter (JETHRO)
+            c += 1;
+        }
+
+        lastrank = -1;
+        // SCROOGE
+        e = d;
+        while first <= e {
+            rank = ISA![SA[e]];
+            if lastrank != rank {
+                lastrank = rank;
+                newrank = e.0;
+            }
+            if newrank != rank {
+                {
+                    let SA_e = SA[e];
+                    ISA!(SA_e) = newrank;
+                }
+            }
+
+            // iter (SCROOGE)
+            e -= 1;
+        }
+
+        lastrank = -1;
+        // DEWEY
+        c = last - 1;
+        e = d + 1;
+        d = b;
+        while e < d {
+            s = SA[c] - depth;
+            if (0 <= s) && (ISA!(s) == v) {
+                d -= 1;
+                SA[d] = s;
+                rank = ISA!(s + depth);
+                if lastrank != rank {
+                    lastrank = rank;
+                    newrank = d.0;
+                }
+                ISA!(s) = newrank;
+            }
+
+            // iter (DEWEY)
+            c -= 1;
+        }
     }
 
     /// Tandem repeat copy
