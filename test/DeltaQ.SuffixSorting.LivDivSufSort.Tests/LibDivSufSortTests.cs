@@ -106,12 +106,14 @@ namespace DeltaQ.Tests
                 yield return "crash-4f8c31dec8c3678a07e0fbacc6bd69e7cc9037fb";
                 yield return "crash-16356e91966a827f79e49167170194fc3088a7ab";
                 //Crosscheck untested:
-                //yield return prefix + "";
+                yield return "crash-aoob-ss_mintrosort";
+                //yield return "";
             }
         }
 
         [Theory]
         [MemberData(nameof(FuzzFiles))]
+        //[InlineData(@"")]
         public void CheckFile(string path)
         {
             SetupCrosscheckListeners();
