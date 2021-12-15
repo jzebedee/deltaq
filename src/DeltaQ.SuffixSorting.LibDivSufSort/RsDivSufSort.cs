@@ -2151,13 +2151,13 @@ internal static class DivSufSort
         //TODO: checkme
         for (i = (m / 2) - 1; i >= 0; i--)
         {
-            ss_fixdown(T, tdOffset, paOffset, SA_top, first, i, m);
+            ss_fixdown(Td, PA, SA, i, m);
         }
 
         if ((size % 2) == 0)
         {
             SA.Swap(0, m);
-            ss_fixdown(T, tdOffset, paOffset, SA_top, first, 0, m);
+            ss_fixdown(Td, PA, SA, 0, m);
         }
 
         // TRUMPET
@@ -2166,44 +2166,25 @@ internal static class DivSufSort
         {
             t = SA[0];
             SA[0] = SA[i];
-            ss_fixdown(T, tdOffset, paOffset, SA_top, first, 0, i);
+            ss_fixdown(Td, PA, SA, 0, i);
             SA[i] = t;
         }
     }
 
-    private static void ss_fixdown(IntAccessor T, Idx Td, SAPtr PA, Span<int> SA_top, SAPtr first, Idx i, Idx size)
+    private static void ss_fixdown(IntAccessor Td, Span<int> PA, Span<int> SA, Idx i, Idx size)
     {
-        let mut j: Idx;
-        let mut v: Idx;
-        let mut c: Idx;
-        let mut d: Idx;
-        let mut e: Idx;
-        let mut k: Idx;
+        Idx j, v, c, d, e, k;
 
-        macro_rules! Td {
-            ($x: expr) => {
-                T.get(Td + $x)
-            };
-        }
-        macro_rules! PA {
-            ($x: expr) => {
-                SA_top[PA + $x]
-            };
-        }
-        macro_rules! SA {
-            ($x: expr) => {
-                SA_top[first + $x]
-            };
-        }
-
-        v = SA!(i);
-        c = Td!(PA!(v));
+        v = SA[i];
+        c = Td[PA[v]];
 
         // BEAST
-        loop {
+        while (true)
+        {
             // cond
             j = 2 * i + 1;
-            if !(j < size) {
+            if (!(j < size))
+            {
                 break;
             }
 
@@ -2211,21 +2192,23 @@ internal static class DivSufSort
             k = j;
             j += 1;
 
-            d = Td!(PA!(SA!(k)));
-            e = Td!(PA!(SA!(j)));
-            if (d < e) {
+            d = Td[PA[SA[k]]];
+            e = Td[PA[SA[j]]];
+            if (d < e)
+            {
                 k = j;
                 d = e;
             }
-            if (d <= c) {
+            if (d <= c)
+            {
                 break;
             }
 
             // iter
-            SA!(i) = SA!(k);
+            SA[i] = SA[k];
             i = k;
         }
-        SA!(i) = v;
+        SA[i] = v;
     }
 
     private static readonly Idx[] sqq_table_array = new[]
