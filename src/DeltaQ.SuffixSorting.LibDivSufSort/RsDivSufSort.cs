@@ -25,12 +25,15 @@ internal static class DivSufSort
             case 1:
                 SA[0] = 0;
                 return;
-                //case 2:
-                //    if(T[0] < T[1])
-                //    {
-                //        SA.copy
-                //    }
-                //    break;
+            case 2:
+                if(T[0] < T[1])
+                {
+                    (stackalloc[] { 0, 1 }).CopyTo(SA);
+                } else
+                {
+                    (stackalloc[] { 1, 0 }).CopyTo(SA);
+                }
+                return;
         }
 
         var result = sort_typeBstar(new IntAccessor(T), SA);
