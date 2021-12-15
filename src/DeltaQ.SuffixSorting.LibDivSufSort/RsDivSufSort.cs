@@ -6,6 +6,7 @@ using Idx = System.Int32;
 using SAPtr = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
+using static Crosscheck;
 
 internal static class DivSufSort
 {
@@ -3705,19 +3706,4 @@ internal static class DivSufSort
         pa = first;
         pb = last;
     }
-
-    [Conditional("DEBUG")]
-    private static void SA_dump(ReadOnlySpan<int> span, string v)
-    {
-        Debug.WriteLine($":: {v}");
-        for (int i = 0; i < span.Length; i++)
-        {
-            Debug.Write($"{span[i]} ");
-            Debug.WriteLineIf((i + 1) % 25 == 0, "");
-        }
-        Debug.WriteLine("");
-    }
-
-    [Conditional("DEBUG")]
-    private static void crosscheck(string v, params object[] args) => Debug.WriteLine(v, args);
 }
