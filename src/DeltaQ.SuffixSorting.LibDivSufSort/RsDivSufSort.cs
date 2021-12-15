@@ -3211,9 +3211,55 @@ public static class DivSufSort
         }
     }
 
-    private static void tr_fixdown(Span<int> iSAd, Span<int> sA_top, int first, int i, int m)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void tr_fixdown(Span<int> ISAd, Span<int> SA_top, SAPtr first, Idx i, Idx size)
     {
-        throw new NotImplementedException();
+        let mut j: Idx;
+        let mut k: Idx;
+        let mut d: Idx;
+        let mut e: Idx;
+
+        crosscheck!("fixdown i={} size={}", i, size);
+
+        macro_rules! ISAd {
+            ($x: expr) => {
+                SA_top[ISAd + $x]
+            };
+        }
+        macro_rules! SA {
+            ($x: expr) => {
+                SA_top[first + $x]
+            };
+        };
+
+        // WILMOT
+        let v = SA!(i);
+        let c = ISAd!(v);
+        loop {
+            // cond
+            j = 2 * i + 1;
+            if !(j < size) {
+                break;
+            }
+
+            // body
+            k = j;
+            d = ISAd!(SA!(k));
+            j += 1;
+            e = ISAd!(SA!(j));
+            if d < e {
+                k = j;
+                d = e;
+            }
+            if d <= c {
+                break;
+            }
+
+            // iter (WILMOT)
+            SA!(i) = SA!(k);
+            i = k;
+        }
+        SA!(i) = v;
     }
 
     /// <summary>
