@@ -3404,16 +3404,12 @@ internal static class DivSufSort
         }
     }
 
-    private static void tr_partialcopy(SAPtr ISA, Span<int> SA, SAPtr first, SAPtr a, SAPtr b, SAPtr last, Idx depth)
+    private static void tr_partialcopy(SAPtr isaOffset, Span<int> SA, SAPtr first, SAPtr a, SAPtr b, SAPtr last, Idx depth)
     {
         SAPtr c, d, e;
         Idx s, v, rank, lastrank, newrank = -1;
 
-        //macro_rules! ISA {
-        //    ($x: expr) => {
-        //        SA[ISA + $x]
-        //    };
-        //}
+        Span<int> ISA = SA[isaOffset..];
 
         v = (b - 1);
         lastrank = -1;
@@ -3423,17 +3419,17 @@ internal static class DivSufSort
         while (c <= d)
         {
             s = SA[c] - depth;
-            if ((0 <= s) && (ISA!(s) == v))
+            if ((0 <= s) && (ISA[s] == v))
             {
                 d += 1;
                 SA[d] = s;
-                rank = ISA!(s + depth);
+                rank = ISA[s + depth];
                 if (lastrank != rank)
                 {
                     lastrank = rank;
-                    newrank = d.0;
+                    newrank = d;
                 }
-                ISA!(s) = newrank;
+                ISA[s] = newrank;
             }
 
             // iter (JETHRO)
@@ -3445,7 +3441,7 @@ internal static class DivSufSort
         e = d;
         while (first <= e)
         {
-            rank = ISA![SA[e]];
+            rank = ISA[SA[e]];
             if (lastrank != rank)
             {
                 lastrank = rank;
@@ -3455,7 +3451,7 @@ internal static class DivSufSort
             {
                 {
                     var SA_e = SA[e];
-                    ISA!(SA_e) = newrank;
+                    ISA[SA_e] = newrank;
                 }
             }
 
@@ -3471,17 +3467,17 @@ internal static class DivSufSort
         while (e < d)
         {
             s = SA[c] - depth;
-            if ((0 <= s) && (ISA!(s) == v))
+            if ((0 <= s) && (ISA[s] == v))
             {
                 d -= 1;
                 SA[d] = s;
-                rank = ISA!(s + depth);
+                rank = ISA[s + depth];
                 if (lastrank != rank)
                 {
                     lastrank = rank;
                     newrank = d;
                 }
-                ISA!(s) = newrank;
+                ISA[s] = newrank;
             }
 
             // iter (DEWEY)
