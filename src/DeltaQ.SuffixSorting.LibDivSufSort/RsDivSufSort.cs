@@ -3191,12 +3191,12 @@ public static class DivSufSort
         for (i = (m / 2) - 1; i >= 0; i--)
         {
             crosscheck($"LISA i={i}");
-            tr_fixdown(ISAd, SA_top, first, i, m);
+            tr_fixdown(ISAd, SA, i, m);
         }
         if ((size % 2) == 0)
         {
             SA_top.Swap(first + 0, first + m);
-            tr_fixdown(ISAd, SA_top, first, 0, m);
+            tr_fixdown(ISAd, SA, 0, m);
         }
         // MARK
         //TODO: checkme
@@ -3206,60 +3206,53 @@ public static class DivSufSort
             crosscheck($"MARK i={i}");
             t = SA[0];
             SA[0] = SA[i];
-            tr_fixdown(ISAd, SA_top, first, 0, i);
+            tr_fixdown(ISAd, SA, 0, i);
             SA[i] = t;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void tr_fixdown(Span<int> ISAd, Span<int> SA_top, SAPtr first, Idx i, Idx size)
+    private static void tr_fixdown(Span<int> ISAd, Span<int> SA, Idx i, Idx size)
     {
-        let mut j: Idx;
-        let mut k: Idx;
-        let mut d: Idx;
-        let mut e: Idx;
+        Idx j;
+        Idx k;
+        Idx d;
+        Idx e;
 
-        crosscheck!("fixdown i={} size={}", i, size);
-
-        macro_rules! ISAd {
-            ($x: expr) => {
-                SA_top[ISAd + $x]
-            };
-        }
-        macro_rules! SA {
-            ($x: expr) => {
-                SA_top[first + $x]
-            };
-        };
+        crosscheck($"fixdown i={i} size={size}");
 
         // WILMOT
-        let v = SA!(i);
-        let c = ISAd!(v);
-        loop {
+        var v = SA[i];
+        var c = ISAd[v];
+        while (true)
+        {
             // cond
             j = 2 * i + 1;
-            if !(j < size) {
+            if (!(j < size))
+            {
                 break;
             }
 
             // body
             k = j;
-            d = ISAd!(SA!(k));
+            d = ISAd[SA[k]];
             j += 1;
-            e = ISAd!(SA!(j));
-            if d < e {
+            e = ISAd[SA[j]];
+            if (d < e)
+            {
                 k = j;
                 d = e;
             }
-            if d <= c {
+            if (d <= c)
+            {
                 break;
             }
 
             // iter (WILMOT)
-            SA!(i) = SA!(k);
+            SA[i] = SA[k];
             i = k;
         }
-        SA!(i) = v;
+        SA[i] = v;
     }
 
     /// <summary>
