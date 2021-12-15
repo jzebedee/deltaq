@@ -83,10 +83,9 @@ namespace DeltaQ.Tests
 
             ReadOnlySpan<byte> T = Encoding.UTF8.GetBytes(shruggy);
 
-            using var ownedSA = SpanOwner<int>.Allocate(T.Length, AllocationMode.Clear);
-            var SA = ownedSA.Span;
-
-            DivSufSort.divsufsort(T, SA);
+            var ldss = new LibDivSufSort();
+            using var owner = ldss.Sort(T);
+            var SA = owner.Memory.Span;
             Verify(T, SA);
         }
 
@@ -120,10 +119,9 @@ namespace DeltaQ.Tests
             var bytes = File.ReadAllBytes(path);
             ReadOnlySpan<byte> T = bytes;
 
-            using var ownedSA = SpanOwner<int>.Allocate(T.Length, AllocationMode.Clear);
-            var SA = ownedSA.Span;
-
-            DivSufSort.divsufsort(T, SA);
+            var ldss = new LibDivSufSort();
+            using var owner = ldss.Sort(T);
+            var SA = owner.Memory.Span;
             Verify(T, SA);
 
             FinalizeCrosscheck();
@@ -140,10 +138,11 @@ namespace DeltaQ.Tests
         [InlineData(51)]
         [InlineData(0x1000)]
         [InlineData(0x8000)]
-        //[InlineData(0x80000)]
-        //[InlineData(0x800000)]
+        [InlineData(0x8000 - 1)]
         public void CheckRandomBuffer(int size)
         {
+            var ldss = new LibDivSufSort();
+
 #if NET461
             var ownedT = ArrayPool<byte>.Shared.Rent(size);
             try
@@ -160,8 +159,7 @@ namespace DeltaQ.Tests
                 using (var ownedSA = SpanOwner<int>.Allocate(size, AllocationMode.Clear))
                 {
                     var SA = ownedSA.Span;
-
-                    DivSufSort.divsufsort(T, SA);
+                    ldss.Sort(T, SA);
                     Verify(T, SA);
                 }
             }
