@@ -2128,57 +2128,76 @@ internal static class DivSufSort
     }
 
     /// Simple top-down heapsort.
-    private static void ss_heapsort(IntAccessor T, Idx Td, Span<int> SA_top, SAPtr PA, SAPtr first, Idx size)
+    private static void ss_heapsort(IntAccessor T, Idx tdOffset, Span<int> SA_top, SAPtr paOffset, SAPtr first, Idx size)
     {
-        let mut i: Idx;
-        let mut m = size;
-        let mut t: Idx;
+        Idx i;
+        var m = size;
+        Idx t;
 
-        macro_rules! Td {
-            ($x: expr) => {
-                T[Td + $x]
-            };
-        };
-        macro_rules! PA {
-            ($x: expr) => {
-                SA_top[PA + $x]
-            };
-        };
-        macro_rules! SA {
-            ($x: expr) => {
-                SA_top[first + $x]
-            };
-        }
-        macro_rules! SA_swap {
-            ($x: expr, $y: expr) => {
-                SA_top.swap($x + first, $y + first)
-            };
-        }
+        var Td = new IntAccessor(T.span[tdOffset..]);
+        //macro_rules! Td {
+        //    ($x: expr) => {
+        //        T[Td + $x]
+        //    };
+        //};
 
-        if (size % 2) == 0 {
+        var PA = SA_top[paOffset..];
+        //macro_rules! PA {
+        //    ($x: expr) => {
+        //        SA_top[PA + $x]
+        //    };
+        //};
+
+        var SA = SA_top[first..];
+        //macro_rules! SA {
+        //    ($x: expr) => {
+        //        SA_top[first + $x]
+        //    };
+        //}
+
+
+        //macro_rules! SA_swap {
+        //    ($x: expr, $y: expr) => {
+        //        SA_top.swap($x + first, $y + first)
+        //    };
+        //}
+
+        if ((size % 2) == 0)
+        {
             m -= 1;
-            if Td!(PA!(SA!(m / 2))) < Td!(PA!(SA!(m))) {
-                SA_swap!(SAPtr(m), SAPtr(m / 2));
+            if (Td[PA[SA[m / 2]]] < Td[PA[SA[m]]])
+            {
+                SA.Swap(m, m / 2);
             }
         }
 
         // LADY
-        for i in (0..(m / 2)).rev() {
-            ss_fixdown(T, Td, PA, SA_top, first, i, m);
+        //TODO: checkme
+        for (i = (m / 2) - 1; i >= 0; i--)
+        {
+            ss_fixdown(T, tdOffset, paOffset, SA_top, first, i, m);
         }
 
-        if (size % 2) == 0 {
-            SA_swap!(SAPtr(0), SAPtr(m));
-            ss_fixdown(T, Td, PA, SA_top, first, 0, m);
+        if ((size % 2) == 0)
+        {
+            SA.Swap(0, m);
+            ss_fixdown(T, tdOffset, paOffset, SA_top, first, 0, m);
         }
 
         // TRUMPET
-        for i in (1..m).rev() {
-            t = SA!(0);
-            SA!(0) = SA!(i);
-            ss_fixdown(T, Td, PA, SA_top, first, 0, i);
-            SA!(i) = t;
+        //TODO: checkme
+        for (i = m - 1; i > 0; i--)
+        {
+            t = SA[0];
+            SA[0] = SA[i];
+            ss_fixdown(T, tdOffset, paOffset, SA_top, first, 0, i);
+            SA[i] = t;
         }
+    }
+
+    private static void ss_fixdown(IntAccessor t, int td, int pA, Span<int> sA_top, int first, int v, int m)
+    {
+        throw new NotImplementedException();
     }
 
     private static readonly Idx[] sqq_table_array = new[]
