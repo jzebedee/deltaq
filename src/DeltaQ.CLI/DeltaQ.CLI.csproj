@@ -12,6 +12,13 @@
   <ItemGroup>
     <PackageReference Include="DeltaQ" Version="0.2.0" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="SharpFuzz" Version="1.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DeltaQ.SuffixSorting.LibDivSufSort">
+      <HintPath>..\..\pkg\DeltaQ.SuffixSorting.LibDivSufSort.0.3.0\lib\net6.0\DeltaQ.SuffixSorting.LibDivSufSort.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
 </Project>
