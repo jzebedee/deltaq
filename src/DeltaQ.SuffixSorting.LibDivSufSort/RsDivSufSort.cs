@@ -7,7 +7,7 @@ using SAPtr = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 
-public static class DivSufSort
+internal static class DivSufSort
 {
     private const int ALPHABET_SIZE = byte.MaxValue + 1;
     private const int BUCKET_A_SIZE = ALPHABET_SIZE;
