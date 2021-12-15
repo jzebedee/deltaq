@@ -81,23 +81,13 @@ namespace DeltaQ.Tests
         {
             const string shruggy = @"¯\_(ツ)_/¯";
 
-            var size = Encoding.UTF8.GetByteCount(shruggy);
-            using var ownedT = SpanOwner<byte>.Allocate(size);
+            ReadOnlySpan<byte> T = Encoding.UTF8.GetBytes(shruggy);
 
-            var actualSize = Encoding.UTF8.GetBytes(shruggy, ownedT.Span);
-            Assert.Equal(size, actualSize);
+            using var ownedSA = SpanOwner<int>.Allocate(T.Length, AllocationMode.Clear);
+            var SA = ownedSA.Span;
 
-            ReadOnlySpan<byte> T = ownedT.Span;
-            //int result;
-            using (var ownedSA = SpanOwner<int>.Allocate(size, AllocationMode.Clear))
-            {
-                var SA = ownedSA.Span;
-
-                DivSufSort.divsufsort(T, SA);
-                Verify(T, SA);
-                //result = SAISChecker.Check(T, SA, T.Length, false);
-            }
-            //Assert.Equal(expected: 0, result);
+            DivSufSort.divsufsort(T, SA);
+            Verify(T, SA);
         }
 
         public static IEnumerable<object[]> FuzzFiles => FuzzFilesInner.Select(fuzzFile => new object[] { Path.Join(FuzzFilesBasePath, fuzzFile) });
@@ -136,7 +126,7 @@ namespace DeltaQ.Tests
             DivSufSort.divsufsort(T, SA);
             Verify(T, SA);
 
-            Trace.Flush();
+            FinalizeCrosscheck();
         }
 
         [Theory]
@@ -167,16 +157,13 @@ namespace DeltaQ.Tests
 #else
                 ReadOnlySpan<byte> T = ownedT.Span;
 #endif
-                //int result;
                 using (var ownedSA = SpanOwner<int>.Allocate(size, AllocationMode.Clear))
                 {
                     var SA = ownedSA.Span;
 
                     DivSufSort.divsufsort(T, SA);
                     Verify(T, SA);
-                    //result = SAISChecker.Check(T, SA, T.Length, false);
                 }
-                //Assert.Equal(expected: 0, result);
             }
 #if NET461
             finally
@@ -185,29 +172,5 @@ namespace DeltaQ.Tests
             }
 #endif
         }
-
-        //[Theory]
-        //[InlineData(0)]
-        //[InlineData(1)]
-        //[InlineData(2)]
-        //[InlineData(4)]
-        //[InlineData(8)]
-        //[InlineData(16)]
-        //[InlineData(32)]
-        //[InlineData(51)]
-        //[InlineData(0x1000)]
-        //public void CheckRandomBufferContinuous(int size)
-        //{
-        //    const int repetitions = 2_000;
-        //    for (int i = 0; i < repetitions; i++)
-        //    {
-        //        CheckRandomBuffer(size);
-
-        //        if (i % 100 == 0)
-        //        {
-        //            System.Diagnostics.Debug.WriteLine("Gen0:{0} Gen1:{1} Gen2:{2}", GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
-        //        }
-        //    }
-        //}
     }
 }
