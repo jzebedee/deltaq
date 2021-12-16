@@ -114,8 +114,6 @@ internal static class DivSufSort
         // Construct the suffix array by using the sorted order of type B suffixes
         c2 = T[n - 1];
         k = A[c2];
-        //TODO: check this
-        //SA[k] = T[n - 2] < c2 ? !(n - 1) : n - 1;
         SA[k] = T[n - 2] < c2 ? ~(n - 1) : n - 1;
         k += 1;
         // Scan the suffix array from left to right
@@ -293,7 +291,6 @@ internal static class DivSufSort
             SAPtr PAb = n - m;
             SAPtr ISAb = m;
 
-            //for i in (0.. = (m - 2)).rev() {
             for (i = m - 2; i >= 0; i--)
             {
                 t = SA[PAb + i];
@@ -453,7 +450,6 @@ internal static class DivSufSort
                         j -= 1;
                         {
                             var pos = SA[ISAb + j];
-                            //TODO: check complement
                             SA[pos] = (t == 0 || (1 < (t - i))) ? t : ~t;
                         }
                     }
