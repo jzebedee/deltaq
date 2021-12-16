@@ -15,7 +15,7 @@ internal static class Utils
           7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
           7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
           7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-        };
+    };
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
