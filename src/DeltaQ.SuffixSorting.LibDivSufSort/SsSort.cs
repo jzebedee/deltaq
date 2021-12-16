@@ -18,9 +18,7 @@ internal static class SsSort
     /// </summary>
     public static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, SAPtr buf, Idx bufsize, Idx depth, Idx n, bool lastsuffix)
     {
-        // Note: in most of this file "PA" seems to mean "Partition Array" - we're
-        // working on a slice of SA. This is also why SA (or a mutable reference to it)
-        // is passed around, so we don't run into lifetime issues.
+        // "PA" = "Partition Array", slice of SA
 
         SAPtr a;
         SAPtr b;
@@ -130,9 +128,6 @@ internal static class SsSort
 
             // Insert last type B* suffix
             Span<Idx> PAi = stackalloc Idx[2] { SA[PA + SA[first - 1]], n - 2 };
-            //let mut PAi:[Idx; 2] = [SA[PA + SA[first - 1]], n - 2];
-            //let SAI = SuffixArray(&mut PAi);
-
             a = first;
             i = SA[first - 1];
 
@@ -193,14 +188,8 @@ internal static class SsSort
 
     private static void ss_inplacemerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, Idx depth)
     {
-        SAPtr p;
-        SAPtr a;
-        SAPtr b;
-        Idx len;
-        Idx half;
-        Idx q;
-        Idx r;
-        Idx x;
+        SAPtr p, a, b;
+        Idx len, half, q, r, x;
 
         var original_first = first;
         var original_last = last;
