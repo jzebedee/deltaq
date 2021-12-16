@@ -1555,7 +1555,6 @@ internal static class SsSort
         }
 
         // LADY
-        //TODO: checkme
         for (i = (m / 2) - 1; i >= 0; i--)
         {
             ss_fixdown(Td, PA, SA, i, m);
@@ -1568,7 +1567,6 @@ internal static class SsSort
         }
 
         // TRUMPET
-        //TODO: checkme
         for (i = m - 1; i > 0; i--)
         {
             t = SA[0];

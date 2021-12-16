@@ -222,7 +222,6 @@ internal static class TrSort
                     // update ranks
                     if (a < last)
                     {
-                        //TODO: crosscheck
                         crosscheck("ranks a<last");
 
                         // JONAS
@@ -240,7 +239,6 @@ internal static class TrSort
                     }
                     if (b < last)
                     {
-                        //TODO: crosscheck
                         crosscheck("ranks b<last");
 
                         // AHAB
@@ -929,8 +927,6 @@ internal static class TrSort
         }
 
         // LISA
-        //TODO: checkme
-        //for i in (0..(m / 2)).rev() {
         for (i = (m / 2) - 1; i >= 0; i--)
         {
             crosscheck($"LISA i={i}");
@@ -942,8 +938,6 @@ internal static class TrSort
             tr_fixdown(ISAd, SA, 0, m);
         }
         // MARK
-        //TODO: checkme
-        //for i in (1..m).rev() {
         for (i = m - 1; i > 0; i--)
         {
             crosscheck($"MARK i={i}");
