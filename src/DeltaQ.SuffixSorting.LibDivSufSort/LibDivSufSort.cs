@@ -22,8 +22,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
                 ThrowHelper();
             }
 
-            //TODO: add 0/1/2 fast cases
-
             DivSufSort.divsufsort(textBuffer, suffixBuffer);
             return suffixBuffer.Length;
         }
