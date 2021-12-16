@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
-    public static class SpanExtensions
+    internal static class SpanExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Swap<T>(this Span<T> span, int i, int j)
