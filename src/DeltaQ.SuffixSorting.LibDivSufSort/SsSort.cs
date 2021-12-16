@@ -1,11 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
 
@@ -66,7 +62,7 @@ internal static class SsSort
             crosscheck($"ss_mintrosort (espresso) a={a - PA} depth={depth}");
             ss_mintrosort(T, SA, PA, a, a + SS_BLOCKSIZE, depth);
 
-            curbufsize = (last - (a + SS_BLOCKSIZE));
+            curbufsize = last - (a + SS_BLOCKSIZE);
             curbuf = a + SS_BLOCKSIZE;
             if (curbufsize <= bufsize)
             {
@@ -227,7 +223,7 @@ internal static class SsSort
 
             // LOIS
             a = first;
-            len = (middle - first)/*.0*/;
+            len = middle - first;
             half = len >> 1;
             r = -1;
             while (0 < len)
@@ -288,17 +284,14 @@ internal static class SsSort
 
     private static void ss_rotate(Span<int> SA, SAPtr first, SAPtr middle, SAPtr last)
     {
-        SAPtr a;
-        SAPtr b;
-        Idx t;
-        Idx l;
-        Idx r;
+        SAPtr a, b;
+        Idx t, l, r;
 
         var original_first = first;
         var original_last = last;
 
-        l = (middle - first)/*.0*/;
-        r = (last - middle)/*.0*/;
+        l = middle - first;
+        r = last - middle;
 
         SA_dump(SA[original_first..original_last], "pre-brendan");
 
@@ -578,19 +571,12 @@ internal static class SsSort
     /// Merge-backward with internal buffer
     private static void ss_mergebackward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
-        SAPtr p1;
-        SAPtr p2;
-        SAPtr a;
-        SAPtr b;
-        SAPtr c;
-        SAPtr bufend;
+        SAPtr p1, p2, a, b, c, bufend;
 
-        Idx t;
-        Idx r;
-        Idx x;
+        Idx t, r, x;
 
         bufend = buf + (last - middle) - 1;
-        ss_blockswap(SA, buf, middle, (last - middle));
+        ss_blockswap(SA, buf, middle, last - middle);
 
         x = 0;
         if (SA[bufend] < 0)
@@ -969,55 +955,6 @@ internal static class SsSort
 
     private const Idx SS_INSERTIONSORT_THRESHOLD = 8;
 
-    private ref struct SpanOffsetAccessor<T>
-    {
-        private readonly Span<T> _span;
-        private readonly int _offset;
-
-        public SpanOffsetAccessor(Span<T> span, int offset)
-        {
-            _span = span;
-            _offset = offset;
-        }
-
-        public ref T this[int index] => ref _span[_offset + index];
-    }
-
-    private ref struct ReadOnlySpanOffsetAccessor<T>
-    {
-        private readonly ReadOnlySpan<T> _span;
-        private readonly int _offset;
-
-        public ReadOnlySpanOffsetAccessor(ReadOnlySpan<T> span, int offset)
-        {
-            _span = span;
-            _offset = offset;
-        }
-
-        public ref readonly T this[int index] => ref _span[_offset + index];
-    }
-
-    private ref struct TdPAStarAccessor
-    {
-        private readonly ReadOnlySpanOffsetAccessor<byte> _TO;
-        private readonly ReadOnlySpan<int> _SA;
-        private readonly ReadOnlySpan<int> _PA;
-        private readonly IntAccessor _TD;
-
-        public TdPAStarAccessor(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA, int partitionOffset, int tdOffset)
-        {
-            _TO = new ReadOnlySpanOffsetAccessor<byte>(T, tdOffset);
-
-            _SA = SA;
-            _PA = SA[partitionOffset..];
-            _TD = new(T[tdOffset..]);
-        }
-
-        public readonly int this[int index] => _TD[_PA[_SA[index]]];
-
-        public readonly int AsOffset(int index) => _TO[index];
-    }
-
     /// <summary>
     /// Multikey introsort for medium size groups
     /// </summary>
@@ -1068,7 +1005,7 @@ internal static class SsSort
             if (old_limit == 0)
             {
                 SA_dump(SA[first..last], "before heapsort");
-                ss_heapsort(T, tdOffset, SA, partitionOffset, first, (last - first));
+                ss_heapsort(T, tdOffset, SA, partitionOffset, first, last - first);
                 SA_dump(SA[first..last], "after heapsort");
             }
 
@@ -1269,8 +1206,8 @@ internal static class SsSort
             if (a <= d)
             {
                 c = b - 1;
-                s = (a - first)/*.0*/;
-                t = (b - a)/*.0*/;
+                s = a - first;
+                t = b - a;
                 if (s > t)
                 {
                     s = t;
@@ -1286,8 +1223,8 @@ internal static class SsSort
                     e += 1;
                     f += 1;
                 }
-                s = (d - c)/*.0*/;
-                t = (last - d - 1)/*.0*/;
+                s = d - c;
+                t = last - d - 1;
                 if (s > t)
                 {
                     s = t;
@@ -1374,7 +1311,7 @@ internal static class SsSort
     /// </summary>
     private static SAPtr ss_pivot(IntAccessor T, Idx Td, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last)
     {
-        Idx t = (last - first)/*.0*/;
+        Idx t = last - first;
         SAPtr middle = first + (t / 2);
 
         if (t <= 512)
@@ -1600,11 +1537,11 @@ internal static class SsSort
     {
         if ((n & 0xff00) > 0)
         {
-            return 8 + lg_table[((n >> 8) & 0xff)];
+            return 8 + lg_table[(n >> 8) & 0xff];
         }
         else
         {
-            return 0 + lg_table[((n >> 0) & 0xff)];
+            return 0 + lg_table[(n >> 0) & 0xff];
         }
     }
 
@@ -1728,22 +1665,22 @@ internal static class SsSort
         {
             if ((x & 0xff00_0000) > 0)
             {
-                e = 24 + lg_table[((x >> 24) & 0xff)];
+                e = 24 + lg_table[(x >> 24) & 0xff];
             }
             else
             {
-                e = 16 + lg_table[((x >> 16) & 0xff)];
+                e = 16 + lg_table[(x >> 16) & 0xff];
             }
         }
         else
         {
             if ((x & 0x0000_ff00) > 0)
             {
-                e = 8 + lg_table[(((x >> 8) & 0xff))];
+                e = 8 + lg_table[(x >> 8) & 0xff];
             }
             else
             {
-                e = 0 + lg_table[(((x >> 0) & 0xff))];
+                e = 0 + lg_table[(x >> 0) & 0xff];
             }
         };
 

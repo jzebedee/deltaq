@@ -1,13 +1,11 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 using static Crosscheck;
-using static Utils;
 
 internal static class DivSufSort
 {

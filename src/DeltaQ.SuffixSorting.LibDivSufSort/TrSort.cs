@@ -1,11 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using Idx = System.Int32;
 using SAPtr = System.Int32;
