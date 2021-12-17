@@ -17,9 +17,7 @@ internal static class DivSufSort
     {
         Trace.Assert(T.Length == SA.Length);
 
-        var n = T.Length;
-
-        switch (n)
+        switch (T.Length)
         {
             case 0: return;
             case 1:
@@ -48,17 +46,13 @@ internal static class DivSufSort
         BBucket Bb = new(B);
         BStarBucket Bstar = new(B);
 
-        SAPtr i;
-        SAPtr j;
-        Idx k;
-        Idx s;
-        Idx c0;
-        Idx c2;
+        SAPtr i, j;
+        Idx k, s, c0, c1, c2;
         if (0 < m)
         {
             // Construct the sorted order of type B suffixes by using the
             // sorted order of type B* suffixes
-            Idx c1 = ALPHABET_SIZE - 2;
+            c1 = ALPHABET_SIZE - 2;
             while (0 <= c1)
             {
                 // Scan the suffix array from right to left
@@ -163,7 +157,7 @@ internal static class DivSufSort
         public int m;
     }
 
-    public ref struct BStarBucket
+    private ref struct BStarBucket
     {
         public readonly Span<int> B;
         public BStarBucket(Span<int> B) => this.B = B;
@@ -171,7 +165,7 @@ internal static class DivSufSort
         public ref int this[(int c0, int c1) index] => ref B[(index.c0 << 8) | index.c1];
     }
 
-    public ref struct BBucket
+    private ref struct BBucket
     {
         public readonly Span<int> B;
         public BBucket(Span<int> B) => this.B = B;
