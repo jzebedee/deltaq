@@ -144,18 +144,14 @@ internal static class SsSort
         }
     }
 
-    public static bool new_ss_compare_feature_flag = false;
     /// <summary>
     /// Compare two suffixes
     /// </summary>
-    internal static int ss_compare(IntAccessor TA, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
-        => new_ss_compare_feature_flag ? ss_compare_new(TA.span, SAp1, p1, SAp2, p2, depth) : ss_compare_old(TA, SAp1, p1, SAp2, p2, depth);
-
-    private static int ss_compare_new(ReadOnlySpan<byte> T, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
-        => T[(depth + SAp1[p1])..(SAp1[p1 + 1] + 2)].SequenceCompareTo(T[(depth + SAp2[p2])..(SAp2[p2 + 1] + 2)]);
-
-    private static int ss_compare_old(IntAccessor T, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
+    private static int ss_compare(IntAccessor T, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
     {
+        //Slower in bench:
+        //T[(depth + SAp1[p1])..(SAp1[p1 + 1] + 2)].SequenceCompareTo(T[(depth + SAp2[p2])..(SAp2[p2 + 1] + 2)])
+
         var U1 = depth + SAp1[p1];
         var U2 = depth + SAp2[p2];
         var U1n = SAp1[p1 + 1] + 2;
