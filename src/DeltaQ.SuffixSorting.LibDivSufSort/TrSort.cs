@@ -838,11 +838,9 @@ internal static class TrSort
 
     /// Returns the median of five elements
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static SAPtr tr_median5(Span<int> SA, SAPtr isadOffset, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
+    private static SAPtr tr_median5(ReadOnlySpan<int> SA, SAPtr isadOffset, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
     {
-        Span<int> ISAd = SA[isadOffset..];
-
-        //get(x) => ISAd[SA[x]]
+        ReadOnlySpan<int> ISAd = SA[isadOffset..];
 
         if (ISAd[SA[v2]] > ISAd[SA[v3]])
         {
