@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
+using Text = System.ReadOnlySpan<byte>;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
 
@@ -13,7 +14,7 @@ internal static class DivSufSort
     private const int BUCKET_A_SIZE = ALPHABET_SIZE;
     private const int BUCKET_B_SIZE = ALPHABET_SIZE * ALPHABET_SIZE;
 
-    public static void divsufsort(ReadOnlySpan<byte> T, Span<int> SA)
+    public static void divsufsort(Text T, Span<int> SA)
     {
         Trace.Assert(T.Length == SA.Length);
 
@@ -35,11 +36,11 @@ internal static class DivSufSort
                 return;
         }
 
-        var result = sort_typeBstar(new IntAccessor(T), SA);
+        var result = sort_typeBstar(T, SA);
         construct_SA(T, SA, result.A, result.B, result.m);
     }
 
-    private static void construct_SA(ReadOnlySpan<byte> T, Span<int> SA, Span<int> A, Span<int> B, int m)
+    private static void construct_SA(Text T, Span<int> SA, Span<int> A, Span<int> B, int m)
     {
         Idx n = T.Length;
 
@@ -173,7 +174,7 @@ internal static class DivSufSort
         public ref int this[(int c0, int c1) index] => ref B[(index.c1 << 8) | index.c0];
     }
 
-    public static SortTypeBstarResult sort_typeBstar(in IntAccessor T, Span<int> SA)
+    public static SortTypeBstarResult sort_typeBstar(Text T, Span<int> SA)
     {
         var n = T.Length;
 
