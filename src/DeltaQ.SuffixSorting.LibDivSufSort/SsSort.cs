@@ -388,16 +388,9 @@ internal static class SsSort
         using var stackOwner = SpanOwner<SsStackItem>.Allocate(MERGE_STACK_SIZE, AllocationMode.Clear);
         var stack = new SsStack(stackOwner.Span);
 
-        SAPtr l;
-        SAPtr r;
-        SAPtr lm;
-        SAPtr rm;
+        SAPtr l, r, lm, rm;
 
-        Idx m;
-        Idx len;
-        Idx half;
-        Idx check;
-        Idx next;
+        Idx m, len, half, check, next;
 
         // BARBARIAN
         check = 0;
@@ -771,12 +764,8 @@ internal static class SsSort
     /// Merge-forward with internal buffer
     private static void ss_mergeforward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
-        SAPtr a;
-        SAPtr b;
-        SAPtr c;
-        SAPtr bufend;
-        Idx t;
-        Idx r;
+        SAPtr a, b, c, bufend;
+        Idx t, r;
 
         SA_dump(SA[first..last], "ss_mergeforward start");
 
@@ -955,19 +944,9 @@ internal static class SsSort
         using var stackOwner = SpanOwner<SsStackItem>.Allocate(SS_STACK_SIZE);
         var stack = new SsStack(stackOwner.Span);
 
-        SAPtr a;
-        SAPtr b;
-        SAPtr c;
-        SAPtr d;
-        SAPtr e;
-        SAPtr f;
+        SAPtr a, b, c, d, e, f;
 
-        Idx s;
-        Idx t;
-
-        Idx limit;
-        Idx v;
-        Idx x = 0;
+        Idx s, t, limit, v, x = 0;
 
         // RENEE
         limit = ss_ilg(last - first);
