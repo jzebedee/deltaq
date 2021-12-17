@@ -1,9 +1,10 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
-using Text = System.ReadOnlySpan<byte>;
+using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
+using Text = System.ReadOnlySpan<byte>;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 using static Crosscheck;
@@ -160,18 +161,30 @@ internal static class DivSufSort
 
     private ref struct BStarBucket
     {
-        public readonly Span<int> B;
+        private readonly Span<int> B;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BStarBucket(Span<int> B) => this.B = B;
 
-        public ref int this[(int c0, int c1) index] => ref B[(index.c0 << 8) | index.c1];
+        public ref int this[(int c0, int c1) index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref B[(index.c0 << 8) | index.c1];
+        }
     }
 
     private ref struct BBucket
     {
-        public readonly Span<int> B;
+        private readonly Span<int> B;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BBucket(Span<int> B) => this.B = B;
 
-        public ref int this[(int c0, int c1) index] => ref B[(index.c1 << 8) | index.c0];
+        public ref int this[(int c0, int c1) index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref B[(index.c1 << 8) | index.c0];
+        }
     }
 
     public static SortTypeBstarResult sort_typeBstar(Text T, Span<int> SA)
