@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿//#define SS_ISQRT_LOOKUP
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -1605,6 +1606,7 @@ internal static class SsSort
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_isqrt(int x)
+#if SS_ISQRT_LOOKUP
     {
         if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
         {
@@ -1663,5 +1665,12 @@ internal static class SsSort
             return y;
         }
     }
+#else
+    => x switch
+    {
+        >= (SS_BLOCKSIZE * SS_BLOCKSIZE) => SS_BLOCKSIZE,
+        _ => (int)MathF.Sqrt(x)
+    };
+#endif
 }
 

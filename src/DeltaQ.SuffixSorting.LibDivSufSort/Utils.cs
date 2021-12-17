@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define SS_ISQRT_LOOKUP
+using System;
 using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 
@@ -19,6 +20,7 @@ internal static class Utils
     };
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
 
+#if SS_ISQRT_LOOKUP
     private static readonly Idx[] sqq_table_array = new[]
     {
           0,  16,  22,  27,  32,  35,  39,  42,  45,  48,  50,  53,  55,  57,  59,  61,
@@ -39,6 +41,7 @@ internal static class Utils
         247, 248, 248, 249, 249, 250, 250, 251, 251, 252, 252, 253, 253, 254, 254, 255
     };
     internal static ReadOnlySpan<Idx> sqq_table => sqq_table_array;
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Swap<T>(ref T lhs, ref T rhs)
