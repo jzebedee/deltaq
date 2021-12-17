@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Text = System.ReadOnlySpan<byte>;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
 
@@ -16,7 +17,7 @@ internal static class SsSort
     /// <summary>
     /// Substring sort
     /// </summary>
-    public static void sssort(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, SAPtr buf, Idx bufsize, Idx depth, Idx n, bool lastsuffix)
+    public static void sssort(Text T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last, SAPtr buf, Idx bufsize, Idx depth, Idx n, bool lastsuffix)
     {
         // "PA" = "Partition Array", slice of SA
 
@@ -127,7 +128,7 @@ internal static class SsSort
             crosscheck("lastsuffix!");
 
             // Insert last type B* suffix
-            Span<Idx> PAi = stackalloc Idx[2] { SA[PA + SA[first - 1]], n - 2 };
+            ReadOnlySpan<Idx> PAi = stackalloc Idx[2] { SA[PA + SA[first - 1]], n - 2 };
             a = first;
             i = SA[first - 1];
 
@@ -147,7 +148,8 @@ internal static class SsSort
     /// <summary>
     /// Compare two suffixes
     /// </summary>
-    private static int ss_compare(IntAccessor T, Span<int> SAp1, SAPtr p1, Span<int> SAp2, SAPtr p2, Idx depth)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int ss_compare(Text T, ReadOnlySpan<int> SAp1, SAPtr p1, ReadOnlySpan<int> SAp2, SAPtr p2, Idx depth)
     {
         //Slower in bench:
         //T[(depth + SAp1[p1])..(SAp1[p1 + 1] + 2)].SequenceCompareTo(T[(depth + SAp2[p2])..(SAp2[p2 + 1] + 2)])
@@ -187,7 +189,7 @@ internal static class SsSort
         }
     }
 
-    private static void ss_inplacemerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, Idx depth)
+    private static void ss_inplacemerge(Text T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, Idx depth)
     {
         SAPtr p, a, b;
         Idx len, half, q, r, x;
@@ -272,6 +274,7 @@ internal static class SsSort
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void ss_rotate(Span<int> SA, SAPtr first, SAPtr middle, SAPtr last)
     {
         SAPtr a, b;
@@ -356,6 +359,7 @@ internal static class SsSort
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void ss_blockswap(Span<int> SA, SAPtr a, SAPtr b, Idx n)
     {
         for (int i = 0; i < n; i++)
@@ -365,11 +369,11 @@ internal static class SsSort
     }
 
     /// D&C based merge
-    private static void ss_swapmerge(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
+    private static void ss_swapmerge(Text T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx bufsize, Idx depth)
     {
         static Idx get_idx(Idx a) => 0 <= a ? a : ~a;
 
-        void merge_check(IntAccessor T, Span<int> SA, Idx a, Idx b, Idx c)
+        void merge_check(Text T, Span<int> SA, Idx a, Idx b, Idx c)
         {
             crosscheck($"mc c={c}");
             if (((c & 1) > 0) || (((c & 2) > 0) && (ss_compare(T, SA, PA + get_idx(SA[a - 1]), SA, PA + SA[a], depth) == 0)))
@@ -552,7 +556,7 @@ internal static class SsSort
     }
 
     /// Merge-backward with internal buffer
-    private static void ss_mergebackward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
+    private static void ss_mergebackward(Text T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
         SAPtr p1, p2, a, b, c, bufend;
 
@@ -762,7 +766,7 @@ internal static class SsSort
     }
 
     /// Merge-forward with internal buffer
-    private static void ss_mergeforward(IntAccessor T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
+    private static void ss_mergeforward(Text T, Span<int> SA, SAPtr PA, SAPtr first, SAPtr middle, SAPtr last, SAPtr buf, Idx depth)
     {
         SAPtr a, b, c, bufend;
         Idx t, r;
@@ -909,6 +913,7 @@ internal static class SsSort
             Size = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d)
         {
             Trace.Assert(Size < Items.Length);
@@ -918,6 +923,8 @@ internal static class SsSort
             item.c = c;
             item.d = d;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d)
         {
             //Debug.Assert(Size > 0);
@@ -937,7 +944,7 @@ internal static class SsSort
     /// <summary>
     /// Multikey introsort for medium size groups
     /// </summary>
-    private static void ss_mintrosort(IntAccessor T, Span<int> SA, SAPtr partitionOffset, SAPtr first, SAPtr last, Idx depth)
+    private static void ss_mintrosort(Text T, Span<int> SA, SAPtr partitionOffset, SAPtr first, SAPtr last, Idx depth)
     {
         var PA = SA[partitionOffset..];
 
@@ -966,7 +973,7 @@ internal static class SsSort
             }
 
             var tdOffset = depth;
-            var TdPAStar = new TdPAStarAccessor(T.span, SA, partitionOffset, tdOffset);
+            var TdPAStar = new TdPAStarAccessor(T, SA, partitionOffset, tdOffset);
 
             /*readonly*/
             var old_limit = limit;
@@ -1278,25 +1285,24 @@ internal static class SsSort
     /// <summary>
     /// Returns the pivot element
     /// </summary>
-    private static SAPtr ss_pivot(IntAccessor T, Idx Td, Span<int> SA, SAPtr PA, SAPtr first, SAPtr last)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static SAPtr ss_pivot(Text T, Idx Td, ReadOnlySpan<int> SA, SAPtr PA, SAPtr first, SAPtr last)
     {
         Idx t = last - first;
         SAPtr middle = first + (t / 2);
 
+        var get = new TdPAStarAccessor(T, SA, PA, Td);
         if (t <= 512)
         {
             if (t <= 32)
             {
-                return ss_median3(T, Td, SA, PA, first, middle, last - 1);
+                return ss_median3(get, first, middle, last - 1);
             }
             else
             {
                 t >>= 2;
                 return ss_median5(
-                    T,
-                    Td,
-                    SA,
-                    PA,
+                    get,
                     first,
                     first + t,
                     middle,
@@ -1306,18 +1312,17 @@ internal static class SsSort
         }
 
         t >>= 3;
-        first = ss_median3(T, Td, SA, PA, first, first + t, first + (t << 1));
-        middle = ss_median3(T, Td, SA, PA, middle - t, middle, middle + t);
-        last = ss_median3(T, Td, SA, PA, last - 1 - (t << 1), last - 1 - t, last - 1);
+        first = ss_median3(get, first, first + t, first + (t << 1));
+        middle = ss_median3(get, middle - t, middle, middle + t);
+        last = ss_median3(get, last - 1 - (t << 1), last - 1 - t, last - 1);
 
-        return ss_median3(T, Td, SA, PA, first, middle, last);
+        return ss_median3(get, first, middle, last);
     }
 
     /// Returns the median of five elements
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static SAPtr ss_median5(IntAccessor T, Idx Td, ReadOnlySpan<int> SA, SAPtr PA, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
+    private static SAPtr ss_median5(TdPAStarAccessor get, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
     {
-        var get = new TdPAStarAccessor(T.span, SA, PA, Td);
         if (get[v2] > get[v3])
         {
             Swap(ref v2, ref v3);
@@ -1353,11 +1358,9 @@ internal static class SsSort
     /// <summary>
     /// Returns the median of three elements
     /// </summary>
-    private static int ss_median3(IntAccessor T, Idx Td, Span<int> SA, SAPtr PA, SAPtr v1, SAPtr v2, SAPtr v3)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int ss_median3(TdPAStarAccessor get, SAPtr v1, SAPtr v2, SAPtr v3)
     {
-        //int get(int x) => T[Td + SA[PA + SA[x]]]
-        var get = new TdPAStarAccessor(T.span, SA, PA, Td);
-
         if (get[v1] > get[v2])
         {
             Swap(ref v1, ref v2);
@@ -1384,7 +1387,7 @@ internal static class SsSort
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr ss_partition(Span<int> SA, SAPtr paOffset, SAPtr first, SAPtr last, Idx depth)
     {
-        Span<int> PA = SA[paOffset..];
+        ReadOnlySpan<int> PA = SA[paOffset..];
 
         // JIMMY
         var a = first - 1;
@@ -1442,7 +1445,7 @@ internal static class SsSort
         return a;
     }
 
-    private static void ss_insertionsort(IntAccessor T, Span<int> SA, int PA, int first, int last, int depth)
+    private static void ss_insertionsort(Text T, Span<int> SA, int PA, int first, int last, int depth)
     {
         SAPtr i;
         SAPtr j;
@@ -1502,6 +1505,7 @@ internal static class SsSort
     /// <summary>
     /// Fast log2, using lookup tables
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_ilg(int n)
     {
         if ((n & 0xff00) > 0)
@@ -1515,14 +1519,14 @@ internal static class SsSort
     }
 
     /// Simple top-down heapsort.
-    private static void ss_heapsort(IntAccessor T, Idx tdOffset, Span<int> SA_top, SAPtr paOffset, SAPtr first, Idx size)
+    private static void ss_heapsort(Text T, Idx tdOffset, Span<int> SA_top, SAPtr paOffset, SAPtr first, Idx size)
     {
         Idx i;
         var m = size;
         Idx t;
 
-        var Td = new IntAccessor(T.span[tdOffset..]);
-        var PA = SA_top[paOffset..];
+        Text Td = T[tdOffset..];
+        ReadOnlySpan<int> PA = SA_top[paOffset..];
         var SA = SA_top[first..];
 
         if ((size % 2) == 0)
@@ -1556,7 +1560,7 @@ internal static class SsSort
         }
     }
 
-    private static void ss_fixdown(IntAccessor Td, Span<int> PA, Span<int> SA, Idx i, Idx size)
+    private static void ss_fixdown(Text Td, ReadOnlySpan<int> PA, Span<int> SA, Idx i, Idx size)
     {
         Idx j, v, c, d, e, k;
 
@@ -1620,6 +1624,7 @@ internal static class SsSort
     /// <summary>
     /// Fast sqrt, using lookup tables
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_isqrt(int x)
     {
         if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
