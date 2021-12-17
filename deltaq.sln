@@ -31,6 +31,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LibDiv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LivDivSufSort.Tests", "test\DeltaQ.SuffixSorting.LivDivSufSort.Tests\DeltaQ.SuffixSorting.LivDivSufSort.Tests.csproj", "{5486E391-BFF9-4ED9-8383-032AE249C588}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bench", "bench", "{BF7CD739-6B0C-424D-A5CD-7970D80915E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.Benchmarks", "bench\DeltaQ.Benchmarks\DeltaQ.Benchmarks.csproj", "{A5FCA064-2EED-4CDB-93D7-FF16E3314885}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,10 @@ Global
 		{5486E391-BFF9-4ED9-8383-032AE249C588}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5486E391-BFF9-4ED9-8383-032AE249C588}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5486E391-BFF9-4ED9-8383-032AE249C588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5FCA064-2EED-4CDB-93D7-FF16E3314885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5FCA064-2EED-4CDB-93D7-FF16E3314885}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5FCA064-2EED-4CDB-93D7-FF16E3314885}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5FCA064-2EED-4CDB-93D7-FF16E3314885}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -102,6 +110,7 @@ Global
 		{96F1E46E-53CB-4463-82E2-0F81BEB87080} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 		{E89B007E-0BDE-4642-B40F-CCB7569F88B8} = {8B14206D-43D5-4740-96BF-3772DC4C3A6B}
 		{5486E391-BFF9-4ED9-8383-032AE249C588} = {03F00ECA-08B1-47A4-8ACE-4624E31741BA}
+		{A5FCA064-2EED-4CDB-93D7-FF16E3314885} = {BF7CD739-6B0C-424D-A5CD-7970D80915E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {595D8046-0D57-4408-A80A-777358A7E831}
