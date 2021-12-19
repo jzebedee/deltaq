@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,7 +14,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="SqrtBenchmarks.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="SqrtBenchmarks.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
   </ItemGroup>
 
   <ItemGroup>
