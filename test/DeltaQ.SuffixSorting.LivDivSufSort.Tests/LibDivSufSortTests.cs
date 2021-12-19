@@ -42,17 +42,16 @@ namespace DeltaQ.Tests
         }
 #endif
 
-        private static void Verify(ReadOnlySpan<byte> input, ReadOnlySpan<int> sa)
+        private static void Verify(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA)
         {
             //ref byte suff(int index) => ref input[sa[index]];
-            for (int i = 0; i < input.Length - 1; i++)
+            for (int i = 0; i < T.Length - 1; i++)
             {
                 //if(!(suff(i) < suff(i + 1)))
-                var cur = input[sa[i]..];
-                var next = input[sa[i + 1]..];
+                var cur = T[SA[i]..];
+                var next = T[SA[i + 1]..];
                 var cmp = cur.SequenceCompareTo(next);
                 if (!(cmp < 0))
-                //if (!(cur < next))
                 {
                     var ex = new InvalidOperationException("Input was unsorted");
                     ex.Data["i"] = i;
@@ -60,6 +59,10 @@ namespace DeltaQ.Tests
                     throw ex;
                 }
             }
+
+            const LDSSChecker.ResultCode expected = LDSSChecker.ResultCode.Done;
+            var actual = LDSSChecker.Check(T, SA, true);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
