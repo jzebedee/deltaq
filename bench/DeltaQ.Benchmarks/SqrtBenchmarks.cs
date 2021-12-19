@@ -12,20 +12,20 @@ namespace DeltaQ.Benchmarks
     public class SqrtBenchmarks
     {
         private const int Step = 1;
-        public SqrtBenchmarks()
-        {
-            //sanity check range
-            for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i++)
-            {
-                var sqrtFast = ss_isqrt(i);
-                var sqrtD = (int)Math.Sqrt(i);
-                var sqrtF = (int)MathF.Sqrt(i);
-                if (sqrtFast != sqrtD || sqrtD != sqrtF) throw new InvalidOperationException($"{i} did not match");
-            }
-        }
+        //public SqrtBenchmarks()
+        //{
+        //    //sanity check range
+        //    for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i++)
+        //    {
+        //        var sqrtFast = ss_isqrt(i);
+        //        var sqrtD = (int)Math.Sqrt(i);
+        //        var sqrtF = (int)MathF.Sqrt(i);
+        //        if (sqrtFast != sqrtD || sqrtD != sqrtF) throw new InvalidOperationException($"{i} did not match");
+        //    }
+        //}
 
-        [Benchmark]
-        public void SqrtsFast()
+        [Benchmark(Baseline = true)]
+        public void SqrtsSS()
         {
             Idx y = -1;
             for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
@@ -35,8 +35,8 @@ namespace DeltaQ.Benchmarks
             GC.KeepAlive(y);
         }
 
-        [Benchmark(Baseline = true)]
-        public void Sqrts()
+        [Benchmark]
+        public void SqrtsMath()
         {
             Idx y = -1;
             for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
@@ -47,7 +47,7 @@ namespace DeltaQ.Benchmarks
         }
 
         [Benchmark]
-        public void SqrtsF()
+        public void SqrtsMathF()
         {
             Idx y = -1;
             for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
@@ -76,13 +76,6 @@ namespace DeltaQ.Benchmarks
             }
             return (int)MathF.Sqrt(x);
         }
-
-        //=> x switch
-        //{
-        //    >= (SS_BLOCKSIZE * SS_BLOCKSIZE) => SS_BLOCKSIZE,
-        //    _ => (int)MathF.Sqrt(x)
-        //};
-
 
         private const Idx SS_BLOCKSIZE = 1024;
         /// <summary>
