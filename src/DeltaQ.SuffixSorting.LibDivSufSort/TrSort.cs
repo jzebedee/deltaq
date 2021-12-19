@@ -12,6 +12,11 @@ using static Utils;
 
 internal static class TrSort
 {
+    /// <summary>
+    /// Fast log2, using lookup tables
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //allow unchecked
     private static int tr_ilg(int n)
     {
         if ((n & 0xffff_0000) > 0)
@@ -38,7 +43,9 @@ internal static class TrSort
         }
     }
 
+    /// <summary>
     /// Tandem repeat sort
+    /// </summary>
     internal static void trsort(SAPtr ISA, Span<int> SA, int n, int depth)
     {
         SAPtr ISAd;
@@ -51,14 +58,6 @@ internal static class TrSort
         /*Index*/
         int unsorted;
         Budget budget = new(tr_ilg(n) * 2 / 3, n);
-
-        //macro_rules! ISA {
-        //    ($x: expr) => {
-        //        SA[ISA + $x]
-        //    };
-        //}
-
-        //ref int getISA(int x) => ref SA[ISA + x];
 
         // JERRY
         ISAd = ISA + depth;
@@ -147,12 +146,14 @@ internal static class TrSort
         public readonly Span<TrStackItem> Items;
         public int Size;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TrStack(Span<TrStackItem> items)
         {
             Items = items;
             Size = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d, Idx e)
         {
             Trace.Assert(Size < Items.Length);
@@ -163,6 +164,8 @@ internal static class TrSort
             item.d = d;
             item.e = e;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d, ref Idx e)
         {
             if (Size == 0) return false;
@@ -191,18 +194,6 @@ internal static class TrSort
         using var stackOwner = SpanOwner<TrStackItem>.Allocate(TR_STACK_SIZE, AllocationMode.Clear);
         TrStack stack = new(stackOwner.Span);
 
-        /*
-           macro_rules! ISA {
-               ($x: expr) => {
-                   SA[ISA + $x]
-               };
-           }
-           macro_rules! ISAd {
-               ($x: expr) => {
-                   SA[ISAd + $x]
-               };
-           }
-        */
         var ISA = SA[isaOffset..];
         var ISAd = SA[isadOffset..];
 
@@ -810,7 +801,9 @@ internal static class TrSort
         } // end PASCAL
     }
 
+    /// <summary>
     /// Returns the pivot element
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr tr_pivot(Span<int> SA, SAPtr ISAd, SAPtr first, SAPtr last)
     {
@@ -836,7 +829,9 @@ internal static class TrSort
         return tr_median3(SA, ISAd, first, middle, last);
     }
 
+    /// <summary>
     /// Returns the median of five elements
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr tr_median5(ReadOnlySpan<int> SA, SAPtr isadOffset, SAPtr v1, SAPtr v2, SAPtr v3, SAPtr v4, SAPtr v5)
     {
@@ -874,7 +869,9 @@ internal static class TrSort
         }
     }
 
+    /// <summary>
     /// Returns the median of three elements
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SAPtr tr_median3(ReadOnlySpan<int> SA, SAPtr isadOffset, SAPtr v1, SAPtr v2, SAPtr v3)
     {
@@ -1126,7 +1123,9 @@ internal static class TrSort
         }
     }
 
+    /// <summary>
     /// Tandem repeat copy
+    /// </summary>
     private static void tr_copy(SAPtr isaOffset, Span<int> SA, SAPtr first, SAPtr a, SAPtr b, SAPtr last, Idx depth)
     {
         // sort suffixes of middle partition
@@ -1182,6 +1181,7 @@ internal static class TrSort
     /// <summary>
     /// Tandem repeat partition
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void tr_partition(Span<int> SA, SAPtr isadOffset, SAPtr first, SAPtr middle, SAPtr last, ref SAPtr pa, ref SAPtr pb, Idx v)
     {
         SAPtr a, b, c, d, e, f;
