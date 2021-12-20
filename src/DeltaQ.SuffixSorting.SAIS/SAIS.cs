@@ -72,7 +72,7 @@ namespace DeltaQ.SuffixSorting.SAIS
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void GetBuckets(Span<int> c, Span<int> b, int k, bool end)
+        private static void GetBuckets(ReadOnlySpan<int> c, Span<int> b, int k, bool end)
         {
             for (int i = 0, sum = 0; i < k; ++i)
             {
@@ -521,17 +521,19 @@ namespace DeltaQ.SuffixSorting.SAIS
 
         private ref struct IntAccessor
         {
-            private readonly Span<int> intSpan;
+            private readonly ReadOnlySpan<int> intSpan;
             private readonly ReadOnlySpan<byte> byteSpan;
             private readonly bool packedIndex;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public IntAccessor(ReadOnlySpan<byte> buffer)
             {
                 this.byteSpan = buffer;
                 this.intSpan = default;
                 this.packedIndex = true;
             }
-            public IntAccessor(Span<int> buffer)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public IntAccessor(ReadOnlySpan<int> buffer)
             {
                 this.byteSpan = default;
                 this.intSpan = buffer;
@@ -540,29 +542,8 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             public int this[int index]
             {
-                get
-                {
-                    if (packedIndex)
-                    {
-                        return byteSpan[index];
-                    }
-                    else
-                    {
-                        return intSpan[index];
-                    }
-                }
-
-                set
-                {
-                    if (packedIndex)
-                    {
-                        throw new InvalidOperationException("Can't use setter while accessing read only span");
-                    }
-                    else
-                    {
-                        intSpan[index] = (byte)value;
-                    }
-                }
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => packedIndex ? byteSpan[index] : intSpan[index];
             }
         }
     }
