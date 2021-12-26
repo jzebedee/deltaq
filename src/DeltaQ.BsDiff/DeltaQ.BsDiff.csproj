@@ -5,13 +5,12 @@
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
     <Version>0.2.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DeltaQ.SuffixSorting.Abstractions" Version="0.2.0" />
-    <PackageReference Include="DeltaQ.Utility.Memory" Version="0.2.0" />
+    <PackageReference Include="DeltaQ.Utility.Memory" Version="0.3.0" />
   </ItemGroup>
 
 </Project>

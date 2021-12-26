@@ -27,8 +27,8 @@
 
 using bz2core;
 using DeltaQ.SuffixSorting;
+using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Microsoft.Toolkit.HighPerformance.Extensions;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -88,7 +88,7 @@ namespace DeltaQ.BsDiff
                 ??	??	Bzip2ed extra block */
             Span<byte> header = stackalloc byte[HeaderSize];
 
-            Span<byte> header_signature = header.Slice(0, sizeof(long));
+            Span<byte> header_signature = header[..sizeof(long)];
             header_signature.WritePackedLong(Signature);
 
             Span<byte> header_compressed_ctrl = header.Slice(sizeof(long), sizeof(long));
@@ -116,12 +116,8 @@ namespace DeltaQ.BsDiff
                 using (var extraStream = GetEncodingStream(msExtra, true))
                 {
                     Span<int> I = saOwner.Span;
-#if NETSTANDARD2_0
-                    var sortLen = suffixSort.Sort(oldData, I.Slice(0, oldData.Length));
-#else
                     var sortLen = suffixSort.Sort(oldData, I[..^1]);
-#endif
-                    Trace.Assert(sortLen == oldData.Length);
+                    Debug.Assert(sortLen == oldData.Length);
 
                     var scan = 0;
                     var pos = 0;
@@ -137,7 +133,7 @@ namespace DeltaQ.BsDiff
 
                         for (var scsc = scan += len; scan < newData.Length; scan++)
                         {
-                            len = Search(I, oldData, newData.Slice(scan), 0, oldData.Length, out pos);
+                            len = Search(I, oldData, newData[scan..], 0, oldData.Length, out pos);
 
                             for (; scsc < scan + len; scsc++)
                             {
@@ -282,8 +278,8 @@ namespace DeltaQ.BsDiff
             {
                 if (end - start < 2)
                 {
-                    var x = MatchLength(oldData.Slice(I[start]), newData);
-                    var y = MatchLength(oldData.Slice(I[end]), newData);
+                    var x = MatchLength(oldData[I[start]..], newData);
+                    var y = MatchLength(oldData[I[end]..], newData);
 
                     if (x > y)
                     {
@@ -298,7 +294,7 @@ namespace DeltaQ.BsDiff
                 }
 
                 var midPoint = start + (end - start) / 2;
-                if (CompareBytes(oldData.Slice(I[midPoint]), newData) < 0)
+                if (CompareBytes(oldData[I[midPoint]..], newData) < 0)
                 {
                     start = midPoint;
                 }

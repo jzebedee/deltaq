@@ -25,8 +25,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Microsoft.Toolkit.HighPerformance.Extensions;
 using System;
 using System.IO;
 
@@ -96,9 +96,9 @@ namespace DeltaQ.BsDiff
                     throw new InvalidOperationException("Corrupt patch");
 
                 // read lengths from header
-                controlLength = header.Slice(sizeof(long)).ReadPackedLong();
-                diffLength = header.Slice(sizeof(long) * 2).ReadPackedLong();
-                newSize = header.Slice(sizeof(long) * 3).ReadPackedLong();
+                controlLength = header[sizeof(long)..].ReadPackedLong();
+                diffLength = header[(sizeof(long) * 2)..].ReadPackedLong();
+                newSize = header[(sizeof(long) * 3)..].ReadPackedLong();
 
                 if (controlLength < 0 || diffLength < 0 || newSize < 0)
                     throw new InvalidOperationException("Corrupt patch");
@@ -147,9 +147,9 @@ namespace DeltaQ.BsDiff
                     // add x bytes from oldfile to x bytes from the diff block;
                     var addSize = ctrlBuffer.ReadPackedLong();
                     // copy y bytes from the extra block;
-                    var copySize = ctrlBuffer.Slice(sizeof(long)).ReadPackedLong();
+                    var copySize = ctrlBuffer[sizeof(long)..].ReadPackedLong();
                     // seek forwards in oldfile by z bytes;
-                    var seekAmount = ctrlBuffer.Slice(sizeof(long) * 2).ReadPackedLong();
+                    var seekAmount = ctrlBuffer[(sizeof(long) * 2)..].ReadPackedLong();
 
                     // sanity-check
                     if (output.Position + addSize > newSize)
@@ -169,7 +169,7 @@ namespace DeltaQ.BsDiff
                         for (var i = 0; i < diffBytesRead; i++)
                             diffBuffer[i] += inputBuffer[i];
 
-                        output.Write(diffBuffer.Slice(0, diffBytesRead));
+                        output.Write(diffBuffer[..diffBytesRead]);
                         addSize -= diffBytesRead;
                     }
 
@@ -181,7 +181,7 @@ namespace DeltaQ.BsDiff
                     while (copySize > 0)
                     {
                         var bytesRead = extra.Read(diffBuffer.SliceUpTo((int)copySize));
-                        output.Write(diffBuffer.Slice(0, bytesRead));
+                        output.Write(diffBuffer[..bytesRead]);
                         copySize -= bytesRead;
                     }
 

@@ -73,6 +73,6 @@ namespace DeltaQ.BsDiff
             return (span[7] & 0x80) != 0 ? -y : y;
         }
 
-        public static Span<T> SliceUpTo<T>(this Span<T> span, int max) => span.Slice(0, Math.Min(span.Length, max));
+        public static Span<T> SliceUpTo<T>(this Span<T> span, int max) => span[..Math.Min(span.Length, max)];
     }
 }
