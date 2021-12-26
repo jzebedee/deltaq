@@ -1669,8 +1669,12 @@ internal static class SsSort
     => x switch
     {
         >= (SS_BLOCKSIZE * SS_BLOCKSIZE) => SS_BLOCKSIZE,
+#if NETSTANDARD2_0
+        _ => (int)Math.Sqrt(x)
+#else
         _ => (int)MathF.Sqrt(x)
+#endif
     };
 #endif
-}
+    }
 

@@ -192,7 +192,7 @@ internal static class TrSort
         Idx trlink = -1;
 
         using var stackOwner = SpanOwner<TrStackItem>.Allocate(TR_STACK_SIZE, AllocationMode.Clear);
-        TrStack stack = new(stackOwner.Span);
+        TrStack stack = new TrStack(stackOwner.Span);
 
         var ISA = SA[isaOffset..];
         var ISAd = SA[isadOffset..];
