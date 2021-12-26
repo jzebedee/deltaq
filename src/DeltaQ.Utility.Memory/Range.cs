@@ -58,11 +58,7 @@ namespace System
         /// <summary>Returns the hash code for this instance.</summary>
         public override int GetHashCode()
         {
-#if (!NETSTANDARD2_0 && !NETFRAMEWORK)
             return HashCode.Combine(Start.GetHashCode(), End.GetHashCode());
-#else
-            return HashHelpers.Combine(Start.GetHashCode(), End.GetHashCode());
-#endif
         }
 
         /// <summary>Converts the value of the current Range object to its equivalent string representation.</summary>
