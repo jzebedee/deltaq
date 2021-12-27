@@ -4,11 +4,18 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
-    <Version>0.3.0</Version>
+    <Version>0.4.1</Version>
+    <PackageIcon>dq.png</PackageIcon>
+    <PackageLicenseExpression>RPL-1.5</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-	<PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+
+  <!-- NuGet Icon -->
+  <ItemGroup>
+    <None Include="../../assets/dq.png" Link="dq.png" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>
