@@ -24,23 +24,21 @@ namespace DeltaQ.Tests
             FinalizeCrosscheck();
         }
 
-#if NET461
-        private static void RandomFillBuffer(byte[] buffer)
-        {
-            var rand = new Random(63 * 13 * 63 * 13);
-            rand.NextBytes(buffer);
-        }
-#else
         private static SpanOwner<byte> GetOwnedRandomBuffer(int size)
         {
             var rand = new Random(63 * 13 * 63 * 13);
 
             var owner = SpanOwner<byte>.Allocate(size);
+#if NETFRAMEWORK
+            var buf = new byte[size];
+            rand.NextBytes(buf);
+            buf.CopyTo(owner.Span);
+#else
             rand.NextBytes(owner.Span);
+#endif
 
             return owner;
         }
-#endif
 
         private static void Verify(ReadOnlySpan<byte> T, ReadOnlySpan<int> SA)
         {
@@ -78,7 +76,14 @@ namespace DeltaQ.Tests
             Verify(T, SA);
         }
 
-        public static IEnumerable<object[]> FuzzFiles => FuzzFilesInner.Select(fuzzFile => new object[] { Path.Join(FuzzFilesBasePath, fuzzFile) });
+        public static IEnumerable<object[]> FuzzFiles
+            => FuzzFilesInner.Select(fuzzFile => new object[] {
+#if NETCOREAPP3_1_OR_GREATER
+                Path.Join(FuzzFilesBasePath, fuzzFile)
+#else
+                Path.Combine(FuzzFilesBasePath, fuzzFile)
+#endif
+            });
         private static IEnumerable<string> FuzzFilesInner
         {
             get
@@ -134,32 +139,12 @@ namespace DeltaQ.Tests
         {
             var ldss = new LibDivSufSort();
 
-#if NET461
-            var ownedT = ArrayPool<byte>.Shared.Rent(size);
-            try
-#else
-            using (var ownedT = GetOwnedRandomBuffer(size))
-#endif
-            {
-#if NET461
-                RandomFillBuffer(ownedT);
-                ReadOnlySpan<byte> T = ownedT;
-#else
-                ReadOnlySpan<byte> T = ownedT.Span;
-#endif
-                using (var ownedSA = SpanOwner<int>.Allocate(size, AllocationMode.Clear))
-                {
-                    var SA = ownedSA.Span;
-                    ldss.Sort(T, SA);
-                    Verify(T, SA);
-                }
-            }
-#if NET461
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(ownedT);
-            }
-#endif
+            using var ownedT = GetOwnedRandomBuffer(size);
+            ReadOnlySpan<byte> T = ownedT.Span;
+            using var ownedSA = SpanOwner<int>.Allocate(size, AllocationMode.Clear);
+            var SA = ownedSA.Span;
+            ldss.Sort(T, SA);
+            Verify(T, SA);
         }
     }
 }

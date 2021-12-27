@@ -18,12 +18,18 @@ namespace DeltaQ.Tests
             rand.NextBytes(buffer);
         }
 #else
-        private static MemoryOwner<byte> GetOwnedRandomBuffer(int size)
+        private static SpanOwner<byte> GetOwnedRandomBuffer(int size)
         {
             var rand = new Random(63 * 13 * 63 * 13);
 
-            var owner = MemoryOwner<byte>.Allocate(size);
+            var owner = SpanOwner<byte>.Allocate(size);
+#if NETFRAMEWORK
+            var buf = new byte[size];
+            rand.NextBytes(buf);
+            buf.CopyTo(owner.Span);
+#else
             rand.NextBytes(owner.Span);
+#endif
 
             return owner;
         }
