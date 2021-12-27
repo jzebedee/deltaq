@@ -4,7 +4,10 @@ using System.Buffers;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort
 {
-    public partial class LibDivSufSort : ISuffixSort
+    /// <summary>
+    /// An implementation of the divsufsort suffix array construction algorithm.
+    /// </summary>
+    public class LibDivSufSort : ISuffixSort
     {
         public IMemoryOwner<int> Sort(ReadOnlySpan<byte> textBuffer)
         {
@@ -15,7 +18,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             return owner;
         }
 
-        public int Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
+        public void Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
         {
             if(textBuffer.Length != suffixBuffer.Length)
             {
@@ -23,7 +26,6 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
             }
 
             DivSufSort.divsufsort(textBuffer, suffixBuffer);
-            return suffixBuffer.Length;
         }
 
         private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
