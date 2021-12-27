@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using DeltaQ.SuffixSorting;
 using DeltaQ.SuffixSorting.LibDivSufSort;
+using DeltaQ.SuffixSorting.SAIS;
 using Microsoft.Extensions.CommandLineUtils;
 using SharpFuzz;
 
@@ -22,6 +24,12 @@ static void Verify(ReadOnlySpan<byte> input, ReadOnlySpan<int> sa)
             ex.Data["j"] = i + 1;
             throw ex;
         }
+    }
+
+    var result = DeltaQ.Tests.LDSSChecker.Check(input, sa, true);
+    if (result != DeltaQ.Tests.LDSSChecker.ResultCode.Done)
+    {
+        throw new InvalidOperationException($"Input failed with result code {result}");
     }
 }
 
@@ -58,7 +66,7 @@ app.Command("fuzz", command =>
             using var ms = new MemoryStream();
             s.CopyTo(ms);
 
-            if(!ms.TryGetBuffer(out var T))
+            if (!ms.TryGetBuffer(out var T))
             {
                 throw new InvalidOperationException();
             }
@@ -71,6 +79,7 @@ app.Command("fuzz", command =>
     });
 });
 
+static ISuffixSort GetDefaultSort() => new LibDivSufSort();
 app.Command("diff", command =>
 {
     command.Description = "Diff two files";
@@ -79,16 +88,21 @@ app.Command("diff", command =>
     var oldFileArg = command.Argument("[oldfile]", "");
     var newFileArg = command.Argument("[newfile]", "");
     var deltaFileArg = command.Argument("[deltafile]", "");
-    var algoArg = command.Option("-a|--algorithm <ALGORITHM>", "", CommandOptionType.SingleValue);
+    var algoArg = command.Option("-ss|--suffix-sort <LIB>", "Suffix sort library: [sais], [divsufsort]", CommandOptionType.SingleValue);
 
     command.OnExecute(() =>
     {
         var oldFile = oldFileArg.Value;
         var newFile = newFileArg.Value;
         var deltaFile = deltaFileArg.Value;
-        var algo = algoArg.Value();
-        DeltaQ.BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), new LibDivSufSort());
-        Console.WriteLine($"Diff [algo:{algo}]: old:{oldFile} new:{newFile} delta:{deltaFile}");
+        ISuffixSort sort = algoArg.Value() switch
+        {
+            "sais" => new SAIS(),
+            "divsufsort" => new LibDivSufSort(),
+            _ => GetDefaultSort()
+        };
+        DeltaQ.BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), sort);
+        Console.WriteLine($"Diff [sort:{sort.GetType()}]: old:{oldFile} new:{newFile} delta:{deltaFile}");
         return 0;
     });
 });
