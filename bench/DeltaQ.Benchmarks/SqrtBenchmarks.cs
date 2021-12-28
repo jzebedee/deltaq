@@ -3,26 +3,15 @@ using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 using static DeltaQ.SuffixSorting.LibDivSufSort.Utils;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Engines;
 
 namespace DeltaQ.Benchmarks
 {
-    [RyuJitX64Job]
-    //[RyuJitX86Job]
-    [HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    //[HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    [SimpleJob(RunStrategy.Throughput)]
     public class SqrtBenchmarks
     {
         private const int Step = 1;
-        //public SqrtBenchmarks()
-        //{
-        //    //sanity check range
-        //    for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i++)
-        //    {
-        //        var sqrtFast = ss_isqrt(i);
-        //        var sqrtD = (int)Math.Sqrt(i);
-        //        var sqrtF = (int)MathF.Sqrt(i);
-        //        if (sqrtFast != sqrtD || sqrtD != sqrtF) throw new InvalidOperationException($"{i} did not match");
-        //    }
-        //}
 
         [Benchmark(Baseline = true)]
         public void SqrtsSS()
@@ -46,6 +35,7 @@ namespace DeltaQ.Benchmarks
             GC.KeepAlive(y);
         }
 
+#if NETCOREAPP3_0_OR_GREATER
         [Benchmark]
         public void SqrtsMathF()
         {
@@ -58,16 +48,6 @@ namespace DeltaQ.Benchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int ss_isqrt_math(int x)
-        {
-            if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
-            {
-                return SS_BLOCKSIZE;
-            }
-            return (int)Math.Sqrt(x);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int ss_isqrt_mathf(int x)
         {
             if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
@@ -75,6 +55,17 @@ namespace DeltaQ.Benchmarks
                 return SS_BLOCKSIZE;
             }
             return (int)MathF.Sqrt(x);
+        }
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int ss_isqrt_math(int x)
+        {
+            if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
+            {
+                return SS_BLOCKSIZE;
+            }
+            return (int)Math.Sqrt(x);
         }
 
         private const Idx SS_BLOCKSIZE = 1024;

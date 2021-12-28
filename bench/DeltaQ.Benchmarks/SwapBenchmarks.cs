@@ -1,9 +1,12 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Engines;
 using System.Runtime.CompilerServices;
 
 namespace DeltaQ.Benchmarks
 {
-    [SimpleJob]
+    //[HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    [SimpleJob(RunStrategy.Throughput)]
     public class SwapBenchmarks
     {
         [Benchmark]

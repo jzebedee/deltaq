@@ -3,32 +3,15 @@ using System.Runtime.CompilerServices;
 using Idx = System.Int32;
 using static DeltaQ.SuffixSorting.LibDivSufSort.Utils;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Engines;
 
 namespace DeltaQ.Benchmarks
 {
-    [RyuJitX64Job]
-    //[RyuJitX86Job]
-    [HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    //[HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    [SimpleJob(RunStrategy.Throughput)]
     public class Log2Benchmarks
     {
         private const int Step = 1;
-        //public Log2Benchmarks()
-        //{
-        //    //sanity check range
-        //    for (int i = 1; i < int.MaxValue; i++)
-        //    {
-        //        var x = tr_ilg(i);
-        //        var y = Log2(i);
-        //        var z = Math.ILogB(i);
-        //        //var a = MathF.ILogB(i);
-        //        var a = (int)Math.Log2(i);
-        //        //var a = (int)MathF.Log2(i);
-        //        if (x != y || y != z || z != a)
-        //        {
-        //            throw new InvalidOperationException($"{i} did not match");
-        //        }
-        //    }
-        //}
 
         [Benchmark(Baseline = true)]
         public void tr_ilg()
@@ -52,6 +35,7 @@ namespace DeltaQ.Benchmarks
             GC.KeepAlive(y);
         }
 
+#if NETCOREAPP3_0_OR_GREATER
         [Benchmark]
         public void MathLog2()
         {
@@ -95,6 +79,7 @@ namespace DeltaQ.Benchmarks
             }
             GC.KeepAlive(y);
         }
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int tr_ilg(int n)
