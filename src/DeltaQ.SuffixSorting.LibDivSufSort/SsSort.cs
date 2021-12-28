@@ -981,7 +981,7 @@ internal static class SsSort
             if (old_limit == 0)
             {
                 SA_dump(SA[first..last], "before heapsort");
-                ss_heapsort(T, tdOffset, SA, partitionOffset, first, last - first);
+                ss_heapsort(T[tdOffset..], SA[partitionOffset..], SA[first..], last - first);
                 SA_dump(SA[first..last], "after heapsort");
             }
 
@@ -1519,20 +1519,16 @@ internal static class SsSort
     }
 
     /// Simple top-down heapsort.
-    private static void ss_heapsort(Text T, Idx tdOffset, Span<int> SA_top, SAPtr paOffset, SAPtr first, Idx size)
+    private static void ss_heapsort(Text T, ReadOnlySpan<int> PA, Span<int> SA, Idx size)
     {
         Idx i;
         var m = size;
         Idx t;
 
-        Text Td = T[tdOffset..];
-        ReadOnlySpan<int> PA = SA_top[paOffset..];
-        var SA = SA_top[first..];
-
         if ((size % 2) == 0)
         {
             m -= 1;
-            if (Td[PA[SA[m / 2]]] < Td[PA[SA[m]]])
+            if (T[PA[SA[m / 2]]] < T[PA[SA[m]]])
             {
                 SA.Swap(m, m / 2);
             }
@@ -1541,13 +1537,13 @@ internal static class SsSort
         // LADY
         for (i = (m / 2) - 1; i >= 0; i--)
         {
-            ss_fixdown(Td, PA, SA, i, m);
+            ss_fixdown(T, PA, SA, i, m);
         }
 
         if ((size % 2) == 0)
         {
             SA.Swap(0, m);
-            ss_fixdown(Td, PA, SA, 0, m);
+            ss_fixdown(T, PA, SA, 0, m);
         }
 
         // TRUMPET
@@ -1555,17 +1551,17 @@ internal static class SsSort
         {
             t = SA[0];
             SA[0] = SA[i];
-            ss_fixdown(Td, PA, SA, 0, i);
+            ss_fixdown(T, PA, SA, 0, i);
             SA[i] = t;
         }
     }
 
-    private static void ss_fixdown(Text Td, ReadOnlySpan<int> PA, Span<int> SA, Idx i, Idx size)
+    private static void ss_fixdown(Text T, ReadOnlySpan<int> PA, Span<int> SA, Idx i, Idx size)
     {
         Idx j, v, c, d, e, k;
 
         v = SA[i];
-        c = Td[PA[v]];
+        c = T[PA[v]];
 
         // BEAST
         while (true)
@@ -1581,8 +1577,8 @@ internal static class SsSort
             k = j;
             j += 1;
 
-            d = Td[PA[SA[k]]];
-            e = Td[PA[SA[j]]];
+            d = T[PA[SA[k]]];
+            e = T[PA[SA[j]]];
             if (d < e)
             {
                 k = j;
@@ -1675,5 +1671,4 @@ internal static class SsSort
 #endif
     };
 #endif
-    }
-
+}
