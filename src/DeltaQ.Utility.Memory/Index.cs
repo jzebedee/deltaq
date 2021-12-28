@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 
-#if NETCOREAPP3_0_OR_GREATER
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 [assembly: TypeForwardedTo(typeof(System.Index))]
 #else
 // Licensed to the .NET Foundation under one or more agreements.
@@ -147,7 +147,7 @@ namespace System
 
         private string ToStringFromEnd()
         {
-#if (!NETSTANDARD2_0 && !NETFRAMEWORK)
+#if !NETSTANDARD2_0 && !NETFRAMEWORK
             Span<char> span = stackalloc char[11]; // 1 for ^ and 10 for longest possible uint value
             bool formatted = ((uint)Value).TryFormat(span.Slice(1), out int charsWritten);
             Debug.Assert(formatted);

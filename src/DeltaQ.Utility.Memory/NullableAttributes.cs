@@ -1,7 +1,7 @@
 ﻿//Generated 2021-12-26
 //https://raw.githubusercontent.com/dotnet/runtime/84680bf557210114ea5ca823386cd49691c4cac6/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 
-#if NETSTANDARD2_0
+#if !(NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
