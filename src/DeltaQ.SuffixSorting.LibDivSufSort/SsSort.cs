@@ -1,11 +1,11 @@
 ﻿//#define SS_ISQRT_LOOKUP
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Text = System.ReadOnlySpan<byte>;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 using static Crosscheck;
@@ -928,7 +928,6 @@ internal static class SsSort
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d)
         {
-            //Debug.Assert(Size > 0);
             if (Size == 0) return false;
 
             ref SsStackItem item = ref Items[--Size];
@@ -1602,7 +1601,7 @@ internal static class SsSort
     }
 
     /// <summary>
-    /// Fast sqrt, using lookup tables
+    /// Fast sqrt
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_isqrt(int x)
@@ -1669,10 +1668,10 @@ internal static class SsSort
     => x switch
     {
         >= (SS_BLOCKSIZE * SS_BLOCKSIZE) => SS_BLOCKSIZE,
-#if NETSTANDARD2_0
-        _ => (int)Math.Sqrt(x)
-#else
+#if NETSTANDARD2_1_OR_GREATER
         _ => (int)MathF.Sqrt(x)
+#else
+        _ => (int)Math.Sqrt(x)
 #endif
     };
 #endif
