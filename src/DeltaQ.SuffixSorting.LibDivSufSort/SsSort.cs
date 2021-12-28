@@ -1507,16 +1507,11 @@ internal static class SsSort
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_ilg(int n)
-    {
-        if ((n & 0xff00) > 0)
+        => n & 0xff00 switch
         {
-            return 8 + lg_table[(n >> 8) & 0xff];
-        }
-        else
-        {
-            return 0 + lg_table[(n >> 0) & 0xff];
-        }
-    }
+            > 0 => 8 + lg_table[n >> 8 & 0xff],
+              _ => 0 + lg_table[n >> 0 & 0xff]
+        };
 
     /// Simple top-down heapsort.
     private static void ss_heapsort(Text T, ReadOnlySpan<int> PA, Span<int> SA, Idx size)
