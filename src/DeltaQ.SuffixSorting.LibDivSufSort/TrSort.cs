@@ -355,7 +355,6 @@ internal static class TrSort
                         // GEMINI
                         while (true)
                         {
-                            //Debug.Assert(SA[isaOffset..] == ISA);
                             ISA[SA[a]] = a;
 
                             // cond (GEMINI)
