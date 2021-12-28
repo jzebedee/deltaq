@@ -10,6 +10,7 @@ using Microsoft.Toolkit.HighPerformance.Buffers;
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 using static Crosscheck;
 using static Utils;
+using SsStackItem = System.ValueTuple<SAPtr, SAPtr, SAPtr, Idx>;//(SAPtr a, SAPtr b, SAPtr c, Idx d);
 
 internal static class SsSort
 {
@@ -159,6 +160,7 @@ internal static class SsSort
         var U2 = depth + SAp2[p2];
         var U1n = SAp1[p1 + 1] + 2;
         var U2n = SAp2[p2 + 1] + 2;
+        //return T[U1..U1n].SequenceCompareTo(T[U2..U2n]);
 
         while ((U1 < U1n) && (U2 < U2n) && (T[U1] == T[U2]))
         {
@@ -893,21 +895,14 @@ internal static class SsSort
         }
     }
 
-    private struct SsStackItem
-    {
-        public SAPtr a;
-        public SAPtr b;
-        public SAPtr c;
-        public Idx d;
-    }
-
     private const int SS_STACK_SIZE = 16;
     private const int MERGE_STACK_SIZE = 32;
     private ref struct SsStack
     {
-        public readonly Span<SsStackItem> Items;
-        public int Size;
+        private readonly Span<SsStackItem> Items;
+        private int Size;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SsStack(Span<SsStackItem> items)
         {
             Items = items;
@@ -919,22 +914,19 @@ internal static class SsSort
         {
             Trace.Assert(Size < Items.Length);
             ref SsStackItem item = ref Items[Size++];
-            item.a = a;
-            item.b = b;
-            item.c = c;
-            item.d = d;
+            item = (a, b, c, d);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Pop(ref SAPtr a, ref SAPtr b, ref SAPtr c, ref Idx d)
         {
-            if (Size == 0) return false;
+            if (Size == 0)
+            {
+                return false;
+            }
 
             ref SsStackItem item = ref Items[--Size];
-            a = item.a;
-            b = item.b;
-            c = item.c;
-            d = item.d;
+            (a, b, c, d) = item;
             return true;
         }
     }
@@ -948,8 +940,7 @@ internal static class SsSort
     {
         var PA = SA[partitionOffset..];
 
-        using var stackOwner = SpanOwner<SsStackItem>.Allocate(SS_STACK_SIZE);
-        var stack = new SsStack(stackOwner.Span);
+        var stack = new SsStack(stackalloc SsStackItem[SS_STACK_SIZE]);
 
         SAPtr a, b, c, d, e, f;
 
