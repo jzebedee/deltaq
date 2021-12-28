@@ -1,54 +1,4 @@
-﻿/*
- * SAIS.cs for DeltaQ
- * Copyright (c) 2014 J. Zebedee
- * 
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-/*
- * SAIS.cs for SAIS-CSharp
- * Copyright (c) 2010 Yuta Mori. All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
@@ -60,15 +10,18 @@ namespace DeltaQ.SuffixSorting.SAIS
     /// </summary>
     public class SAIS : ISuffixSort
     {
-        private const int MinBucketSize = 256;
+        private const int AlphabetSize = byte.MaxValue + 1;
+        private const int MinBucketSize = byte.MaxValue + 1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void GetCounts(IntAccessor T, Span<int> c, int n, int k)
         {
-            c.Slice(0, k).Clear();
+            c[..k].Clear();
 
             for (int i = 0; i < n; ++i)
+            {
                 c[T[i]]++;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +43,10 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             /* compute SAl */
             if (c == b)
+            {
                 GetCounts(T, c, n, k);
+            }
+
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
             j = n - 1;
@@ -118,7 +74,10 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             /* compute SAs */
             if (c == b)
+            {
                 GetCounts(T, c, n, k);
+            }
+
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
             for (i = n - 1, bb = b[c1 = 0]; 0 <= i; --i)
@@ -228,7 +187,10 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             /* compute SAl */
             if (c == b)
+            {
                 GetCounts(T, c, n, k);
+            }
+
             GetBuckets(c, b, k, false); /* find starts of buckets */
 
             j = n - 1;
@@ -251,7 +213,10 @@ namespace DeltaQ.SuffixSorting.SAIS
 
             /* compute SAs */
             if (c == b)
+            {
                 GetCounts(T, c, n, k);
+            }
+
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
             for (i = n - 1, bb = b[c1 = 0]; 0 <= i; --i)
@@ -288,7 +253,7 @@ namespace DeltaQ.SuffixSorting.SAIS
                 c = new int[k];// ArrayPool<int>.Shared.Rent(k);
                 if (k <= fs)
                 {
-                    b = sa.Slice(n + fs - k, sa.Length - (n + fs - k));
+                    b = sa[(n + fs - k)..];
                     flags = 1;
                 }
                 else
@@ -299,10 +264,10 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
             else if (k <= fs)
             {
-                c = sa.Slice(n + fs - k, sa.Length - (n + fs - k));
+                c = sa[(n + fs - k)..];
                 if (k <= fs - k)
                 {
-                    b = sa.Slice(n + fs - k * 2, sa.Length - (n + fs - k * 2));
+                    b = sa[(n + fs - k * 2)..];
                     flags = 0;
                 }
                 else if (k <= MinBucketSize * 4)
@@ -327,7 +292,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             GetCounts(T, c, n, k);
             GetBuckets(c, b, k, true); /* find ends of buckets */
 
-            sa.Slice(0, n).Clear();
+            sa[..n].Clear();
 
             bb = -1;
             i = n - 1;
@@ -409,7 +374,7 @@ namespace DeltaQ.SuffixSorting.SAIS
                     }
                 }
 
-                sais_main(new IntAccessor(sa.Slice(m + newfs, sa.Length - (m + newfs))), sa, newfs, m, name);
+                sais_main(new IntAccessor(sa[(m + newfs)..]), sa, newfs, m, name);
 
                 i = n - 1;
                 j = m * 2 - 1;
@@ -502,10 +467,12 @@ namespace DeltaQ.SuffixSorting.SAIS
         IMemoryOwner<int> ISuffixSort.Sort(ReadOnlySpan<byte> textBuffer)
             => Sort(textBuffer);
 
-        public int Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
+        public void Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
         {
-            if (suffixBuffer.Length < textBuffer.Length)
-                throw new ArgumentException("Output span must have length greater than or equal to input span", nameof(suffixBuffer));
+            if (suffixBuffer.Length != textBuffer.Length)
+            {
+                ThrowHelper();
+            }
 
             if (textBuffer.Length <= 1)
             {
@@ -513,11 +480,13 @@ namespace DeltaQ.SuffixSorting.SAIS
                 {
                     suffixBuffer[0] = 0;
                 }
+                return;
             }
-            else sais_main(new IntAccessor(textBuffer), suffixBuffer, 0, textBuffer.Length, 256);
-            
-            return textBuffer.Length;
+
+            sais_main(new IntAccessor(textBuffer), suffixBuffer, 0, textBuffer.Length, AlphabetSize);
         }
+
+        private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
 
         private ref struct IntAccessor
         {
@@ -528,16 +497,16 @@ namespace DeltaQ.SuffixSorting.SAIS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public IntAccessor(ReadOnlySpan<byte> buffer)
             {
-                this.byteSpan = buffer;
-                this.intSpan = default;
-                this.packedIndex = true;
+                byteSpan = buffer;
+                intSpan = default;
+                packedIndex = true;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public IntAccessor(ReadOnlySpan<int> buffer)
             {
-                this.byteSpan = default;
-                this.intSpan = buffer;
-                this.packedIndex = false;
+                byteSpan = default;
+                intSpan = buffer;
+                packedIndex = false;
             }
 
             public int this[int index]
