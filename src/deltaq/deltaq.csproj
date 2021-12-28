@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
-    <Version>0.2.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.2.1</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeltaQ.BsDiff" Version="0.2.0" />
-    <PackageReference Include="DeltaQ.SuffixSorting.SAIS" Version="0.2.0" />
+    <ProjectReference Include="..\DeltaQ.BsDiff\DeltaQ.BsDiff.csproj" />
+    <ProjectReference Include="..\DeltaQ.SuffixSorting.LibDivSufSort\DeltaQ.SuffixSorting.LibDivSufSort.csproj" />
+    <ProjectReference Include="..\DeltaQ.SuffixSorting.SAIS\DeltaQ.SuffixSorting.SAIS.csproj" />
   </ItemGroup>
 
 </Project>
