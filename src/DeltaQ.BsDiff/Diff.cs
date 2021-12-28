@@ -4,7 +4,6 @@ using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO;
 
 namespace DeltaQ.BsDiff
@@ -89,8 +88,7 @@ namespace DeltaQ.BsDiff
                 using (var extraStream = GetEncodingStream(msExtra, true))
                 {
                     Span<int> I = saOwner.Span;
-                    var sortLen = suffixSort.Sort(oldData, I[..^1]);
-                    Debug.Assert(sortLen == oldData.Length);
+                    suffixSort.Sort(oldData, I[..^1]);
 
                     var scan = 0;
                     var pos = 0;
