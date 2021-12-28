@@ -1,21 +1,29 @@
-#deltaq
+# <img src="assets/dq.svg" alt="deltaq logo" width="128" /> DeltaQ
 
-Fast and portable delta encoding library for .NET
+Fast and portable delta encoding for .NET.
 
-deltaq is a [.NET Core](https://dotnet.github.io/) class library
+## About
+
+DeltaQ provides fast and portable delta encoding for .NET in 100% safe, managed code.
+
+DeltaQ is available for use as a library in .NET and .NET Framework, and as a cross-platform command-line tool, `dq`, which can be used to perform delta operations (similar to `bsdiff` or `xdelta`).
 
 ## Installing
 
-* Manual install: Download from the [Releases](https://github.com/jzebedee/deltaq/releases/)
-* NuGet install: Follow instructions on the [NuGet page](https://www.nuget.org/packages/deltaq/) or enter ```Install-Package deltaq``` in the Package Manager console.
+### `dq` command-line tool
 
-### Supported formats
-|Format|Create patches|Apply patches|
-|------|--------------|-------------|
-|bsdiff|Yes|Yes|
-|vcdiff|No|No|
+`> ` `dotnet tool install DeltaQ.CLI -g`
 
-### Roadmap
+### `DeltaQ` library
 
-* Add support for applying VCDIFF patches. VCDIFF format is defined in [RFC 3284](https://tools.ietf.org/html/rfc3284) with several existing implementations. Jon Skeet's [MiscUtil](http://www.yoda.arachsys.com/csharp/miscutil/) already has an implementation of the patch portion of VCDIFF, but much more work is needed to create a C# patch generator.
-* Add platform-specific libraries to make usage as simple as possible. There's also room to support memory-mapped files and similar significant optimizations.
+`> ` `dotnet add package DeltaQ`
+
+## Usage
+
+### `dq` command-line tool
+
+TBW
+
+### `DeltaQ` library
+
+TBW
