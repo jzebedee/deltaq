@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>dq</AssemblyName>
+    <!--<AssemblyName>dq</AssemblyName>-->
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Product>DeltaQ</Product>
@@ -14,11 +14,11 @@
 
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
-    <PublishTrimmed>true</PublishTrimmed>
-    <DebugType>embedded</DebugType>
+    <!--<PublishSingleFile>true</PublishSingleFile>-->
+    <!--<PublishReadyToRun>true</PublishReadyToRun>-->
+    <!--<PublishReadyToRunComposite>true</PublishReadyToRunComposite>-->
+    <!--<PublishTrimmed>true</PublishTrimmed>-->
+    <!--<DebugType>embedded</DebugType>-->
     <ToolCommandName>dq</ToolCommandName>
     <PackAsTool>true</PackAsTool>
 
