@@ -39,6 +39,7 @@
     <Otherwise>
       <ItemGroup>
         <Compile Remove="Fuzzing\*.cs" />
+        <None Include="Fuzzing\*.cs" />
       </ItemGroup>
     </Otherwise>
   </Choose>
