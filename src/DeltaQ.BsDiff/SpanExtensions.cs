@@ -9,29 +9,26 @@ namespace DeltaQ.BsDiff
     {
         public static void WritePackedLong(this Span<byte> span, long y)
         {
-            if (y < 0)
+            // Write to highest index first so the JIT skips bounds checks on subsequent writes.
+            unchecked
             {
-                y = -y;
+                if (y < 0)
+                {
+                    y = -y;
+                    span[7] = (byte)((y >> 56) | 0x80);
+                }
+                else
+                {
+                    span[7] = (byte)(y >> 56);
+                }
 
+                span[6] = (byte)(y >> 48);
+                span[5] = (byte)(y >> 40);
+                span[4] = (byte)(y >> 32);
+                span[3] = (byte)(y >> 24);
+                span[2] = (byte)(y >> 16);
+                span[1] = (byte)(y >> 8);
                 span[0] = (byte)y;
-                span[1] = (byte)(y >>= 8);
-                span[2] = (byte)(y >>= 8);
-                span[3] = (byte)(y >>= 8);
-                span[4] = (byte)(y >>= 8);
-                span[5] = (byte)(y >>= 8);
-                span[6] = (byte)(y >>= 8);
-                span[7] = (byte)((y >> 8) | 0x80);
-            }
-            else
-            {
-                span[0] = (byte)y;
-                span[1] = (byte)(y >>= 8);
-                span[2] = (byte)(y >>= 8);
-                span[3] = (byte)(y >>= 8);
-                span[4] = (byte)(y >>= 8);
-                span[5] = (byte)(y >>= 8);
-                span[6] = (byte)(y >>= 8);
-                span[7] = (byte)(y >> 8);
             }
         }
 
