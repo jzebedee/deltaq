@@ -4,6 +4,7 @@ using DeltaQ.SuffixSorting.SAIS;
 using Humanizer;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace DeltaQ.CommandLine;
@@ -11,9 +12,9 @@ using static Defaults;
 
 internal static partial class Commands
 {
-    public static Action<CommandLineApplication> DeltaCommand { get; } = command =>
+    public static Action<CommandLineApplication> BsDiffCommand { get; } = command =>
     {
-        command.Description = "Generate a delta (difference) between two files";
+        command.Description = "Generate a BSDIFF-compatible delta (difference) between two files";
         command.HelpOption(HelpOptions);
 
         var oldFileArg = command.Argument("[oldfile]", "Original file (input)");
@@ -35,14 +36,23 @@ internal static partial class Commands
             Console.WriteLine("Generating BsDiff delta between");
             Console.WriteLine($@"Old file: ""{oldFile}""");
             Console.WriteLine($@"New file: ""{newFile}""");
-            Console.WriteLine($"with suffix sort {sort.GetType().Name}");
+            if (algoArg.HasValue())
+            {
+                Console.WriteLine($"with suffix sort {sort.GetType().Name}");
+            }
             Console.WriteLine();
             try
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), sort);
-                sw.Stop();
-                
+                Stopwatch sw;
+                {
+                    var oldBytes = File.ReadAllBytes(oldFile);
+                    var newBytes = File.ReadAllBytes(newFile);
+                    using var fsDelta = File.Create(deltaFile);
+                    sw = Stopwatch.StartNew();
+                    BsDiff.Diff.Create(oldBytes, newBytes, fsDelta, sort);
+                    sw.Stop();
+                }
+
                 Console.WriteLine($"Finished in {sw.Elapsed.Humanize()} [{sw.Elapsed}]");
                 Console.WriteLine($@"Delta file: ""{deltaFile}""");
                 var deltaFileInfo = new FileInfo(deltaFile);

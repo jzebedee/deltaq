@@ -26,8 +26,8 @@ app.OnExecute(() =>
 app.Command("fuzz", Commands.FuzzCommand);
 #endif
 
-app.Command("delta", Commands.DeltaCommand);
-app.Command("apply", Commands.ApplyCommand);
+app.Command("bsdiff", Commands.BsDiffCommand);
+app.Command("bspatch", Commands.BsPatchCommand);
 
 try
 {
