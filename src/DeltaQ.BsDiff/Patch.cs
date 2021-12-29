@@ -4,6 +4,7 @@ using System;
 using System.IO;
 
 namespace DeltaQ.BsDiff;
+using static Constants;
 
 public static class Patch
 {
@@ -52,7 +53,7 @@ public static class Patch
     {
         // read header
         long controlLength, diffLength, newSize;
-        using (var headerStream = openPatchStream(0, Diff.HeaderSize))
+        using (var headerStream = openPatchStream(0, HeaderSize))
         {
             // check patch stream capabilities
             if (!headerStream.CanRead)
@@ -60,18 +61,18 @@ public static class Patch
             if (!headerStream.CanSeek)
                 throw new ArgumentException("Patch stream must be seekable", nameof(openPatchStream));
 
-            Span<byte> header = stackalloc byte[Diff.HeaderSize];
+            Span<byte> header = stackalloc byte[HeaderSize];
             headerStream.Read(header);
 
             // check for appropriate magic
             var signature = header.ReadPackedLong();
-            if (signature != Diff.Signature)
+            if (signature != Signature)
                 throw new InvalidOperationException("Corrupt patch");
 
             // read lengths from header
-            controlLength = header[sizeof(long)..].ReadPackedLong();
-            diffLength = header[(sizeof(long) * 2)..].ReadPackedLong();
-            newSize = header[(sizeof(long) * 3)..].ReadPackedLong();
+            controlLength = header[HeaderOffsetCtrl..].ReadPackedLong();
+            diffLength = header[HeaderOffsetDiff..].ReadPackedLong();
+            newSize = header[HeaderOffsetNewData..].ReadPackedLong();
 
             if (controlLength < 0 || diffLength < 0 || newSize < 0)
                 throw new InvalidOperationException("Corrupt patch");
@@ -79,9 +80,9 @@ public static class Patch
 
         // prepare to read three parts of the patch in parallel
         Stream
-            compressedControlStream = openPatchStream(Diff.HeaderSize, controlLength),
-            compressedDiffStream = openPatchStream(Diff.HeaderSize + controlLength, diffLength),
-            compressedExtraStream = openPatchStream(Diff.HeaderSize + controlLength + diffLength, 0);
+            compressedControlStream = openPatchStream(HeaderSize, controlLength),
+            compressedDiffStream = openPatchStream(HeaderSize + controlLength, diffLength),
+            compressedExtraStream = openPatchStream(HeaderSize + controlLength + diffLength, 0);
 
         // decompress each part (to read it)
         ctrl = Diff.GetEncodingStream(compressedControlStream, false);

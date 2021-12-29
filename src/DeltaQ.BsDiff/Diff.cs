@@ -7,18 +7,10 @@ using System.Buffers;
 using System.IO;
 
 namespace DeltaQ.BsDiff;
+using static Constants;
 
 public static class Diff
 {
-    internal const int HeaderSize = 32;
-
-    private const int HeaderOffsetSig = 0;
-    private const int HeaderOffsetCtrl = sizeof(long) * 1;
-    private const int HeaderOffsetDiff = sizeof(long) * 2;
-    private const int HeaderOffsetNewData = sizeof(long) * 3;
-
-    internal const long Signature = 0x3034464649445342; //"BSDIFF40"
-
     internal static Stream GetEncodingStream(Stream stream, bool output)
         => output
             ? new BZip2OutputStream(stream)
