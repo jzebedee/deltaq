@@ -16,9 +16,9 @@ internal static partial class Commands
         command.Description = "Generate a delta (difference) between two files";
         command.HelpOption(HelpOptions);
 
-        var oldFileArg = command.Argument("[oldfile]", "");
-        var newFileArg = command.Argument("[newfile]", "");
-        var deltaFileArg = command.Argument("[deltafile]", "");
+        var oldFileArg = command.Argument("[oldfile]", "Original file (input)");
+        var newFileArg = command.Argument("[newfile]", "New file (input)");
+        var deltaFileArg = command.Argument("[deltafile]", "Delta file (output)");
         var algoArg = command.Option("-ss|--suffix-sort <LIB>", "Suffix sort library: [sais], [divsufsort]", CommandOptionType.SingleValue);
 
         command.OnExecute(() =>
