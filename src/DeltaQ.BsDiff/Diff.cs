@@ -1,5 +1,5 @@
-﻿using bz2core;
-using DeltaQ.SuffixSorting;
+﻿using DeltaQ.SuffixSorting;
+using ICSharpCode.SharpZipLib.BZip2;
 using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
@@ -11,19 +11,18 @@ namespace DeltaQ.BsDiff
     public static class Diff
     {
         internal const int HeaderSize = 32;
+
+        private const int HeaderOffsetSig = 0;
+        private const int HeaderOffsetCtrl = sizeof(long) * 1;
+        private const int HeaderOffsetDiff = sizeof(long) * 2;
+        private const int HeaderOffsetNewData = sizeof(long) * 3;
+
         internal const long Signature = 0x3034464649445342; //"BSDIFF40"
 
         internal static Stream GetEncodingStream(Stream stream, bool output)
-        {
-            if (output)
-            {
-                return new BZip2OutputStream(stream) { IsStreamOwner = false };
-            }
-            else
-            {
-                return new BZip2InputStream(stream);
-            }
-        }
+            => output
+                ? new BZip2OutputStream(stream)
+                : new BZip2InputStream(stream);
 
         /// <summary>
         /// Creates a BSDIFF-format patch from two byte buffers
@@ -59,15 +58,9 @@ namespace DeltaQ.BsDiff
                 ??	??	Bzip2ed diff block
                 ??	??	Bzip2ed extra block */
             Span<byte> header = stackalloc byte[HeaderSize];
+            header[HeaderOffsetSig..].WritePackedLong(Signature);
 
-            Span<byte> header_signature = header[..sizeof(long)];
-            header_signature.WritePackedLong(Signature);
-
-            Span<byte> header_compressed_ctrl = header.Slice(sizeof(long), sizeof(long));
-            Span<byte> header_compressed_diff = header.Slice(sizeof(long) * 2, sizeof(long));
-
-            Span<byte> header_newdata_len = header.Slice(sizeof(long) * 3, sizeof(long));
-            header_newdata_len.WritePackedLong(newData.Length);
+            header[HeaderOffsetNewData..].WritePackedLong(newData.Length);
 
             var startPosition = output.Position;
             output.Write(header);
@@ -78,148 +71,142 @@ namespace DeltaQ.BsDiff
             //the memory allocated for the suffix array MUST be at least (n+1)
             //this is only required for bsdiff, so we allocate it ourselves
             //instead of using the ISuffixSort overloads that only require allocations of (n)
-            using (MemoryOwner<int> saOwner = MemoryOwner<int>.Allocate(oldData.Length + 1, AllocationMode.Clear))
-            using (var msControl = new MemoryStream())
-            using (var msDiff = new MemoryStream())
-            using (var msExtra = new MemoryStream())
+            using var saOwner = MemoryOwner<int>.Allocate(oldData.Length + 1, AllocationMode.Clear);
+
+            using var ctrlSink = new ArrayPoolBufferWriter<byte>();
+            using var diffSink = new ArrayPoolBufferWriter<byte>();
+            using var extraSink = new ArrayPoolBufferWriter<byte>();
+
             {
-                using (var ctrlStream = GetEncodingStream(msControl, true))
-                using (var diffStream = GetEncodingStream(msDiff, true))
-                using (var extraStream = GetEncodingStream(msExtra, true))
+                using var ctrlEncStream = GetEncodingStream(ctrlSink.AsStream(), true);
+                using var diffEncStream = GetEncodingStream(diffSink.AsStream(), true);
+                using var extraEncStream = GetEncodingStream(extraSink.AsStream(), true);
+
+                Span<int> I = saOwner.Span;
+                suffixSort.Sort(oldData, I[..^1]);
+
+                var scan = 0;
+                var pos = 0;
+                var len = 0;
+                var lastscan = 0;
+                var lastpos = 0;
+                var lastoffset = 0;
+
+                // compute the differences, writing ctrl as we go
+                while (scan < newData.Length)
                 {
-                    Span<int> I = saOwner.Span;
-                    suffixSort.Sort(oldData, I[..^1]);
+                    var oldscore = 0;
 
-                    var scan = 0;
-                    var pos = 0;
-                    var len = 0;
-                    var lastscan = 0;
-                    var lastpos = 0;
-                    var lastoffset = 0;
-
-                    // compute the differences, writing ctrl as we go
-                    while (scan < newData.Length)
+                    for (var scsc = scan += len; scan < newData.Length; scan++)
                     {
-                        var oldscore = 0;
+                        len = Search(I, oldData, newData[scan..], 0, oldData.Length, out pos);
 
-                        for (var scsc = scan += len; scan < newData.Length; scan++)
+                        for (; scsc < scan + len; scsc++)
                         {
-                            len = Search(I, oldData, newData[scan..], 0, oldData.Length, out pos);
-
-                            for (; scsc < scan + len; scsc++)
-                            {
-                                if ((scsc + lastoffset < oldData.Length) && (oldData[scsc + lastoffset] == newData[scsc]))
-                                    oldscore++;
-                                }
-
-                            if ((len == oldscore && len != 0) || (len > oldscore + 8))
-                                break;
-
-                            if ((scan + lastoffset < oldData.Length) && (oldData[scan + lastoffset] == newData[scan]))
-                                oldscore--;
-                            }
-
-                        if (len != oldscore || scan == newData.Length)
-                        {
-                            var s = 0;
-                            var sf = 0;
-                            var lenf = 0;
-                            for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length);)
-                            {
-                                if (oldData[lastpos + i] == newData[lastscan + i])
-                                    s++;
-                                i++;
-                                if (s * 2 - i > sf * 2 - lenf)
-                                {
-                                    sf = s;
-                                    lenf = i;
-                                }
-                            }
-
-                            var lenb = 0;
-                            if (scan < newData.Length)
-                            {
-                                s = 0;
-                                var sb = 0;
-                                for (var i = 1; (scan >= lastscan + i) && (pos >= i); i++)
-                                {
-                                    if (oldData[pos - i] == newData[scan - i])
-                                        s++;
-                                    if (s * 2 - i > sb * 2 - lenb)
-                                    {
-                                        sb = s;
-                                        lenb = i;
-                                    }
-                                }
-                            }
-
-                            if (lastscan + lenf > scan - lenb)
-                            {
-                                var overlap = (lastscan + lenf) - (scan - lenb);
-                                s = 0;
-                                var ss = 0;
-                                var lens = 0;
-                                for (var i = 0; i < overlap; i++)
-                                {
-                                    if (newData[lastscan + lenf - overlap + i] == oldData[lastpos + lenf - overlap + i])
-                                        s++;
-                                    if (newData[scan - lenb + i] == oldData[pos - lenb + i])
-                                        s--;
-                                    if (s > ss)
-                                    {
-                                        ss = s;
-                                        lens = i + 1;
-                                    }
-                                }
-
-                                lenf += lens - overlap;
-                                lenb -= lens;
-                            }
-
-                            //write diff string
-                            for (var i = 0; i < lenf; i++)
-                                diffStream.WriteByte((byte)(newData[lastscan + i] - oldData[lastpos + i]));
-
-                            //write extra string
-                            var extraLength = (scan - lenb) - (lastscan + lenf);
-                            if (extraLength > 0)
-                                extraStream.Write(newData.Slice(lastscan + lenf, extraLength));
-
-                            //write ctrl block
-                            buf.WritePackedLong(lenf);
-                            ctrlStream.Write(buf);
-
-                            buf.WritePackedLong(extraLength);
-                            ctrlStream.Write(buf);
-
-                            buf.WritePackedLong((pos - lenb) - (lastpos + lenf));
-                            ctrlStream.Write(buf);
-
-                            lastscan = scan - lenb;
-                            lastpos = pos - lenb;
-                            lastoffset = pos - scan;
+                            if ((scsc + lastoffset < oldData.Length) && (oldData[scsc + lastoffset] == newData[scsc]))
+                                oldscore++;
                         }
+
+                        if ((len == oldscore && len != 0) || (len > oldscore + 8))
+                            break;
+
+                        if ((scan + lastoffset < oldData.Length) && (oldData[scan + lastoffset] == newData[scan]))
+                            oldscore--;
+                    }
+
+                    if (len != oldscore || scan == newData.Length)
+                    {
+                        var s = 0;
+                        var sf = 0;
+                        var lenf = 0;
+                        for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length);)
+                        {
+                            if (oldData[lastpos + i] == newData[lastscan + i])
+                                s++;
+                            i++;
+                            if (s * 2 - i > sf * 2 - lenf)
+                            {
+                                sf = s;
+                                lenf = i;
+                            }
+                        }
+
+                        var lenb = 0;
+                        if (scan < newData.Length)
+                        {
+                            s = 0;
+                            var sb = 0;
+                            for (var i = 1; (scan >= lastscan + i) && (pos >= i); i++)
+                            {
+                                if (oldData[pos - i] == newData[scan - i])
+                                    s++;
+                                if (s * 2 - i > sb * 2 - lenb)
+                                {
+                                    sb = s;
+                                    lenb = i;
+                                }
+                            }
+                        }
+
+                        if (lastscan + lenf > scan - lenb)
+                        {
+                            var overlap = (lastscan + lenf) - (scan - lenb);
+                            s = 0;
+                            var ss = 0;
+                            var lens = 0;
+                            for (var i = 0; i < overlap; i++)
+                            {
+                                if (newData[lastscan + lenf - overlap + i] == oldData[lastpos + lenf - overlap + i])
+                                    s++;
+                                if (newData[scan - lenb + i] == oldData[pos - lenb + i])
+                                    s--;
+                                if (s > ss)
+                                {
+                                    ss = s;
+                                    lens = i + 1;
+                                }
+                            }
+
+                            lenf += lens - overlap;
+                            lenb -= lens;
+                        }
+
+                        //write diff string
+                        for (var i = 0; i < lenf; i++)
+                            diffEncStream.WriteByte((byte)(newData[lastscan + i] - oldData[lastpos + i]));
+
+                        //write extra string
+                        var extraLength = (scan - lenb) - (lastscan + lenf);
+                        if (extraLength > 0)
+                            extraEncStream.Write(newData.Slice(lastscan + lenf, extraLength));
+
+                        //write ctrl block
+                        buf.WritePackedLong(lenf);
+                        ctrlEncStream.Write(buf);
+
+                        buf.WritePackedLong(extraLength);
+                        ctrlEncStream.Write(buf);
+
+                        buf.WritePackedLong((pos - lenb) - (lastpos + lenf));
+                        ctrlEncStream.Write(buf);
+
+                        lastscan = scan - lenb;
+                        lastpos = pos - lenb;
+                        lastoffset = pos - scan;
                     }
                 }
-
-                //write compressed ctrl data
-                msControl.Seek(0, SeekOrigin.Begin);
-                msControl.CopyTo(output);
-
-                // compute size of compressed ctrl data
-                header_compressed_ctrl.WritePackedLong(msControl.Length);
-
-                // write compressed diff data
-                msDiff.Seek(0, SeekOrigin.Begin);
-                msDiff.CopyTo(output);
-
-                // compute size of compressed diff data
-                header_compressed_diff.WritePackedLong(msDiff.Length);
-
-                // write compressed extra data
-                msExtra.Seek(0, SeekOrigin.Begin);
-                msExtra.CopyTo(output);
             }
+
+            //write compressed ctrl data
+            output.Write(ctrlSink.WrittenSpan);
+            header[HeaderOffsetCtrl..].WritePackedLong(ctrlSink.WrittenCount);
+
+            // write compressed diff data
+            output.Write(diffSink.WrittenSpan);
+            header[HeaderOffsetDiff..].WritePackedLong(diffSink.WrittenCount);
+
+            // write compressed extra data
+            output.Write(extraSink.WrittenSpan);
 
             // seek to the beginning, write the header, then seek back to end
             var endPosition = output.Position;
