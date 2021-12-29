@@ -133,7 +133,7 @@ namespace DeltaQ.BsDiff
                     while (addSize > 0)
                     {
                         var diffBytesRead = diff.Read(diffBuffer.SliceUpTo((int)addSize));
-                        var inputBytesRead = input.Read(inputBuffer);
+                        var inputBytesRead = input.Read(inputBuffer.SliceUpTo((int)addSize));
 
                         if (inputBytesRead != diffBytesRead)
                             throw new InvalidOperationException("Corrupt patch");
