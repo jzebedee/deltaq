@@ -29,11 +29,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.Utility.Memory", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LibDivSufSort", "src\DeltaQ.SuffixSorting.LibDivSufSort\DeltaQ.SuffixSorting.LibDivSufSort.csproj", "{E89B007E-0BDE-4642-B40F-CCB7569F88B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LivDivSufSort.Tests", "test\DeltaQ.SuffixSorting.LivDivSufSort.Tests\DeltaQ.SuffixSorting.LivDivSufSort.Tests.csproj", "{5486E391-BFF9-4ED9-8383-032AE249C588}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.SuffixSorting.LibDivSufSort.Tests", "test\DeltaQ.SuffixSorting.LibDivSufSort.Tests\DeltaQ.SuffixSorting.LibDivSufSort.Tests.csproj", "{5486E391-BFF9-4ED9-8383-032AE249C588}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bench", "bench", "{BF7CD739-6B0C-424D-A5CD-7970D80915E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaQ.Benchmarks", "bench\DeltaQ.Benchmarks\DeltaQ.Benchmarks.csproj", "{A5FCA064-2EED-4CDB-93D7-FF16E3314885}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.Benchmarks", "bench\DeltaQ.Benchmarks\DeltaQ.Benchmarks.csproj", "{A5FCA064-2EED-4CDB-93D7-FF16E3314885}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{09BBE319-2E1C-4878-AA44-FCC730167792}"
 	ProjectSection(SolutionItems) = preProject
