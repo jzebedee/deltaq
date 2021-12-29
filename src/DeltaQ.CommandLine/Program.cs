@@ -12,7 +12,7 @@ var app = new CommandLineApplication()
 };
 
 app.HelpOption(HelpOptions);
-app.VersionOption("--version", "0.1.0");
+app.VersionOption("--version", typeof(Program).Assembly.GetName().Version.ToString());
 
 //No args
 app.OnExecute(() =>

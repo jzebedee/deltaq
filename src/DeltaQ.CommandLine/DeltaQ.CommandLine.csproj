@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
+    <Version>0.1.0</Version>
 	<ToolCommandName>dq</ToolCommandName>
 	<PackAsTool>true</PackAsTool>
   </PropertyGroup>
