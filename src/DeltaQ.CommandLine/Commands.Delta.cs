@@ -31,8 +31,28 @@ internal static partial class Commands
                 "divsufsort" => new LibDivSufSort(),
                 _ => GetDefaultSort()
             };
-            BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), sort);
-            Console.WriteLine($"Diff [sort:{sort.GetType()}]: old:{oldFile} new:{newFile} delta:{deltaFile}");
+            Console.WriteLine("Generating BsDiff delta between");
+            Console.WriteLine($@"Old file: ""{oldFile}""");
+            Console.WriteLine($@"New file: ""{newFile}""");
+            Console.WriteLine($"with suffix sort {sort.GetType().Name}");
+            Console.WriteLine();
+            try
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), sort);
+                sw.Stop();
+
+                Console.WriteLine($"Finished in {sw.Elapsed}");
+                Console.WriteLine($@"Delta file: ""{deltaFile}""");
+                var deltaFileInfo = new FileInfo(deltaFile);
+                var deltaFileRatio = (double)deltaFileInfo.Length / (new FileInfo(oldFile).Length + new FileInfo(newFile).Length);
+                Console.WriteLine($@"Delta size: {deltaFileInfo.Length} ({deltaFileRatio:0.00%})");
+            }
+            catch
+            {
+                Console.Error.WriteLine("Failed to create delta");
+                throw;
+            }
             return 0;
         });
     };
