@@ -12,6 +12,7 @@
 
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
 
     <!-- Source Link Support -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
