@@ -1,0 +1,22 @@
+﻿DeltaQ uses third-party libraries or other resources that may be distributed under a different licenese from DeltaQ.
+
+The attached notices are provided for information only.
+
+License notice for LibDivSufSort
+-------------------------------
+
+Copyright (c) 2003 Yuta Mori. All rights reserved.
+Licensed under the MIT license.
+
+Available at
+https://raw.githubusercontent.com/y-256/libdivsufsort/master/LICENSE
+
+
+License notice for divsufsort (Rust)
+-------------------------------
+
+Copyright (c) 2019 Amos Wenger. All rights reserved.
+Licensed under the MIT license.
+
+Available at
+https://raw.githubusercontent.com/fasterthanlime/stringsearch/master/crates/divsufsort/LICENSE
