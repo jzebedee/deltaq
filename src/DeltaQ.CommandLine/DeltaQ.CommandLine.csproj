@@ -11,16 +11,34 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
-    <PackageReference Include="SharpFuzz" Version="1.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\deltaq\DeltaQ.csproj" />
   </ItemGroup>
 
-  <!--<ItemGroup>
-    <Reference Include="DeltaQ.SuffixSorting.LibDivSufSort">
-      <HintPath>..\..\pkg\DeltaQ.SuffixSorting.LibDivSufSort.0.5.0\lib\net6.0\DeltaQ.SuffixSorting.LibDivSufSort.dll</HintPath>
-    </Reference>
-  </ItemGroup>-->
+  <!-- Fuzzing -->
+  <Choose>
+    <!-- This bit of gore to match a specific define constant comes from:
+    https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditional-constructs?view=vs-2022
+    -->
+    <When Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(DefineConstants), '^(.*;)*FUZZ(;.*)*$'))">
+      <ItemGroup>
+        <PackageReference Include="SharpFuzz" Version="1.6.2" />
+      </ItemGroup>
+      <!-- Instrumented fuzz binary, change as needed -->
+      <!--
+      <ItemGroup>
+        <Reference Include="DeltaQ.SuffixSorting.LibDivSufSort">
+          <HintPath>..\..\pkg\DeltaQ.SuffixSorting.LibDivSufSort.0.5.0\lib\net6.0\DeltaQ.SuffixSorting.LibDivSufSort.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+      -->
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <Compile Remove="Fuzzing\*.cs" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 </Project>
