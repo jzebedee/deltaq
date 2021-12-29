@@ -82,7 +82,7 @@ app.Command("fuzz", command =>
 static ISuffixSort GetDefaultSort() => new LibDivSufSort();
 app.Command("diff", command =>
 {
-    command.Description = "Diff two files";
+    command.Description = "Generate a delta (difference) between two files";
     command.HelpOption(HelpOptions);
 
     var oldFileArg = command.Argument("[oldfile]", "");
