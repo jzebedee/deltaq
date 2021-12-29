@@ -27,7 +27,7 @@ app.Command("fuzz", Commands.FuzzCommand);
 #endif
 
 app.Command("delta", Commands.DeltaCommand);
-app.Command("diff", Commands.DeltaCommand);
+app.Command("apply", Commands.ApplyCommand);
 
 try
 {
