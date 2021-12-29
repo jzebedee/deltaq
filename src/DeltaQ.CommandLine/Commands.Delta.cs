@@ -1,6 +1,7 @@
 ﻿using DeltaQ.SuffixSorting;
 using DeltaQ.SuffixSorting.LibDivSufSort;
 using DeltaQ.SuffixSorting.SAIS;
+using Humanizer;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.IO;
@@ -41,12 +42,12 @@ internal static partial class Commands
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 BsDiff.Diff.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), File.Create(deltaFile), sort);
                 sw.Stop();
-
-                Console.WriteLine($"Finished in {sw.Elapsed}");
+                
+                Console.WriteLine($"Finished in {sw.Elapsed.Humanize()} [{sw.Elapsed}]");
                 Console.WriteLine($@"Delta file: ""{deltaFile}""");
                 var deltaFileInfo = new FileInfo(deltaFile);
                 var deltaFileRatio = (double)deltaFileInfo.Length / (new FileInfo(oldFile).Length + new FileInfo(newFile).Length);
-                Console.WriteLine($@"Delta size: {deltaFileInfo.Length} ({deltaFileRatio:0.00%})");
+                Console.WriteLine($@"Delta size: {deltaFileInfo.Length.Bytes()} ({deltaFileRatio:0.00%})");
             }
             catch
             {
