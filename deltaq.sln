@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ", "src\deltaq\DeltaQ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.Tests", "test\DeltaQ.Tests\DeltaQ.Tests.csproj", "{784B81AE-E39B-497B-90AE-AA7EC4B98E50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.CLI", "src\DeltaQ.CLI\DeltaQ.CLI.csproj", "{2E9A6A2A-438E-45DD-BDBC-8156A70B284F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.CommandLine", "src\DeltaQ.CommandLine\DeltaQ.CommandLine.csproj", "{2E9A6A2A-438E-45DD-BDBC-8156A70B284F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaQ.BsDiff", "src\DeltaQ.BsDiff\DeltaQ.BsDiff.csproj", "{C8834EFF-AB77-42D5-8EA2-0AAB88DFEDA1}"
 EndProject
