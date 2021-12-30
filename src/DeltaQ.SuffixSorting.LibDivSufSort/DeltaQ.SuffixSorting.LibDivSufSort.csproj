@@ -4,7 +4,6 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
     <VersionPrefix>2.0.0</VersionPrefix>
     <Description>DeltaQ implementation of the DivSufSort suffix sorting algorithm</Description>
     <PackageProjectUrl>https://github.com/jzebedee/deltaq</PackageProjectUrl>
