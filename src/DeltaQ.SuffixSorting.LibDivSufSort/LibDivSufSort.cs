@@ -13,7 +13,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort
         {
             var owner = MemoryOwner<int>.Allocate(textBuffer.Length);
 
-            Sort(textBuffer, suffixBuffer: owner.Span);
+            DivSufSort.divsufsort(textBuffer, owner.Span);
 
             return owner;
         }
