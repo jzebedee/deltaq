@@ -2,7 +2,8 @@ name: CI build-test-pack
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # In order to run netframework test targets
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET SDK - 6.0.x
