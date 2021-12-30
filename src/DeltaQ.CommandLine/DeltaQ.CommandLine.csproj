@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\deltaq\DeltaQ.csproj" />
+    <ProjectReference Include="..\DeltaQ\DeltaQ.csproj" />
   </ItemGroup>
 
   <!-- Fuzzing -->
