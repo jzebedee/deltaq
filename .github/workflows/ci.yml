@@ -3,30 +3,30 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '6.0.x', '5.0.x', '3.1.x' ]
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET SDK ${{ matrix.dotnet }}
       uses: actions/setup-dotnet@v1.7.2
       with:
-        dotnet-version: ${{ matrix.dotnet-version }}
+        dotnet-version: | 
+          3.1.x
+          5.0.x
+          6.0.x
     - name: Install dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore --configuration Release
     - name: Test
-      run: dotnet test --no-restore --no-build --configuration Release --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+      run: dotnet test --no-restore --no-build --configuration Release --logger trx --results-directory "TestResults"
     - name: Upload test results
       uses: actions/upload-artifact@v2
       with:
-          name: dotnet-results-${{ matrix.dotnet-version }}
-          path: TestResults-${{ matrix.dotnet-version }}
+          name: TestResults
+          path: TestResults
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
     - name: Pack
-      run: dotnet pack --no-restore --no-build --version-suffix CI-$GITHUB_RUN_ID --output pkg
+      run: dotnet pack --no-restore --configuration Release --version-suffix CI-$GITHUB_RUN_ID --output pkg
     - name: Upload package
       uses: actions/upload-artifact@v2
       with:
