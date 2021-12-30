@@ -1,0 +1,12 @@
+﻿DeltaQ uses third-party libraries or other resources that may be distributed under a different license than DeltaQ.
+
+The attached notices are provided for information only.
+
+License notice for .NET
+-------------------------------
+
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+Licensed under the MIT license.
+
+Available at
+https://raw.githubusercontent.com/dotnet/runtime/main/LICENSE.TXT

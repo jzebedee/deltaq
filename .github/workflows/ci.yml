@@ -1,0 +1,44 @@
+name: CI build-test-pack
+on: [push]
+jobs:
+  build:
+    # In order to run netframework test targets
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET SDK - 6.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+    - name: Setup .NET SDK - 5.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+    - name: Setup .NET SDK - 3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Install dependencies
+      run: dotnet restore
+      shell: bash
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+      shell: bash
+    - name: Test
+      run: dotnet test --no-restore --no-build --configuration Release --logger trx --results-directory "TestResults"
+      shell: bash
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+          name: TestResults
+          path: TestResults
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
+    - name: Pack
+      run: dotnet pack --no-restore --no-build --configuration Release --version-suffix CI-$GITHUB_RUN_ID --output pkg
+      shell: bash
+    - name: Upload package
+      uses: actions/upload-artifact@v2
+      with:
+          name: DeltaQ-pkg
+          path: pkg/*.*

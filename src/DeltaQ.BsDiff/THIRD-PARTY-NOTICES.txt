@@ -1,0 +1,22 @@
+﻿DeltaQ uses third-party libraries or other resources that may be distributed under a different license than DeltaQ.
+
+The attached notices are provided for information only.
+
+License notice for BsDiff.net
+-------------------------------
+
+Copyright 2010 Logos Bible Software
+Licensed under the MIT license.
+
+Available at
+https://github.com/LogosBible/bsdiff.net
+
+
+License notice for SharpZipLib
+-------------------------------
+
+Copyright 2000-2018 SharpZipLib Contributors
+Licensed under the MIT license.
+
+Available at
+https://raw.githubusercontent.com/icsharpcode/SharpZipLib/master/LICENSE.txt

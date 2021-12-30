@@ -1,0 +1,19 @@
+name: Upload packages to feeds
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x' # SDK Version to use.
+    - name: Pack
+      run: dotnet pack -c Release --output pkg
+    - name: Publish the package to GPR
+      run: dotnet nuget push pkg/*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/jzebedee/index.json --skip-duplicate
+    - name: Publish the package to NuGet
+      run: dotnet nuget push pkg/*.nupkg -k ${{ secrets.DELTAQ_NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json --skip-duplicate

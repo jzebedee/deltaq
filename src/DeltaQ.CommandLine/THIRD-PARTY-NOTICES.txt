@@ -1,0 +1,21 @@
+﻿DeltaQ uses third-party libraries or other resources that may be distributed under a different license than DeltaQ.
+
+The attached notices are provided for information only.
+
+License notice for Humanizer.Core
+-------------------------------
+
+Copyright (c) .NET Foundation and Contributors
+Licensed under the MIT license.
+
+Available at
+https://raw.githubusercontent.com/Humanizr/Humanizer/main/LICENSE
+
+
+License notice for Microsoft.Extensions.CommandLineUtils
+-------------------------------
+
+Licensed under the MICROSOFT .NET LIBRARY license.
+
+Available at
+https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm

@@ -1,0 +1,12 @@
+﻿DeltaQ uses third-party libraries or other resources that may be distributed under a different license than DeltaQ.
+
+The attached notices are provided for information only.
+
+License notice for SAIS-CSharp
+-------------------------------
+
+Copyright (c) 2010 Yuta Mori. All Rights Reserved.
+Licensed under the MIT license.
+
+Available at
+https://sites.google.com/site/yuta256/sais
