@@ -40,5 +40,5 @@ jobs:
     - name: Upload package
       uses: actions/upload-artifact@v2
       with:
-          name: DeltaQ-$GITHUB_RUN_ID
+          name: DeltaQ-pkg
           path: pkg/*.*
