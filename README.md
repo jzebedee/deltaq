@@ -1,4 +1,4 @@
-# <img src="assets/dq.svg" alt="deltaq logo" width="128" /> DeltaQ
+# ![DeltaQ logo](assets/dq.png) DeltaQ
 
 Fast and portable delta encoding for .NET in 100% safe, managed code.
 
