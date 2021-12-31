@@ -1,4 +1,4 @@
-# ![DeltaQ logo](assets/dq.png) DeltaQ
+# [![DeltaQ logo](assets/dq.png) DeltaQ](#)
 
 Fast and portable delta encoding for .NET in 100% safe, managed code.
 
