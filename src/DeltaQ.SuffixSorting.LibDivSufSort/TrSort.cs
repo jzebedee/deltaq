@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿#define ILOG2_LOOKUP
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -18,6 +19,7 @@ internal static class TrSort
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     //allow unchecked
     private static int tr_ilg(int n)
+#if ILOG2_LOOKUP
     {
         if ((n & 0xffff_0000) > 0)
         {
@@ -42,6 +44,9 @@ internal static class TrSort
             }
         }
     }
+#else
+        => BitOperations.Log2(n);
+#endif
 
     /// <summary>
     /// Tandem repeat sort

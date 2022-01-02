@@ -1,4 +1,5 @@
 ﻿//#define ISQRT_LOOKUP
+#define ILOG2_LOOKUP
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -1498,11 +1499,15 @@ internal static class SsSort
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ss_ilg(int n)
+#if ILOG2_LOOKUP
         => n & 0xff00 switch
         {
             > 0 => 8 + lg_table[n >> 8 & 0xff],
               _ => 0 + lg_table[n >> 0 & 0xff]
         };
+#else
+        => BitOperations.Log2(n);
+#endif
 
     /// Simple top-down heapsort.
     private static void ss_heapsort(Text T, ReadOnlySpan<int> PA, Span<int> SA, Idx size)

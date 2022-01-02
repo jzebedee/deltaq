@@ -1,4 +1,5 @@
 ﻿//#define ISQRT_LOOKUP
+#define ILOG2_LOOKUP
 using System;
 using System.Runtime.CompilerServices;
 using Idx = System.Int32;
@@ -7,6 +8,7 @@ namespace DeltaQ.SuffixSorting.LibDivSufSort;
 
 internal static class Utils
 {
+#if ILOG2_LOOKUP
     private static readonly int[] lg_table_array = new[]
     {
          -1,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
@@ -19,6 +21,7 @@ internal static class Utils
           7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
     };
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
+#endif
 
 #if ISQRT_LOOKUP
     private static readonly Idx[] sqq_table_array = new[]
