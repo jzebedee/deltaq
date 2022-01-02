@@ -14,41 +14,6 @@ using static Utils;
 internal static class TrSort
 {
     /// <summary>
-    /// Fast log2, using lookup tables
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //allow unchecked
-    private static int tr_ilg(int n)
-#if ILOG2_LOOKUP
-    {
-        if ((n & 0xffff_0000) > 0)
-        {
-            if ((n & 0xff00_0000) > 0)
-            {
-                return 24 + lg_table[((n >> 24) & 0xff)];
-            }
-            else
-            {
-                return 16 + lg_table[((n >> 16) & 0xff)];
-            }
-        }
-        else
-        {
-            if ((n & 0x0000_ff00) > 0)
-            {
-                return 8 + lg_table[((n >> 8) & 0xff)];
-            }
-            else
-            {
-                return 0 + lg_table[((n >> 0) & 0xff)];
-            }
-        }
-    }
-#else
-        => BitOperations.Log2(n);
-#endif
-
-    /// <summary>
     /// Tandem repeat sort
     /// </summary>
     internal static void trsort(SAPtr ISA, Span<int> SA, int n, int depth)

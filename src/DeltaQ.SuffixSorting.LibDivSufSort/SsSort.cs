@@ -1494,21 +1494,6 @@ internal static class SsSort
         }
     }
 
-    /// <summary>
-    /// Fast log2, using lookup tables
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int ss_ilg(int n)
-#if ILOG2_LOOKUP
-        => n & 0xff00 switch
-        {
-            > 0 => 8 + lg_table[n >> 8 & 0xff],
-              _ => 0 + lg_table[n >> 0 & 0xff]
-        };
-#else
-        => BitOperations.Log2(n);
-#endif
-
     /// Simple top-down heapsort.
     private static void ss_heapsort(Text T, ReadOnlySpan<int> PA, Span<int> SA, Idx size)
     {
