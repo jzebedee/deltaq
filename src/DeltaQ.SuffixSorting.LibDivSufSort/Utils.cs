@@ -24,6 +24,25 @@ internal static class Utils
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
 #endif
 
+#if !ILOG2LOOKUP && !NETCOREAPP3_0_OR_GREATER
+    public static int FastLog2(int n)
+    {
+        int r = 0xFFFF - n >> 31 & 0x10;
+        n >>= r;
+        int shift = 0xFF - n >> 31 & 0x8;
+        n >>= shift;
+        r |= shift;
+        shift = 0xF - n >> 31 & 0x4;
+        n >>= shift;
+        r |= shift;
+        shift = 0x3 - n >> 31 & 0x2;
+        n >>= shift;
+        r |= shift;
+        r |= (n >> 1);
+        return r;
+    }
+#endif
+
     /// <summary>
     /// Fast log2, using lookup tables
     /// </summary>
@@ -55,8 +74,10 @@ internal static class Utils
             }
         }
     }
-#else
+#elif NETCOREAPP3_0_OR_GREATER
         => BitOperations.Log2((uint)n);
+#else
+        => FastLog2(n);
 #endif
 
     /// <summary>
@@ -70,8 +91,10 @@ internal static class Utils
             > 0 => 8 + lg_table[n >> 8 & 0xff],
               _ => 0 + lg_table[n >> 0 & 0xff]
         };
-#else
+#elif NETCOREAPP3_0_OR_GREATER
         => BitOperations.Log2((uint)n);
+#else
+        => FastLog2(n);
 #endif
 
 #if ISQRT_LOOKUP
