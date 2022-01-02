@@ -1,4 +1,4 @@
-﻿#define ILOG2_LOOKUP
+﻿//#define ILOG2_LOOKUP
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics;

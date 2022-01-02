@@ -1,5 +1,5 @@
 ﻿//#define ISQRT_LOOKUP
-#define ILOG2_LOOKUP
+//#define ILOG2_LOOKUP
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
