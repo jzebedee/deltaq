@@ -1,4 +1,4 @@
-﻿//#define SS_ISQRT_LOOKUP
+﻿//#define ISQRT_LOOKUP
 using System;
 using System.Runtime.CompilerServices;
 using Idx = System.Int32;
@@ -20,7 +20,7 @@ internal static class Utils
     };
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
 
-#if SS_ISQRT_LOOKUP
+#if ISQRT_LOOKUP
     private static readonly Idx[] sqq_table_array = new[]
     {
           0,  16,  22,  27,  32,  35,  39,  42,  45,  48,  50,  53,  55,  57,  59,  61,
