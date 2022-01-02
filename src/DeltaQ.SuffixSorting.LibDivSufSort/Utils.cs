@@ -1,5 +1,7 @@
 ﻿//#define ISQRT_LOOKUP
-//#define ILOG2_LOOKUP
+#if !NETCOREAPP3_0_OR_GREATER
+#define ILOG2_LOOKUP
+#endif
 using System;
 using System.Runtime.CompilerServices;
 using System.Numerics;
@@ -22,10 +24,12 @@ internal static class Utils
           7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
     };
     internal static ReadOnlySpan<int> lg_table => lg_table_array;
-#endif
-
-#if !ILOG2LOOKUP && !NETCOREAPP3_0_OR_GREATER
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int FastLog2(int n)
+#if NETCOREAPP3_0_OR_GREATER
+        => BitOperations.Log2((uint)n);
+#else
     {
         int r = 0xFFFF - n >> 31 & 0x10;
         n >>= r;
@@ -41,6 +45,7 @@ internal static class Utils
         r |= (n >> 1);
         return r;
     }
+#endif
 #endif
 
     /// <summary>
@@ -74,8 +79,6 @@ internal static class Utils
             }
         }
     }
-#elif NETCOREAPP3_0_OR_GREATER
-        => BitOperations.Log2((uint)n);
 #else
         => FastLog2(n);
 #endif
@@ -91,8 +94,6 @@ internal static class Utils
             > 0 => 8 + lg_table[n >> 8 & 0xff],
               _ => 0 + lg_table[n >> 0 & 0xff]
         };
-#elif NETCOREAPP3_0_OR_GREATER
-        => BitOperations.Log2((uint)n);
 #else
         => FastLog2(n);
 #endif
