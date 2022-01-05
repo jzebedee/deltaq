@@ -27,5 +27,11 @@ namespace DeltaQ.SuffixSorting.SAIS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _text.IsEmpty;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TextAccessor<T> Slice(int start) => new(_text[start..]);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TextAccessor<T> Slice(int start, int length) => new(_text[start..length]);
     }
 }
