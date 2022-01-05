@@ -15,5 +15,17 @@ namespace DeltaQ.SuffixSorting.SAIS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _text[index].ToInt32(null);
         }
+
+        public readonly int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _text.Length;
+        }
+
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _text.IsEmpty;
+        }
     }
 }
