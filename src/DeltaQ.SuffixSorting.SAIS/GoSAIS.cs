@@ -184,7 +184,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         // If there's only enough tmp for one slice,
         // we make it the bucket offsets and recompute
         // the character frequency each time we need it.
-        Span<int> freq = default, bucket = default;
+        Span<int> freq, bucket;
         if (tmp.Length >= 2 * textMax)
         {
             freq = tmp[..textMax];
@@ -193,7 +193,8 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         }
         else
         {
-            tmp = tmp[..textMax];
+            freq = default;
+            bucket = tmp[..textMax];
         }
 
         // The SAIS algorithm.
@@ -792,10 +793,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
                 //n = (int)n;
 
 
-                var @this = text[j..^n];//text[j..][..n];
+                var @this = text[j..(j+n)];//text[j..][..n];
 
 
-                var last = text[lastPos..^n];
+                var last = text[lastPos..(lastPos+n)];
 
 
 
