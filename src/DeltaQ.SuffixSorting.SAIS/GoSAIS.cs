@@ -143,7 +143,7 @@ internal class GoSAIS
         }
 
         using var tmpOwner = SpanOwner<int>.Allocate(2 * alphabetSize);
-        sais_8_32(text, alphabetSize, sa, tmpOwner.Span);
+        sais_8_32(new TextAccessor<byte>(text), alphabetSize, sa, tmpOwner.Span);
     }
 
     private static void ThrowHelper() => throw new NotImplementedException();
@@ -156,7 +156,7 @@ internal class GoSAIS
     // with len(tmp) ≥ textMax. If len(tmp) ≥ 2*textMax
     // then the algorithm runs a little faster.
     // If sais_8_32 modifies tmp, it sets tmp[0] = -1 on return.
-    public void sais_8_32(ReadOnlySpan<byte> text, int textMax, Span<int> sa, Span<int> tmp)
+    public void sais_8_32<T>(TextAccessor<T> text, int textMax, Span<int> sa, Span<int> tmp) where T : unmanaged, IConvertible
     {
         Debug.Assert(text.Length == sa.Length);
 
@@ -242,7 +242,7 @@ internal class GoSAIS
     // If the frequency data is overwritten or uninitialized,
     // the caller must set freq[0] = -1 to force recomputation
     // the next time it is needed.
-    Span<int> freq_8_32(ReadOnlySpan<byte> text, Span<int> freq, Span<int> bucket)
+    Span<int> freq_8_32<T>(TextAccessor<T> text, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         if (!freq.IsEmpty && freq[0] >= 0)
         {
@@ -268,7 +268,7 @@ internal class GoSAIS
 
     // bucketMin_8_32 stores into bucket[c] the minimum index
     // in the bucket for character c in a bucket-sort of text.
-    void bucketMin_8_32(ReadOnlySpan<byte> text, Span<int> freq, Span<int> bucket)
+    void bucketMin_8_32<T>(TextAccessor<T> text, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         freq = freq_8_32(text, freq, bucket);
 
@@ -290,7 +290,7 @@ internal class GoSAIS
     // in the bucket for character c in a bucket-sort of text.
     // The bucket indexes for c are [min, max).
     // That is, max is one past the final index in that bucket.
-    void bucketMax_8_32(ReadOnlySpan<byte> text, Span<int> freq, Span<int> bucket)
+    void bucketMax_8_32<T>(TextAccessor<T> text, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         freq = freq_8_32(text, freq, bucket);
         freq = freq[..256];     // establish len(freq) = 256, so 0 ≤ i < 256 below
@@ -329,7 +329,7 @@ internal class GoSAIS
     // so using 0 as a “not present” suffix array entry is safe,
     // both in this function and in most later functions
     // (until induceL_8_32 below).
-    int placeLMS_8_32(ReadOnlySpan<byte> text, Span<int> sa, Span<int> freq, Span<int> bucket)
+    int placeLMS_8_32<T>(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         bucketMax_8_32(text, freq, bucket);
 
@@ -423,7 +423,7 @@ internal class GoSAIS
     // indexes that are present on entry, and it inserts but then removes
     // the interior L-type indexes too.
     // (Only the leftmost L-type index is needed by induceSubS_8_32.)
-    void induceSubL_8_32(ReadOnlySpan<byte> text, Span<int> sa, Span<int> freq, Span<int> bucket)
+    void induceSubL_8_32<T>(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         // Initialize positions for left side of character buckets.
         bucketMin_8_32(text, freq, bucket);
@@ -553,7 +553,7 @@ internal class GoSAIS
     // and it inserts but then removes the interior S-type indexes too,
     // leaving the LMS-substring start indexes packed into sa[len(sa)-numLMS:].
     // (Only the LMS-substring start indexes are processed by the recursion.)
-    void induceSubS_8_32(ReadOnlySpan<byte> text, Span<int> sa, Span<int> freq, Span<int> bucket)
+    void induceSubS_8_32<T>(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         // Initialize positions for right side of character buckets.
         bucketMax_8_32(text, freq, bucket);
@@ -668,7 +668,7 @@ internal class GoSAIS
     // The definition of “very short” is that the text bytes must pack into an uint32,
     // and the unsigned encoding e must be ≥ len(text), so that it can be
     // distinguished from a valid length.
-    void length_8_32(ReadOnlySpan<byte> text, Span<int> sa, int numLMS)
+    void length_8_32<T>(TextAccessor<T> text, Span<int> sa, int numLMS) where T : unmanaged, IConvertible
     {
         var end = 0; // index of current LMS-substring end (0 indicates final LMS-substring)
 
@@ -757,7 +757,7 @@ internal class GoSAIS
     // consider each in turn, removing adjacent duplicates.
     // The new ID for the LMS-substring at index j is written to sa[j/2],
     // overwriting the length previously stored there (by length_8_32 above).
-    int assignID_8_32(ReadOnlySpan<byte> text, Span<int> sa, int numLMS)
+    int assignID_8_32<T>(TextAccessor<T> text, Span<int> sa, int numLMS) where T : unmanaged, IConvertible
     {
         int id = 0;
 
@@ -942,7 +942,7 @@ internal class GoSAIS
     // Then if the list says K it really means sa[K].
     // Having mapped the list back to LMS-substring indexes,
     // we can place those into the right buckets.
-    void unmap_8_32(ReadOnlySpan<byte> text, Span<int> sa, int numLMS)
+    void unmap_8_32<T>(TextAccessor<T> text, Span<int> sa, int numLMS) where T : unmanaged, IConvertible
     {
         var unmap = sa[^numLMS..];
 
@@ -993,7 +993,7 @@ internal class GoSAIS
     // from sa[:numLMS] into the tops of the appropriate buckets in sa,
     // preserving the sorted order and making room for the L-type indexes
     // to be slotted into the sorted sequence by induceL_8_32.
-    void expand_8_32(ReadOnlySpan<byte> text, Span<int> freq, Span<int> bucket, Span<int> sa, int numLMS)
+    void expand_8_32<T>(TextAccessor<T> text, Span<int> freq, Span<int> bucket, Span<int> sa, int numLMS) where T : unmanaged, IConvertible
     {
         bucketMax_8_32(text, freq, bucket);
 
@@ -1056,7 +1056,7 @@ internal class GoSAIS
     // It leaves all the L-type indexes in sa, but the
     // leftmost L-type indexes are negated, to mark them
     // for processing by induceS_8_32.
-    void induceL_8_32(ReadOnlySpan<byte> text, Span<int> sa, Span<int> freq, Span<int> bucket)
+    void induceL_8_32<T>(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         // Initialize positions for left side of character buckets.
         bucketMin_8_32(text, freq, bucket);
@@ -1154,7 +1154,7 @@ internal class GoSAIS
         }
     }
 
-    void induceS_8_32(ReadOnlySpan<byte> text, Span<int> sa, Span<int> freq, Span<int> bucket)
+    void induceS_8_32<T>(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) where T : unmanaged, IConvertible
     {
         // Initialize positions for right side of character buckets.
         bucketMax_8_32(text, freq, bucket);
