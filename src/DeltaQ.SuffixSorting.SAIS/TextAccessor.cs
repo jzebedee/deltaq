@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DeltaQ.SuffixSorting.SAIS
 {
-    internal ref struct TextAccessor<T>
+    internal ref struct TextAccessor<T> where T : unmanaged, IConvertible
     {
         private readonly ReadOnlySpan<T> _text;
         public TextAccessor(ReadOnlySpan<T> text)
@@ -12,6 +12,6 @@ namespace DeltaQ.SuffixSorting.SAIS
             _text = text;
         }
 
-        public ref readonly T this[int index] => ref _text[index];
+        public readonly int this[int index] => _text[index].ToInt32(null);
     }
 }
