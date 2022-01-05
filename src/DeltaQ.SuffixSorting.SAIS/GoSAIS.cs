@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DeltaQ.SuffixSorting.SAIS;
 
-internal static class GoSAIS
+public static class GoSAIS
 {
     // text_32 returns the suffix array for the input text.
     // It requires that len(text) fit in an int32
@@ -20,7 +20,7 @@ internal static class GoSAIS
             ThrowHelper();
         }
 
-        using var tmpOwner = SpanOwner<int>.Allocate(2 * alphabetSize);
+        using var tmpOwner = SpanOwner<int>.Allocate(2 * alphabetSize, AllocationMode.Clear);
         new GoSAIS<byte>().sais_32(new TextAccessor<byte>(text), alphabetSize, sa, tmpOwner.Span);
     }
     private static void ThrowHelper() => throw new NotImplementedException();
@@ -256,6 +256,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
             freq = bucket;
         }
 
+        //TODO: remove
         freq = freq[..256]; // eliminate bounds check for freq[c] below
         freq.Clear();
 
@@ -373,7 +374,9 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
         for (int i = text.Length - 1; i >= 0; i--)
         {
-            c1 = c0 = text[i];
+            (c1, c0) = (c0, text[i]);
+            //c1 = c0;
+            //c0 = text[i];
 
             if (c0 < c1)
             {
@@ -701,7 +704,8 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
         for (int i = text.Length - 1; i >= 0; i--)
         {
-            c1 = c0 = text[i];
+            (c1, c0) = (c0, text[i]);
+            //c1 = c0 = text[i];
             cx = cx << 8 | (uint)(c1 + 1); // byte-only
 
             if (c0 < c1)
