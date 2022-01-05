@@ -1,8 +1,6 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace DeltaQ.SuffixSorting.SAIS;
 
@@ -21,13 +19,13 @@ public static class GoSAIS
         }
 
         using var tmpOwner = SpanOwner<int>.Allocate(2 * alphabetSize, AllocationMode.Clear);
-        new GoSAIS<byte>().sais_32(new TextAccessor<byte>(text), alphabetSize, sa, tmpOwner.Span);
+        GoSAIS<byte>.sais_32(new TextAccessor<byte>(text), alphabetSize, sa, tmpOwner.Span);
     }
     private static void ThrowHelper() => throw new NotImplementedException();
 
 }
 
-internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
+internal static class GoSAIS<T> where T : unmanaged, IConvertible
 {
     // Copyright 2019 The Go Authors. All rights reserved.
     // Use of this source code is governed by a BSD-style
@@ -159,7 +157,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // with len(tmp) ≥ textMax. If len(tmp) ≥ 2*textMax
     // then the algorithm runs a little faster.
     // If sais_8_32 modifies tmp, it sets tmp[0] = -1 on return.
-    public void sais_32(TextAccessor<T> text, int textMax, Span<int> sa, Span<int> tmp)
+    public static void sais_32(TextAccessor<T> text, int textMax, Span<int> sa, Span<int> tmp)
     {
         Debug.Assert(text.Length == sa.Length);
 
@@ -246,7 +244,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // If the frequency data is overwritten or uninitialized,
     // the caller must set freq[0] = -1 to force recomputation
     // the next time it is needed.
-    Span<int> freq_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket)
+    static Span<int> freq_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket)
     {
         if (!freq.IsEmpty && freq[0] >= 0)
         {
@@ -257,8 +255,6 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
             freq = bucket;
         }
 
-        //TODO: remove
-        freq = freq[..256]; // eliminate bounds check for freq[c] below
         freq.Clear();
 
         for (int i = 0; i < text.Length; i++)
@@ -273,14 +269,9 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
     // bucketMin_8_32 stores into bucket[c] the minimum index
     // in the bucket for character c in a bucket-sort of text.
-    void bucketMin_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket)
+    static void bucketMin_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket)
     {
         freq = freq_8_32(text, freq, bucket);
-
-        freq = freq[..256];     // establish len(freq) = 256, so 0 ≤ i < 256 below
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[i] below
-
         int total = 0;
 
         for (int i = 0; i < freq.Length; i++)
@@ -295,13 +286,9 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // in the bucket for character c in a bucket-sort of text.
     // The bucket indexes for c are [min, max).
     // That is, max is one past the final index in that bucket.
-    void bucketMax_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket) 
+    static void bucketMax_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket)
     {
         freq = freq_8_32(text, freq, bucket);
-        freq = freq[..256];     // establish len(freq) = 256, so 0 ≤ i < 256 below
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[i] below
-
         int total = 0;
         for (int i = 0; i < freq.Length; i++)
         {
@@ -334,16 +321,12 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // so using 0 as a “not present” suffix array entry is safe,
     // both in this function and in most later functions
     // (until induceL_8_32 below).
-    int placeLMS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) 
+    static int placeLMS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket)
     {
         bucketMax_8_32(text, freq, bucket);
 
-
         int numLMS = 0;
-
         int lastB = -1;
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[c1] below
 
         // The next stanza of code (until the blank line) loop backward
         // over text, stopping to execute a code body at each position i
@@ -370,7 +353,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         // Position len(text) is one such position by definition, but we have
         // nowhere to write it down, so we eliminate it by untruthfully
         // setting isTypeS = false at the start of the loop.
-        int c0 = 0, c1 = 0;
+        int c0 = 0, c1;
         bool isTypeS = false;
 
         for (int i = text.Length - 1; i >= 0; i--)
@@ -430,13 +413,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // indexes that are present on entry, and it inserts but then removes
     // the interior L-type indexes too.
     // (Only the leftmost L-type index is needed by induceSubS_8_32.)
-    void induceSubL_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) 
+    static void induceSubL_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket)
     {
         // Initialize positions for left side of character buckets.
         bucketMin_8_32(text, freq, bucket);
-
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[cB] below
 
         // As we scan the array left-to-right, each sa[i] = j > 0 is a correctly
         // sorted suffix array entry (for text[j:]) for which we know that j-1 is type L.
@@ -560,13 +540,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // and it inserts but then removes the interior S-type indexes too,
     // leaving the LMS-substring start indexes packed into sa[len(sa)-numLMS:].
     // (Only the LMS-substring start indexes are processed by the recursion.)
-    void induceSubS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) 
+    static void induceSubS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket)
     {
         // Initialize positions for right side of character buckets.
         bucketMax_8_32(text, freq, bucket);
-
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[cB] below
 
         // Analogous to induceSubL_8_32 above,
         // as we scan the array right-to-left, each sa[i] = j > 0 is a correctly
@@ -675,7 +652,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // The definition of “very short” is that the text bytes must pack into an uint32,
     // and the unsigned encoding e must be ≥ len(text), so that it can be
     // distinguished from a valid length.
-    void length_8_32(TextAccessor<T> text, Span<int> sa, int numLMS) 
+    static void length_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
     {
         var end = 0; // index of current LMS-substring end (0 indicates final LMS-substring)
 
@@ -695,6 +672,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         // then the high bit of the inversion will be set,
         // making it clearly not a valid length (it would be a negative one).
         //
+
         // cx holds the pre-inverted encoding (the packed incremented bytes).
         uint cx = 0; // byte-only
 
@@ -706,8 +684,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         for (int i = text.Length - 1; i >= 0; i--)
         {
             (c1, c0) = (c0, text[i]);
-            //c1 = c0 = text[i];
-            cx = cx << 8 | (uint)(c1 + 1); // byte-only
+            if (typeof(T) == typeof(byte))
+            {
+                cx = cx << 8 | (uint)(c1 + 1);
+            }
 
             if (c0 < c1)
             {
@@ -735,21 +715,21 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
                 {
                     code = (end - j);
 
-
-                    if (code <= 32 / 8 && ~cx >= (uint)text.Length)
-                    { // byte-only
-                        code = (int)~cx; // byte-only
-
-                    } // byte-only
+                    if (typeof(T) == typeof(byte))
+                    {
+                        if (code <= 32 / 8 && ~cx >= (uint)text.Length)
+                        {
+                            code = (int)~cx;
+                        }
+                    }
                 }
                 sa[j >> 1] = code;
-
-
                 end = j + 1;
 
-
-                cx = (uint)(c1 + 1); // byte-only
-
+                if (typeof(T) == typeof(byte))
+                {
+                    cx = (uint)(c1 + 1);
+                }
             }
         }
     }
@@ -764,7 +744,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // consider each in turn, removing adjacent duplicates.
     // The new ID for the LMS-substring at index j is written to sa[j/2],
     // overwriting the length previously stored there (by length_8_32 above).
-    int assignID_8_32(TextAccessor<T> text, Span<int> sa, int numLMS) 
+    static int assignID_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
     {
         int id = 0;
 
@@ -793,10 +773,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
                 //n = (int)n;
 
 
-                var @this = text[j..(j+n)];//text[j..][..n];
+                var @this = text[j..(j + n)];//text[j..][..n];
 
 
-                var last = text[lastPos..(lastPos+n)];
+                var last = text[lastPos..(lastPos + n)];
 
 
 
@@ -842,7 +822,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // map_32 packs the result, which is the input to the recursion,
     // into the top of sa, so that the recursion result can be stored
     // in the bottom of sa, which sets up for expand_8_32 well.
-    void map_32(Span<int> sa, int numLMS)
+    static void map_32(Span<int> sa, int numLMS)
     {
         var w = sa.Length;
 
@@ -865,7 +845,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // The subproblem is at the right end of sa, the suffix array result will be
     // written at the left end of sa, and the middle of sa is available for use as
     // temporary frequency and bucket storage.
-    void recurse_32(Span<int> sa, Span<int> oldTmp, int numLMS, int maxID)
+    static void recurse_32(Span<int> sa, Span<int> oldTmp, int numLMS, int maxID)
     {
         var dst = sa[..numLMS];
         var saTmp = sa[numLMS..^numLMS];
@@ -930,7 +910,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
             }
             //TODO: remove allocation
-            tmp = new int[n]; ;
+            tmp = new int[n];
         }
 
         // sais_32 requires that the caller arrange to clear dst,
@@ -938,7 +918,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         // freshly-allocated and already cleared. But this one is not.
         dst.Clear();
 
-        new GoSAIS<int>().sais_32(new TextAccessor<int>(text), maxID, dst, tmp);
+        GoSAIS<int>.sais_32(new TextAccessor<int>(text), maxID, dst, tmp);
     }
 
     // unmap_8_32 unmaps the subproblem back to the original.
@@ -949,7 +929,7 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // Then if the list says K it really means sa[K].
     // Having mapped the list back to LMS-substring indexes,
     // we can place those into the right buckets.
-    void unmap_8_32(TextAccessor<T> text, Span<int> sa, int numLMS) 
+    static void unmap_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
     {
         var unmap = sa[^numLMS..];
 
@@ -963,12 +943,11 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
         for (int i = text.Length - 1; i >= 0; i--)
         {
-            c1 = c0 = text[i];
+            (c1, c0) = (c0, text[i]);
 
             if (c0 < c1)
             {
                 isTypeS = true;
-
             }
             else if (c0 > c1 && isTypeS)
             {
@@ -976,22 +955,15 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
                 // Populate inverse map.
                 j--;
-
-
                 unmap[j] = i + 1;
-
-
             }
         }
 
         // Apply inverse map to subproblem suffix array.
         sa = sa[..numLMS];
-
-
         for (int i = 0; i < sa.Length; i++)
         {
             sa[i] = unmap[sa[i]];
-
         }
     }
 
@@ -999,12 +971,9 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // from sa[:numLMS] into the tops of the appropriate buckets in sa,
     // preserving the sorted order and making room for the L-type indexes
     // to be slotted into the sorted sequence by induceL_8_32.
-    void expand_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket, Span<int> sa, int numLMS) 
+    static void expand_8_32(TextAccessor<T> text, Span<int> freq, Span<int> bucket, Span<int> sa, int numLMS)
     {
         bucketMax_8_32(text, freq, bucket);
-
-
-        bucket = bucket[..256]; // eliminate bound check for bucket[c] below
 
         // Loop backward through sa, always tracking
         // the next index to populate from sa[:numLMS].
@@ -1062,13 +1031,10 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
     // It leaves all the L-type indexes in sa, but the
     // leftmost L-type indexes are negated, to mark them
     // for processing by induceS_8_32.
-    void induceL_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) 
+    static void induceL_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket)
     {
         // Initialize positions for left side of character buckets.
         bucketMin_8_32(text, freq, bucket);
-
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[cB] below
 
         // This scan is similar to the one in induceSubL_8_32 above.
         // That one arranges to clear all but the leftmost L-type indexes.
@@ -1132,41 +1098,27 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
 
             if (k > 0)
             {
-                c0 = text[k - 1];
-                if (c0 < c1)
+                if (text[k - 1] < c1)
                 {
                     k = -k;
-
-
                 }
             }
 
             if (cB != c1)
             {
                 bucket[cB] = b;
-
-
                 cB = c1;
-
-
                 b = bucket[cB];
-
-
             }
             sa[b] = (k);
-
             b++;
-
         }
     }
 
-    void induceS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket) 
+    static void induceS_8_32(TextAccessor<T> text, Span<int> sa, Span<int> freq, Span<int> bucket)
     {
         // Initialize positions for right side of character buckets.
         bucketMax_8_32(text, freq, bucket);
-
-
-        bucket = bucket[..256]; // eliminate bounds check for bucket[cB] below
 
 
         int cB = (0);
@@ -1179,18 +1131,15 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
         for (int i = sa.Length - 1; i >= 0; i--)
         {
             var j = (sa[i]);
-
             if (j >= 0)
             {
                 // Skip non-flagged entry.
                 // (This loop can't see an empty entry; 0 means the real zero index.)
                 continue;
-
             }
 
             // Negative j is a work queue entry; rewrite to positive j for final suffix array.
             j = -j;
-
             sa[i] = (j);
 
             // Index j was on work queue (encoded as -j but now decoded),
@@ -1201,36 +1150,23 @@ internal sealed class GoSAIS<T> where T : unmanaged, IConvertible
             // If k is zero, k-1 doesn't exist, so we only need to leave it
             // for the caller.
             var k = j - 1;
-
             var c1 = text[k];
-
             if (k > 0)
             {
-                var c0 = text[k - 1];
-                if (c0 <= c1)
+                if (text[k - 1] <= c1)
                 {
                     k = -k;
-
-
                 }
             }
 
             if (cB != c1)
             {
                 bucket[cB] = b;
-
-
                 cB = c1;
-
-
                 b = bucket[cB];
-
-
             }
             b--;
-
             sa[b] = (k);
-
         }
     }
 }
