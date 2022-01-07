@@ -1,30 +1,56 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 
 namespace DeltaQ.SuffixSorting.SAIS;
 
-public static class GoSAIS
+public class GoSAIS : ISuffixSort
 {
+    private const int AlphabetSize = byte.MaxValue + 1;
+
+    public MemoryOwner<int> Sort(ReadOnlySpan<byte> text)
+    {
+        var ownedSA = MemoryOwner<int>.Allocate(text.Length, AllocationMode.Clear);
+        Sort(text, ownedSA.Span);
+        return ownedSA;
+    }
+
+    IMemoryOwner<int> ISuffixSort.Sort(ReadOnlySpan<byte> text)
+        => Sort(text);
+
     // text_32 returns the suffix array for the input text.
     // It requires that len(text) fit in an int32
     // and that the caller zero sa.
-    public static void text_32(ReadOnlySpan<byte> text, Span<int> sa)
+    public void Sort(ReadOnlySpan<byte> text, Span<int> suffixes)
     {
-        const int alphabetSize = 256;
-
-        if (text.Length != sa.Length)
+        if (suffixes.Length != text.Length)
         {
             ThrowHelper();
         }
 
-        using var tmpOwner = SpanOwner<int>.Allocate(2 * alphabetSize, AllocationMode.Clear);
-        GoSAIS<byte>.sais_32(new TextAccessor<byte>(text), alphabetSize, sa, tmpOwner.Span);
-    }
-    private static void ThrowHelper() => throw new NotImplementedException();
+        // Trivial base cases. Sorting 0 or 1 things is easy.
+        if (text.IsEmpty)
+        {
+            return;
+        }
+        else if (text.Length == 1)
+        {
+            suffixes[0] = 0;
+            return;
+        }
 
+        using var tmpOwner = SpanOwner<int>.Allocate(2 * AlphabetSize);
+        GoSAIS<byte>.sais_32(new TextAccessor<byte>(text), AlphabetSize, suffixes, tmpOwner.Span);
+    }
+
+    private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <typeparam name="T">Unmanaged value type convertible to int that represents the type of the TextAccessor buffer</typeparam>
 internal static class GoSAIS<T> where T : unmanaged, IConvertible
 {
     // Copyright 2019 The Go Authors. All rights reserved.
@@ -160,22 +186,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     public static void sais_32(TextAccessor<T> text, int textMax, Span<int> sa, Span<int> tmp)
     {
         Debug.Assert(text.Length == sa.Length);
-
-        //if len(sa) != len(text) || len(tmp) < int(textMax) {
-        //    panic("suffixarray: misuse of sais_8_32")
-        //}
-
-        // Trivial base cases. Sorting 0 or 1 things is easy.
-        if (text.IsEmpty)
-        {
-            return;
-        }
-        else if (text.Length == 1)
-        {
-            sa[0] = 0;
-            return;
-        }
-
+        Debug.Assert(tmp.Length >= textMax);
 
         // Establish slices indexed by text character
         // holding character frequency and bucket-sort offsets.
