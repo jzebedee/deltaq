@@ -208,11 +208,11 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         {
             induceSubL_8_32(text, sa, freq, bucket);
             induceSubS_8_32(text, sa, freq, bucket);
-            length_8_32(text, sa, numLMS);
+            length_8_32(text, sa);
             var maxID = assignID_8_32(text, sa, numLMS);
             if (maxID < numLMS)
             {
-                map_32(sa, numLMS);
+                map_32(sa);
                 recurse_32(sa, tmp, numLMS, maxID);
                 unmap_8_32(text, sa, numLMS);
             }
@@ -359,8 +359,6 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         for (int i = text.Length - 1; i >= 0; i--)
         {
             (c1, c0) = (c0, text[i]);
-            //c1 = c0;
-            //c0 = text[i];
 
             if (c0 < c1)
             {
@@ -458,35 +456,23 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // has very good locality.
         // Invariant: b is cached, possibly dirty copy of bucket[cB].
         var cB = c1;
-
-
         var b = bucket[cB];
-
-
         sa[b] = k;
-
-
         b++;
 
         for (int i = 0; i < sa.Length; i++)
         {
             var j = sa[i];
-
             if (j == 0)
             {
                 // Skip empty entry.
                 continue;
-
             }
             if (j < 0)
             {
                 // Leave discovered type-S index for caller.
                 sa[i] = -j;
-
-
                 continue;
-
-
             }
             sa[i] = 0;
 
@@ -495,12 +481,8 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             // If k-1 is L-type, queue k for processing later in this loop.
             // If k-1 is S-type (text[k-1] < text[k]), queue -k to save for the caller.
             k = j - 1;
-
-
             c0 = text[k - 1];
             c1 = text[k];
-
-
             if (c0 < c1)
             {
                 k = -k;
@@ -510,21 +492,11 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             if (cB != c1)
             {
                 bucket[cB] = b;
-
-
                 cB = c1;
-
-
                 b = bucket[cB];
-
-
             }
             sa[b] = k;
-
-
             b++;
-
-
         }
     }
 
@@ -566,35 +538,24 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
         // Cache recently used bucket index:
         int cB = 0;
-
-
         var b = bucket[cB];
 
-
-
         var top = sa.Length;
-
         for (int i = sa.Length - 1; i >= 0; i--)
         {
             var j = sa[i];
-
             if (j == 0)
             {
                 // Skip empty entry.
                 continue;
-
             }
             sa[i] = 0;
-
             if (j < 0)
             {
                 // Leave discovered LMS-substring start index for caller.
                 top--;
-
                 sa[top] = -j;
-
                 continue;
-
             }
 
             // Index j was on work queue, meaning k := j-1 is S-type,
@@ -602,33 +563,21 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             // If k-1 is S-type, queue k for processing later in this loop.
             // If k-1 is L-type (text[k-1] > text[k]), queue -k to save for the caller.
             var k = j - 1;
-
             int c1 = text[k];
-
             int c0 = text[k - 1];
-
             if (c0 > c1)
             {
                 k = -k;
-
             }
 
             if (cB != c1)
             {
                 bucket[cB] = b;
-
-
                 cB = c1;
-
-
                 b = bucket[cB];
-
-
             }
             b--;
-
             sa[b] = k;
-
         }
     }
 
@@ -652,7 +601,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     // The definition of “very short” is that the text bytes must pack into an uint32,
     // and the unsigned encoding e must be ≥ len(text), so that it can be
     // distinguished from a valid length.
-    static void length_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
+    static void length_8_32(TextAccessor<T> text, Span<int> sa)
     {
         var end = 0; // index of current LMS-substring end (0 indicates final LMS-substring)
 
@@ -678,21 +627,18 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
         // This stanza (until the blank line) is the "LMS-substring iterator",
         // described in placeLMS_8_32 above, with one line added to maintain cx.
-        int c0 = 0, c1 = 0;
+        int c0 = 0, c1;
         bool isTypeS = false;
-
         for (int i = text.Length - 1; i >= 0; i--)
         {
             (c1, c0) = (c0, text[i]);
             if (typeof(T) == typeof(byte))
             {
-                cx = cx << 8 | (uint)(c1 + 1);
+                cx = cx << 8 | (byte)(c1 + 1);
             }
-
             if (c0 < c1)
             {
                 isTypeS = true;
-
             }
             else if (c0 > c1 && isTypeS)
             {
@@ -701,20 +647,14 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
                 // Index j = i+1 is the start of an LMS-substring.
                 // Compute length or encoded text to store in sa[j/2].
                 var j = i + 1;
-
-
                 int code;
-
-
                 if (end == 0)
                 {
                     code = 0;
-
                 }
                 else
                 {
                     code = (end - j);
-
                     if (typeof(T) == typeof(byte))
                     {
                         if (code <= 32 / 8 && ~cx >= (uint)text.Length)
@@ -725,10 +665,9 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
                 }
                 sa[j >> 1] = code;
                 end = j + 1;
-
                 if (typeof(T) == typeof(byte))
                 {
-                    cx = (uint)(c1 + 1);
+                    cx = (byte)(c1 + 1);
                 }
             }
         }
@@ -747,66 +686,47 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     static int assignID_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
     {
         int id = 0;
-
         int lastLen = -1; // impossible
-
         int lastPos = 0;
 
         foreach (var j in sa[^numLMS..])
         {
             // Is the LMS-substring at index j new, or is it the same as the last one we saw?
             var n = sa[j / 2];
-
             if (n != lastLen)
             {
                 goto New;
-
             }
-            if ((uint)n >= (uint)text.Length)
+
+            if ((uint)n >= text.Length)
             {
                 // “Length” is really encoded full text, and they match.
                 goto Same;
-
             }
+
             {
                 // Compare actual texts.
                 //n = (int)n;
-
-
+                Debug.Assert(n > 0);
                 var @this = text[j..(j + n)];//text[j..][..n];
-
-
                 var last = text[lastPos..(lastPos + n)];
-
-
-
                 for (int i = 0; i < n; i++)
                 {
                     if (@this[i] != last[i])
                     {
                         goto New;
-
-
                     }
                 }
                 goto Same;
-
-
             }
+
         New:
             id++;
-
-
             lastPos = j;
-
-
             lastLen = n;
-
 
         Same:
             sa[j / 2] = id;
-
-
         }
         return id;
     }
@@ -822,21 +742,15 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     // map_32 packs the result, which is the input to the recursion,
     // into the top of sa, so that the recursion result can be stored
     // in the bottom of sa, which sets up for expand_8_32 well.
-    static void map_32(Span<int> sa, int numLMS)
+    static void map_32(Span<int> sa)
     {
         var w = sa.Length;
-
-
         for (int i = sa.Length / 2; i >= 0; i--)
         {
             var j = sa[i];
-
             if (j > 0)
             {
-                w--;
-
-                sa[w] = j - 1;
-
+                sa[--w] = j - 1;
             }
         }
     }
@@ -891,23 +805,18 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // so this one allocation is guaranteed to suffice for the entire stack
         // of recursive calls.
         var tmp = oldTmp;
-
-
         if (tmp.Length < saTmp.Length)
         {
             tmp = saTmp;
-
         }
+
         if (tmp.Length < numLMS)
         {
             // TestSAIS/forcealloc reaches this code.
             var n = maxID;
-
-
             if (n < numLMS / 2)
             {
                 n = numLMS / 2;
-
             }
             //TODO: remove allocation
             tmp = new int[n];
@@ -1065,7 +974,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         var b = bucket[cB];
 
 
-        sa[b] = (k);
+        sa[b] = k;
 
 
         b++;
@@ -1110,7 +1019,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
                 cB = c1;
                 b = bucket[cB];
             }
-            sa[b] = (k);
+            sa[b] = k;
             b++;
         }
     }
@@ -1130,7 +1039,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
         for (int i = sa.Length - 1; i >= 0; i--)
         {
-            var j = (sa[i]);
+            var j = sa[i];
             if (j >= 0)
             {
                 // Skip non-flagged entry.
@@ -1140,7 +1049,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
             // Negative j is a work queue entry; rewrite to positive j for final suffix array.
             j = -j;
-            sa[i] = (j);
+            sa[i] = j;
 
             // Index j was on work queue (encoded as -j but now decoded),
             // meaning k := j-1 is L-type,
@@ -1166,7 +1075,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
                 b = bucket[cB];
             }
             b--;
-            sa[b] = (k);
+            sa[b] = k;
         }
     }
 }
