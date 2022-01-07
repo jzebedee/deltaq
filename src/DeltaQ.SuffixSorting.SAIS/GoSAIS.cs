@@ -888,31 +888,17 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // When we get to one, populate it.
         // Zero the rest of the slots; they have dead values in them.
         var x = numLMS - 1;
-
-
         var saX = sa[x];
-
-
         var c = text[saX];
-
-
         var b = bucket[c] - 1;
-
-
         bucket[c] = b;
-
-
 
         for (int i = sa.Length - 1; i >= 0; i--)
         {
             if (i != b)
             {
                 sa[i] = 0;
-
-
                 continue;
-
-
             }
             sa[i] = saX;
 
@@ -920,15 +906,10 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             if (x > 0)
             {
                 x--;
-
                 saX = sa[x]; // TODO bounds check
-
                 c = text[saX];
-
                 b = bucket[c] - 1;
-
                 bucket[c] = b;
-
             }
         }
     }
