@@ -208,7 +208,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         {
             induceSubL_8_32(text, sa, freq, bucket);
             induceSubS_8_32(text, sa, freq, bucket);
-            length_8_32(text, sa);
+            length_t_32(text, sa);
             var maxID = assignID_8_32(text, sa, numLMS);
             if (maxID < numLMS)
             {
@@ -601,7 +601,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     // The definition of “very short” is that the text bytes must pack into an uint32,
     // and the unsigned encoding e must be ≥ len(text), so that it can be
     // distinguished from a valid length.
-    static void length_8_32(TextAccessor<T> text, Span<int> sa)
+    static void length_t_32(TextAccessor<T> text, Span<int> sa)
     {
         var end = 0; // index of current LMS-substring end (0 indicates final LMS-substring)
 
