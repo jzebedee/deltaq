@@ -272,9 +272,6 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         {
             freq[text[i]]++;
         }
-        //for _, c := range text {
-        //	freq[c]++
-        //}
         return freq;
     }
 
@@ -307,7 +304,6 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             total += n;
 
             bucket[i] = total;
-
         }
     }
 
@@ -370,11 +366,9 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         for (int i = text.Length - 1; i >= 0; i--)
         {
             (c1, c0) = (c0, text[i]);
-
             if (c0 < c1)
             {
                 isTypeS = true;
-
             }
             else if (c0 > c1 && isTypeS)
             {
@@ -382,12 +376,8 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
                 // Bucket the index i+1 for the start of an LMS-substring.
                 var b = bucket[c1] - 1;
-
-
                 bucket[c1] = b;
                 sa[b] = i + 1;
-
-
                 lastB = b;
                 numLMS++;
             }
@@ -497,7 +487,6 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             if (c0 < c1)
             {
                 k = -k;
-
             }
 
             if (cB != c1)
@@ -717,9 +706,8 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
 
             {
                 // Compare actual texts.
-                //n = (int)n;
                 Debug.Assert(n > 0);
-                var @this = text[j..(j + n)];//text[j..][..n];
+                var @this = text[j..(j + n)];
                 var last = text[lastPos..(lastPos + n)];
                 for (int i = 0; i < n; i++)
                 {
