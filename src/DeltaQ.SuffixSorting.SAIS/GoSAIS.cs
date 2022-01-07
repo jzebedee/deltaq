@@ -905,8 +905,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             // Load next entry to put down (if any).
             if (x > 0)
             {
-                x--;
-                saX = sa[x]; // TODO bounds check
+                saX = sa[--x];
                 c = text[saX];
                 b = bucket[c] - 1;
                 bucket[c] = b;
