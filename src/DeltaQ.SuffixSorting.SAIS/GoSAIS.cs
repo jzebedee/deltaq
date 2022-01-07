@@ -764,6 +764,11 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         var saTmp = sa[numLMS..^numLMS];
         var text = sa[^numLMS..];
 
+        // sais_32 requires that the caller arrange to clear dst,
+        // because in general the caller may know dst is
+        // freshly-allocated and already cleared. But this one is not.
+        dst.Clear();
+
         // Set up temporary space for recursive call.
         // We must pass sais_32 a tmp buffer wiith at least maxID entries.
         //
@@ -803,30 +808,15 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // and all deeper levels of the recursion will need no more than numLMS/2,
         // so this one allocation is guaranteed to suffice for the entire stack
         // of recursive calls.
-        var tmp = oldTmp;
-        if (tmp.Length < saTmp.Length)
+        var tmp = oldTmp.Length < saTmp.Length ? saTmp : oldTmp;
+        if (tmp.Length >= numLMS)
         {
-            tmp = saTmp;
+            GoSAIS<int>.sais_32(new TextAccessor<int>(text), maxID, dst, tmp);
+            return;
         }
 
-        if (tmp.Length < numLMS)
-        {
-            // TestSAIS/forcealloc reaches this code.
-            var n = maxID;
-            if (n < numLMS >> 1)
-            {
-                n = numLMS >> 1;
-            }
-            //TODO: remove allocation
-            tmp = new int[n];
-        }
-
-        // sais_32 requires that the caller arrange to clear dst,
-        // because in general the caller may know dst is
-        // freshly-allocated and already cleared. But this one is not.
-        dst.Clear();
-
-        GoSAIS<int>.sais_32(new TextAccessor<int>(text), maxID, dst, tmp);
+        using var tmpOwner = SpanOwner<int>.Allocate(maxID < numLMS >> 1 ? numLMS >> 1 : maxID);
+        GoSAIS<int>.sais_32(new TextAccessor<int>(text), maxID, dst, tmpOwner.Span);
     }
 
     // unmap_8_32 unmaps the subproblem back to the original.
@@ -840,19 +830,14 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     static void unmap_8_32(TextAccessor<T> text, Span<int> sa, int numLMS)
     {
         var unmap = sa[^numLMS..];
-
-
         var j = unmap.Length;
 
         // "LMS-substring iterator" (see placeLMS_8_32 above).
         int c0 = 0, c1 = 0;
         bool isTypeS = false;
-
-
         for (int i = text.Length - 1; i >= 0; i--)
         {
             (c1, c0) = (c0, text[i]);
-
             if (c0 < c1)
             {
                 isTypeS = true;
