@@ -692,7 +692,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         foreach (var j in sa[^numLMS..])
         {
             // Is the LMS-substring at index j new, or is it the same as the last one we saw?
-            var n = sa[j / 2];
+            var n = sa[j >> 1];
             if (n != lastLen)
             {
                 goto New;
@@ -725,7 +725,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             lastLen = n;
 
         Same:
-            sa[j / 2] = id;
+            sa[j >> 1] = id;
         }
         return id;
     }
@@ -744,7 +744,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
     static void map_32(Span<int> sa)
     {
         var w = sa.Length;
-        for (int i = sa.Length / 2; i >= 0; i--)
+        for (int i = sa.Length >> 1; i >= 0; i--)
         {
             var j = sa[i];
             if (j > 0)
@@ -813,9 +813,9 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         {
             // TestSAIS/forcealloc reaches this code.
             var n = maxID;
-            if (n < numLMS / 2)
+            if (n < numLMS >> 1)
             {
-                n = numLMS / 2;
+                n = numLMS >> 1;
             }
             //TODO: remove allocation
             tmp = new int[n];
