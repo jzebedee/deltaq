@@ -47,10 +47,6 @@ public class GoSAIS : ISuffixSort
     private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <typeparam name="T">Unmanaged value type convertible to int that represents the type of the TextAccessor buffer</typeparam>
 internal static class GoSAIS<T> where T : unmanaged, IConvertible
 {
     // Copyright 2019 The Go Authors. All rights reserved.
