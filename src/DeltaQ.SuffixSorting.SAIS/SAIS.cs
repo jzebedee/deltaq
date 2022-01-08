@@ -11,10 +11,45 @@ namespace DeltaQ.SuffixSorting.SAIS
     public class SAIS : ISuffixSort
     {
         private const int AlphabetSize = byte.MaxValue + 1;
+
+        public MemoryOwner<int> Sort(ReadOnlySpan<byte> textBuffer)
+        {
+            var owner = MemoryOwner<int>.Allocate(textBuffer.Length);
+            Sort(textBuffer, owner.Span);
+            return owner;
+        }
+
+        IMemoryOwner<int> ISuffixSort.Sort(ReadOnlySpan<byte> textBuffer)
+            => Sort(textBuffer);
+
+        public void Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
+        {
+            if (suffixBuffer.Length != textBuffer.Length)
+            {
+                ThrowHelper();
+            }
+
+            if (textBuffer.Length <= 1)
+            {
+                if (textBuffer.Length == 1)
+                {
+                    suffixBuffer[0] = 0;
+                }
+                return;
+            }
+
+            SAIS<byte>.sais_main(new TextAccessor<byte>(textBuffer), suffixBuffer, 0, textBuffer.Length, AlphabetSize);
+        }
+
+        private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
+    }
+
+    internal static class SAIS<T> where T : unmanaged, IConvertible
+    {
         private const int MinBucketSize = byte.MaxValue + 1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void GetCounts(IntAccessor T, Span<int> c, int n, int k)
+        private static void GetCounts(TextAccessor<T> T, Span<int> c, int n, int k)
         {
             c[..k].Clear();
 
@@ -34,9 +69,10 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
         }
 
-        /* sort all type LMS suffixes */
-
-        private static void LMS_sort(IntAccessor T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
+        /// <summary>
+        /// sort all type LMS suffixes
+        /// </summary>
+        private static void LMS_sort(TextAccessor<T> T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
         {
             int bb, i, j;
             int c0, c1;
@@ -96,7 +132,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
         }
 
-        private static int LMS_post_proc(IntAccessor T, Span<int> sa, int n, int m)
+        private static int LMS_post_proc(TextAccessor<T> T, Span<int> sa, int n, int m)
         {
             int i, j, p, q;
             int qlen, name;
@@ -180,7 +216,7 @@ namespace DeltaQ.SuffixSorting.SAIS
             return name;
         }
 
-        private static void InduceSA(IntAccessor T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
+        private static void InduceSA(TextAccessor<T> T, Span<int> sa, Span<int> c, Span<int> b, int n, int k)
         {
             int bb, i, j;
             int c0, c1;
@@ -237,10 +273,11 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
         }
 
-        /* find the suffix array SA of T[0..n-1] in {0..k-1}^n
-           use a working space (excluding T and SA) of at most 2n+O(1) for a constant alphabet */
-
-        private void sais_main(IntAccessor T, Span<int> sa, int fs, int n, int k)
+        /// <summary>
+        /// find the suffix array SA of T[0..n-1] in {0..k-1}^n,
+        /// using a working space (excluding T and SA) of at most 2n+O(1) for a constant alphabet
+        /// </summary>
+        public static void sais_main(TextAccessor<T> T, Span<int> sa, int fs, int n, int k)
         {
             Span<int> c, b;
             int i, j, bb, m;
@@ -374,7 +411,7 @@ namespace DeltaQ.SuffixSorting.SAIS
                     }
                 }
 
-                sais_main(new IntAccessor(sa[(m + newfs)..]), sa, newfs, m, name);
+                SAIS<int>.sais_main(new TextAccessor<int>(sa[(m + newfs)..]), sa, newfs, m, name);
 
                 i = n - 1;
                 j = m * 2 - 1;
@@ -455,65 +492,6 @@ namespace DeltaQ.SuffixSorting.SAIS
             }
 
             InduceSA(T, sa, c, b, n, k);
-        }
-
-        public MemoryOwner<int> Sort(ReadOnlySpan<byte> textBuffer)
-        {
-            var owner = MemoryOwner<int>.Allocate(textBuffer.Length);
-            Sort(textBuffer, owner.Span);
-            return owner;
-        }
-
-        IMemoryOwner<int> ISuffixSort.Sort(ReadOnlySpan<byte> textBuffer)
-            => Sort(textBuffer);
-
-        public void Sort(ReadOnlySpan<byte> textBuffer, Span<int> suffixBuffer)
-        {
-            if (suffixBuffer.Length != textBuffer.Length)
-            {
-                ThrowHelper();
-            }
-
-            if (textBuffer.Length <= 1)
-            {
-                if (textBuffer.Length == 1)
-                {
-                    suffixBuffer[0] = 0;
-                }
-                return;
-            }
-
-            sais_main(new IntAccessor(textBuffer), suffixBuffer, 0, textBuffer.Length, AlphabetSize);
-        }
-
-        private static void ThrowHelper() => throw new ArgumentException("Text and suffix buffers should have the same length");
-
-        private ref struct IntAccessor
-        {
-            private readonly ReadOnlySpan<int> intSpan;
-            private readonly ReadOnlySpan<byte> byteSpan;
-            private readonly bool packedIndex;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public IntAccessor(ReadOnlySpan<byte> buffer)
-            {
-                byteSpan = buffer;
-                intSpan = default;
-                packedIndex = true;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public IntAccessor(ReadOnlySpan<int> buffer)
-            {
-                byteSpan = default;
-                intSpan = buffer;
-                packedIndex = false;
-            }
-
-            public int this[int index]
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => packedIndex ? byteSpan[index] : intSpan[index];
-            }
         }
     }
 }
