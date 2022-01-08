@@ -973,14 +973,8 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // Initialize positions for right side of character buckets.
         bucketMax_8_32(text, freq, bucket);
 
-
-        int cB = (0);
-
-
+        int cB = 0;
         var b = bucket[cB];
-
-
-
         for (int i = sa.Length - 1; i >= 0; i--)
         {
             var j = sa[i];
