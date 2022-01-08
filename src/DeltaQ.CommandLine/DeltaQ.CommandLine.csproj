@@ -22,7 +22,7 @@
     <ToolCommandName>dq</ToolCommandName>
     <PackAsTool>true</PackAsTool>
 
-    <DefineConstants>FUZZ</DefineConstants>
+    <!--<DefineConstants>FUZZ</DefineConstants>-->
 
     <!-- Source Link Support -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -64,11 +64,13 @@
       </ItemGroup>
       
       <!-- Instrumented fuzz binary, change as needed -->
+      <!--
       <ItemGroup>
         <Reference Include="DeltaQ.SuffixSorting.SAIS">
           <HintPath>..\..\pkg\DeltaQ.SuffixSorting.SAIS.2.1.1\lib\netstandard2.1\DeltaQ.SuffixSorting.SAIS.dll</HintPath>
         </Reference>
       </ItemGroup>
+      -->
     </When>
     <Otherwise>
       <ItemGroup>
