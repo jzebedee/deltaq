@@ -916,40 +916,26 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
         // Process it before the left-to-right scan of sa proper.
         // See body in loop for commentary.
         var k = text.Length - 1;
-
-
         int c0 = text[k - 1];
         int c1 = text[k];
-
         if (c0 < c1)
         {
             k = -k;
-
         }
 
         // Cache recently used bucket index.
         var cB = c1;
-
-
         var b = bucket[cB];
-
-
         sa[b] = k;
-
-
         b++;
-
-
 
         for (int i = 0; i < sa.Length; i++)
         {
             var j = sa[i];
-
             if (j <= 0)
             {
                 // Skip empty or negated entry (including negated zero).
                 continue;
-
             }
 
             // Index j was on work queue, meaning k := j-1 is L-type,
@@ -962,9 +948,7 @@ internal static class GoSAIS<T> where T : unmanaged, IConvertible
             // to distinguish them anyway: the final suffix array will end up
             // with one zero somewhere, and that will be a real zero.
             k = j - 1;
-
             c1 = text[k];
-
             if (k > 0)
             {
                 if (text[k - 1] < c1)
