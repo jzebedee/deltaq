@@ -51,9 +51,9 @@ namespace DeltaQ.Benchmarks
                 }
             }
         }
-        public static IEnumerable<byte[]> Randoms { get; } = Sizes
+        public static IEnumerable<object[]> Randoms { get; } = Sizes
             .Select(i => new { size = i, asset = GetOwnedRandomBuffer(i) })
-            .Select(a => new object[] { i.ToString(), a.asset })
+            .Select(a => new object[] { a.size.ToString(), a.asset })
             .ToArray();
 
         private static readonly ISuffixSort GoSAIS = new GoSAIS();
