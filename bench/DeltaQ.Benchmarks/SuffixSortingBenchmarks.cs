@@ -51,26 +51,31 @@ namespace DeltaQ.Benchmarks
                 }
             }
         }
-        public static IEnumerable<byte[]> Randoms { get; } = Sizes
+        public static IEnumerable<object[]> Randoms { get; } = Sizes
             .Select(i => new { size = i, asset = GetOwnedRandomBuffer(i) })
-            .Select(a => new object[] { i.ToString(), a.asset })
+            .Select(a => new object[] { a.size.ToString(), a.asset })
             .ToArray();
 
         private static readonly ISuffixSort GoSAIS = new GoSAIS();
         private static readonly ISuffixSort SAIS = new SAIS();
+        private static readonly ISuffixSort SAIS_NA = new SAIS_NA();
         private static readonly ISuffixSort LDSS = new LibDivSufSort();
 
-        [ArgumentsSource(nameof(Randoms))]
+        [ArgumentsSource(nameof(Assets))]
         [Benchmark(Baseline = true)]
         public void sais(string name, byte[] asset) => SAIS.Sort(asset).Dispose();
 
-        [ArgumentsSource(nameof(Randoms))]
+        [ArgumentsSource(nameof(Assets))]
         [Benchmark]
-        public void go_sais(string name, byte[] asset) => GoSAIS.Sort(asset).Dispose();
+        public void sais_na(string name, byte[] asset) => SAIS_NA.Sort(asset).Dispose();
 
-        [ArgumentsSource(nameof(Randoms))]
-        [Benchmark]
-        public void ldss(string name, byte[] asset) => LDSS.Sort(asset).Dispose();
+        //[ArgumentsSource(nameof(Randoms))]
+        //[Benchmark]
+        //public void go_sais(string name, byte[] asset) => GoSAIS.Sort(asset).Dispose();
+
+        //[ArgumentsSource(nameof(Randoms))]
+        //[Benchmark]
+        //public void ldss(string name, byte[] asset) => LDSS.Sort(asset).Dispose();
 
     }
 }
