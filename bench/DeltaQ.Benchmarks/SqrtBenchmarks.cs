@@ -1,53 +1,43 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System.Runtime.CompilerServices;
 using Idx = System.Int32;
-using static DeltaQ.SuffixSorting.LibDivSufSort.Utils;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 
 namespace DeltaQ.Benchmarks
 {
-    //[HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
+    [HardwareCounters(HardwareCounter.BranchInstructions, HardwareCounter.BranchMispredictions)]
     [SimpleJob(RunStrategy.Throughput)]
     public class SqrtBenchmarks
     {
-        private const int Step = 1;
+        public static IEnumerable<int> Numbers { get; } = new[] { 0, 1, 2, 32, 51, 1024, 2000, 48000, int.MaxValue };
 
+        [ArgumentsSource(nameof(Numbers))]
         [Benchmark(Baseline = true)]
-        public void SqrtsSS()
+        public void SqrtsSS(int i)
         {
-            Idx y = -1;
-            for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
-            {
-                y = ss_isqrt(i);
-            }
+            Idx y = ss_isqrt(i);
             GC.KeepAlive(y);
         }
 
+        [ArgumentsSource(nameof(Numbers))]
         [Benchmark]
-        public void SqrtsMath()
+        public void SqrtsMath(int i)
         {
-            Idx y = -1;
-            for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
-            {
-                y = ss_isqrt_math(i);
-            }
+            Idx y = ss_isqrt_math(i);
             GC.KeepAlive(y);
         }
 
 #if NETCOREAPP3_0_OR_GREATER
+        [ArgumentsSource(nameof(Numbers))]
         [Benchmark]
-        public void SqrtsMathF()
+        public void SqrtsMathF(int i)
         {
-            Idx y = -1;
-            for (int i = 0; i < SS_BLOCKSIZE * SS_BLOCKSIZE; i += Step)
-            {
-                y = ss_isqrt_mathf(i);
-            }
+            Idx y = ss_isqrt_mathf(i);
             GC.KeepAlive(y);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private static int ss_isqrt_mathf(int x)
         {
             if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
@@ -58,7 +48,7 @@ namespace DeltaQ.Benchmarks
         }
 #endif
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private static int ss_isqrt_math(int x)
         {
             if (x >= (SS_BLOCKSIZE * SS_BLOCKSIZE))
@@ -72,7 +62,7 @@ namespace DeltaQ.Benchmarks
         /// <summary>
         /// Fast sqrt, using lookup tables
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         /*unchecked*/
         private static int ss_isqrt(int x)
         {
@@ -153,7 +143,19 @@ namespace DeltaQ.Benchmarks
             239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247,
             247, 248, 248, 249, 249, 250, 250, 251, 251, 252, 252, 253, 253, 254, 254, 255
         };
-        internal static ReadOnlySpan<Idx> sqq_table => sqq_table_array;
+        private static ReadOnlySpan<Idx> sqq_table => sqq_table_array;
 
+        private static readonly int[] lg_table_array = new[]
+        {
+         -1,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+          5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+          6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+          6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+          7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+        };
+        private static ReadOnlySpan<int> lg_table => lg_table_array;
     }
 }
