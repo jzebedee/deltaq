@@ -1,0 +1,1 @@
+afl-tmin -i findings/crashes.2022-01-07-13\:56\:25/id:000002,sig:02,src:000128,op:arith8,pos:91,val:+27 -o crash-force-sais-tmp-alloc -t 5000 -m 10000 -- dotnet bin/Release/net6.0/DeltaQ.CommandLine.dll fuzz
