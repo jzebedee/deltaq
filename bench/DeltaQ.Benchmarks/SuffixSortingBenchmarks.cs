@@ -58,19 +58,24 @@ namespace DeltaQ.Benchmarks
 
         private static readonly ISuffixSort GoSAIS = new GoSAIS();
         private static readonly ISuffixSort SAIS = new SAIS();
+        private static readonly ISuffixSort SAIS_NA = new SAIS_NA();
         private static readonly ISuffixSort LDSS = new LibDivSufSort();
 
-        [ArgumentsSource(nameof(Randoms))]
+        [ArgumentsSource(nameof(Assets))]
         [Benchmark(Baseline = true)]
         public void sais(string name, byte[] asset) => SAIS.Sort(asset).Dispose();
 
-        [ArgumentsSource(nameof(Randoms))]
+        [ArgumentsSource(nameof(Assets))]
         [Benchmark]
-        public void go_sais(string name, byte[] asset) => GoSAIS.Sort(asset).Dispose();
+        public void sais_na(string name, byte[] asset) => SAIS_NA.Sort(asset).Dispose();
 
-        [ArgumentsSource(nameof(Randoms))]
-        [Benchmark]
-        public void ldss(string name, byte[] asset) => LDSS.Sort(asset).Dispose();
+        //[ArgumentsSource(nameof(Randoms))]
+        //[Benchmark]
+        //public void go_sais(string name, byte[] asset) => GoSAIS.Sort(asset).Dispose();
+
+        //[ArgumentsSource(nameof(Randoms))]
+        //[Benchmark]
+        //public void ldss(string name, byte[] asset) => LDSS.Sort(asset).Dispose();
 
     }
 }
