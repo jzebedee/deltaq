@@ -10,3 +10,13 @@ Licensed under the MIT license.
 
 Available at
 https://sites.google.com/site/yuta256/sais
+
+
+License notice for GoSAIS
+-------------------------------
+
+Copyright (c) 2009 The Go Authors. All rights reserved.
+Licensed under the BSD-3-Clause license.
+
+Available at
+https://go.dev/LICENSE

@@ -1,6 +1,8 @@
 ﻿using DeltaQ.CommandLine.Fuzzing;
 using DeltaQ.SuffixSorting.LibDivSufSort;
+using DeltaQ.SuffixSorting.SAIS;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using SharpFuzz;
 using System;
 using System.IO;
@@ -28,9 +30,11 @@ internal static partial class Commands
                     throw new InvalidOperationException();
                 }
 
-                var ldss = new LibDivSufSort();
-                using var ownedSA = ldss.Sort(T);
-                Verify(T, ownedSA.Memory.Span);
+                var sais = new GoSAIS();
+                using var ownedSA = sais.Sort(T);
+                var SA = ownedSA.Span;
+
+                Verify(T, SA);
             });
             return 0;
         });
