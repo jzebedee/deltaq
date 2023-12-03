@@ -1,7 +1,7 @@
-﻿using DeltaQ.SuffixSorting;
+﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
+using DeltaQ.SuffixSorting;
 using ICSharpCode.SharpZipLib.BZip2;
-using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.IO;

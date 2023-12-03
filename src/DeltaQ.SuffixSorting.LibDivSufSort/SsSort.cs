@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Text = System.ReadOnlySpan<byte>;
 using Idx = System.Int32;
 using SAPtr = System.Int32;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 
 namespace DeltaQ.SuffixSorting.LibDivSufSort;
 using static Crosscheck;

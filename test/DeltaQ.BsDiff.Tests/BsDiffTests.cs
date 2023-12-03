@@ -1,6 +1,6 @@
-﻿using DeltaQ.BsDiff;
-using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
+using DeltaQ.BsDiff;
 using System;
 using System.Collections.Generic;
 using System.IO;
