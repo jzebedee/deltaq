@@ -29,7 +29,9 @@ public class LibDivSufSortTests : IDisposable
         var rand = new Random(63 * 13 * 63 * 13);
 
         var owner = SpanOwner<byte>.Allocate(size);
-#if NETFRAMEWORK
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        rand.NextBytes(owner.Span);
+#else
         var buf = new byte[size];
         rand.NextBytes(buf);
         buf.CopyTo(owner.Span);
