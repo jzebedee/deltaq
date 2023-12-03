@@ -78,19 +78,11 @@ public class BsDiffTests
     }
 
     [Theory]
-    [MemberData(nameof(BsDiffCreateNullArguments_TestData))]
+    //this was changed from MemberData that checks old/new data since we implicitly convert to a ROS<T> now
+    [InlineData(null, null, null)]
     public void BsDiffCreateNullArgumentsThrows(byte[] oldData, byte[] newData, Stream outStream)
     {
         Assert.Throws<ArgumentNullException>(() => Diff.Create(oldData, newData, outStream, new SuffixSorting.SAIS.SAIS()));
-    }
-
-    public static IEnumerable<object[]> BsDiffCreateNullArguments_TestData()
-    {
-        var emptybuf = Array.Empty<byte>();
-        var ms = new MemoryStream();
-        yield return new object[] { null, emptybuf, ms };
-        yield return new object[] { emptybuf, null, ms };
-        yield return new object[] { emptybuf, emptybuf, null };
     }
 
     [Theory]
