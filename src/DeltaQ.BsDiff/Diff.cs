@@ -229,6 +229,7 @@ public static class Diff
         output.Position = endPosition;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         => left.SequenceCompareTo(right);
 
