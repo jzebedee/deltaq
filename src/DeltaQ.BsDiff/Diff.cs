@@ -5,6 +5,7 @@ using ICSharpCode.SharpZipLib.BZip2;
 using System;
 using System.Buffers;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace DeltaQ.BsDiff;
 using static Constants;
