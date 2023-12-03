@@ -9,63 +9,62 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System
+namespace System;
+
+internal static class ThrowHelper
 {
-    internal static class ThrowHelper
+    [DoesNotReturn]
+    internal static void ThrowValueArgumentOutOfRange_NeedNonNegNumException()
     {
-        [DoesNotReturn]
-        internal static void ThrowValueArgumentOutOfRange_NeedNonNegNumException()
-        {
-            throw GetArgumentOutOfRangeException(ExceptionArgument.value, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
-        }
+        throw GetArgumentOutOfRangeException(ExceptionArgument.value, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+    }
 
-        [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument)
-        {
-            throw new ArgumentOutOfRangeException(GetArgumentName(argument));
-        }
+    [DoesNotReturn]
+    internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument)
+    {
+        throw new ArgumentOutOfRangeException(GetArgumentName(argument));
+    }
 
-        private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
-        {
-            return new ArgumentOutOfRangeException(GetArgumentName(argument), GetResourceString(resource));
-        }
+    private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
+    {
+        return new ArgumentOutOfRangeException(GetArgumentName(argument), GetResourceString(resource));
+    }
 
-        private static string GetArgumentName(ExceptionArgument argument)
+    private static string GetArgumentName(ExceptionArgument argument)
+    {
+        switch (argument)
         {
-            switch (argument)
-            {
-                case ExceptionArgument.value:
-                    return "value";
-                case ExceptionArgument.length:
-                    return "length";
-                default:
-                    Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
-                    return "";
-            }
-        }
-
-        private static string GetResourceString(ExceptionResource resource)
-        {
-            switch (resource)
-            {
-                case ExceptionResource.ArgumentOutOfRange_NeedNonNegNum:
-                    return "Non-negative number required.";
-                default:
-                    Debug.Fail("The enum value is not defined, please check the ExceptionResource Enum.");
-                    return "";
-            }
+            case ExceptionArgument.value:
+                return "value";
+            case ExceptionArgument.length:
+                return "length";
+            default:
+                Debug.Fail("The enum value is not defined, please check the ExceptionArgument Enum.");
+                return "";
         }
     }
 
-    internal enum ExceptionArgument
+    private static string GetResourceString(ExceptionResource resource)
     {
-        value,
-        length
+        switch (resource)
+        {
+            case ExceptionResource.ArgumentOutOfRange_NeedNonNegNum:
+                return "Non-negative number required.";
+            default:
+                Debug.Fail("The enum value is not defined, please check the ExceptionResource Enum.");
+                return "";
+        }
     }
+}
 
-    internal enum ExceptionResource
-    {
-        ArgumentOutOfRange_NeedNonNegNum,
-    }
+internal enum ExceptionArgument
+{
+    value,
+    length
+}
+
+internal enum ExceptionResource
+{
+    ArgumentOutOfRange_NeedNonNegNum,
 }
 #endif
