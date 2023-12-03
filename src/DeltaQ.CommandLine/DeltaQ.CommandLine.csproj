@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="2.13.14" />
+    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
   </ItemGroup>
 
