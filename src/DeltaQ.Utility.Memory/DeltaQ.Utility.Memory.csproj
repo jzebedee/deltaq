@@ -12,7 +12,7 @@
 
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    
+
     <!-- Source Link Support -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -32,19 +32,20 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
-  
+
   <!-- NuGet Icon -->
   <ItemGroup>
     <None Include="../../assets/dq.png" Link="dq.png" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-	<PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
-	<PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="PolySharp" Version="1.14.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
   </ItemGroup>
-  
+
 </Project>
