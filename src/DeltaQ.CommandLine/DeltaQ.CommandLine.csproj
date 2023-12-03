@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!--<AssemblyName>dq</AssemblyName>-->
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
     <VersionPrefix>2.0.0</VersionPrefix>
