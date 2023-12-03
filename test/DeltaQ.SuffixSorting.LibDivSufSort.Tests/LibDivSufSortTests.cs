@@ -1,5 +1,5 @@
+using CommunityToolkit.HighPerformance.Buffers;
 using DeltaQ.SuffixSorting.LibDivSufSort;
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
 using System.IO;
