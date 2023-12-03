@@ -12,13 +12,17 @@
 
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <IsTrimmable>true</IsTrimmable>
     
     <!-- Source Link Support -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- Trimming Support -->
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <!-- Source Link Support -->
