@@ -27,18 +27,29 @@ public static class Diff
     public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output, ISuffixSort suffixSort)
     {
         // check arguments
-        if (oldData == null)
-            throw new ArgumentNullException(nameof(oldData));
-        if (newData == null)
-            throw new ArgumentNullException(nameof(newData));
-        if (output == null)
+#if NET6_0_OR_GREATER
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(suffixSort);
+#else
+        if (output is null)
+        {
             throw new ArgumentNullException(nameof(output));
-        if (suffixSort == null)
+        }
+        if (suffixSort is null)
+        {
             throw new ArgumentNullException(nameof(suffixSort));
+        }
+#endif
+
         if (!output.CanSeek)
+        {
             throw new ArgumentException("Output stream must be seekable.", nameof(output));
+        }
+
         if (!output.CanWrite)
+        {
             throw new ArgumentException("Output stream must be writable.", nameof(output));
+        }
 
         /* Header is
             0	8	 "BSDIFF40"
@@ -99,7 +110,7 @@ public static class Diff
                         if ((scsc + lastoffset < oldData.Length) && (oldData[scsc + lastoffset] == newData[scsc]))
                         {
                             oldscore++;
-                    }
+                        }
                     }
 
                     if ((len == oldscore && len != 0) || (len > oldscore + 8))
@@ -110,7 +121,7 @@ public static class Diff
                     if ((scan + lastoffset < oldData.Length) && (oldData[scan + lastoffset] == newData[scan]))
                     {
                         oldscore--;
-                }
+                    }
                 }
 
                 if (len != oldscore || scan == newData.Length)
@@ -246,7 +257,7 @@ public static class Diff
             if (oldData[i] != newData[i])
             {
                 break;
-        }
+            }
         }
 
         return i;
