@@ -111,17 +111,11 @@ internal static class TrSort
     }
 
     private const int TR_STACK_SIZE = 64;
-    private ref struct TrStack
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ref struct TrStack(Span<TrStackItem> items)
     {
-        public readonly Span<TrStackItem> Items;
-        public int Size;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TrStack(Span<TrStackItem> items)
-        {
-            Items = items;
-            Size = 0;
-        }
+        public readonly Span<TrStackItem> Items = items;
+        public int Size = 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d, Idx e)
