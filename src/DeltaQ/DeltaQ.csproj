@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0</TargetFrameworks>
     <Product>DeltaQ</Product>
     <Authors>jzebedee</Authors>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <Description>DeltaQ provides fast and portable delta encoding for .NET in 100% safe, managed code</Description>
     <PackageProjectUrl>https://github.com/jzebedee/deltaq</PackageProjectUrl>
     <PackageIcon>dq.png</PackageIcon>
