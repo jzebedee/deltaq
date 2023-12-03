@@ -11,7 +11,7 @@ namespace DeltaQ.Tests;
 
 using static Crosscheck;
 
-public class LibDivSufSortTests : IDisposable
+public sealed class LibDivSufSortTests : IDisposable
 {
     private const string FuzzFilesBasePath = "assets/";
 
