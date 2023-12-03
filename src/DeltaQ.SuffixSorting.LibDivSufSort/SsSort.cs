@@ -898,17 +898,11 @@ internal static class SsSort
 
     private const int SS_STACK_SIZE = 16;
     private const int MERGE_STACK_SIZE = 32;
-    private ref struct SsStack
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ref struct SsStack(Span<SsStackItem> items)
     {
-        private readonly Span<SsStackItem> Items;
-        private int Size;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SsStack(Span<SsStackItem> items)
-        {
-            Items = items;
-            Size = 0;
-        }
+        private readonly Span<SsStackItem> Items = items;
+        private int Size = 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Push(SAPtr a, SAPtr b, SAPtr c, Idx d)
