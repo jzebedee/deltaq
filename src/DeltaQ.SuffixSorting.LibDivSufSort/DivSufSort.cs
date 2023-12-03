@@ -159,28 +159,24 @@ internal static class DivSufSort
         public int m;
     }
 
-    private ref struct BStarBucket
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ref struct BStarBucket(Span<int> B)
     {
-        private readonly Span<int> B;
+        private readonly Span<int> B = B;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BStarBucket(Span<int> B) => this.B = B;
-
-        public ref int this[(int c0, int c1) index]
+        public readonly ref int this[(int c0, int c1) index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref B[(index.c0 << 8) | index.c1];
         }
     }
 
-    private ref struct BBucket
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ref struct BBucket(Span<int> B)
     {
-        private readonly Span<int> B;
+        private readonly Span<int> B = B;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BBucket(Span<int> B) => this.B = B;
-
-        public ref int this[(int c0, int c1) index]
+        public readonly ref int this[(int c0, int c1) index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref B[(index.c1 << 8) | index.c0];
