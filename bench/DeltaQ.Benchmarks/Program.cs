@@ -10,13 +10,13 @@ if (args.Any() && args[0] == "etl")
 {
     var bdnDefaults = (ClrTraceEventParser.Keywords)167993uL;
     var keywords = bdnDefaults | ClrTraceEventParser.Keywords.GCSampledObjectAllocationHigh | ClrTraceEventParser.Keywords.Threading;
-    var providers = new (Guid, TraceEventLevel, ulong, TraceEventProviderOptions?)[]
+    var providers = new (Guid, TraceEventLevel, ulong, TraceEventProviderOptions)[]
     {
     (ClrTraceEventParser.ProviderGuid, TraceEventLevel.Verbose, (ulong)keywords, new TraceEventProviderOptions
     {
         StacksEnabled = true,
     }),
-    (new Guid("0866B2B8-5CEF-5DB9-2612-0C0FFD814A44"), TraceEventLevel.Informational, ulong.MaxValue, null)
+    (new Guid("0866B2B8-5CEF-5DB9-2612-0C0FFD814A44"), TraceEventLevel.Informational, ulong.MaxValue, new())
     };
     var profilerConfig = new EtwProfilerConfig(providers: providers);
     var profiler = new EtwProfiler(profilerConfig);
