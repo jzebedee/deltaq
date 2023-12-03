@@ -3,8 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 using Xunit;
 
-namespace DeltaQ.Tests
-{
+namespace DeltaQ.Tests;
+
     public class BsPatchTests
     {
         private static RandomNumberGenerator _cryptoRNG = RandomNumberGenerator.Create();
@@ -37,4 +37,3 @@ namespace DeltaQ.Tests
             Assert.Equal(newBuffer, reconstructedBuffer);
         }
     }
-}

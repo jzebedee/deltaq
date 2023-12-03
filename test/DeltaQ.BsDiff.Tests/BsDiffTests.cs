@@ -8,8 +8,8 @@ using System.IO.Compression;
 using System.Linq;
 using Xunit;
 
-namespace DeltaQ.Tests
-{
+namespace DeltaQ.Tests;
+
     public class BsDiffTests
     {
         private static readonly int[] Sizes = { 0, 1, 512, 999, 1024, 0x10000 };
@@ -121,4 +121,3 @@ namespace DeltaQ.Tests
             return outputStream.GetBuffer().AsMemory(0, (int)outputStream.Length);
         }
     }
-}
