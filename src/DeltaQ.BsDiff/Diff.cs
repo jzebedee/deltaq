@@ -96,14 +96,20 @@ public static class Diff
                     for (; scsc < scan + len; scsc++)
                     {
                         if ((scsc + lastoffset < oldData.Length) && (oldData[scsc + lastoffset] == newData[scsc]))
+                        {
                             oldscore++;
+                    }
                     }
 
                     if ((len == oldscore && len != 0) || (len > oldscore + 8))
+                    {
                         break;
+                    }
 
                     if ((scan + lastoffset < oldData.Length) && (oldData[scan + lastoffset] == newData[scan]))
+                    {
                         oldscore--;
+                }
                 }
 
                 if (len != oldscore || scan == newData.Length)
@@ -114,7 +120,10 @@ public static class Diff
                     for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length);)
                     {
                         if (oldData[lastpos + i] == newData[lastscan + i])
+                        {
                             s++;
+                        }
+
                         i++;
                         if (s * 2 - i > sf * 2 - lenf)
                         {
@@ -131,7 +140,10 @@ public static class Diff
                         for (var i = 1; (scan >= lastscan + i) && (pos >= i); i++)
                         {
                             if (oldData[pos - i] == newData[scan - i])
+                            {
                                 s++;
+                            }
+
                             if (s * 2 - i > sb * 2 - lenb)
                             {
                                 sb = s;
@@ -149,9 +161,15 @@ public static class Diff
                         for (var i = 0; i < overlap; i++)
                         {
                             if (newData[lastscan + lenf - overlap + i] == oldData[lastpos + lenf - overlap + i])
+                            {
                                 s++;
+                            }
+
                             if (newData[scan - lenb + i] == oldData[pos - lenb + i])
+                            {
                                 s--;
+                            }
+
                             if (s > ss)
                             {
                                 ss = s;
@@ -165,12 +183,16 @@ public static class Diff
 
                     //write diff string
                     for (var i = 0; i < lenf; i++)
+                    {
                         diffEncStream.WriteByte((byte)(newData[lastscan + i] - oldData[lastpos + i]));
+                    }
 
                     //write extra string
                     var extraLength = (scan - lenb) - (lastscan + lenf);
                     if (extraLength > 0)
+                    {
                         extraEncStream.Write(newData.Slice(lastscan + lenf, extraLength));
+                    }
 
                     //write ctrl block
                     buf.WritePackedLong(lenf);
