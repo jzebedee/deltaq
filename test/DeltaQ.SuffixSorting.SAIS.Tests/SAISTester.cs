@@ -1,5 +1,5 @@
-﻿using DeltaQ.SuffixSorting;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
+using DeltaQ.SuffixSorting;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
