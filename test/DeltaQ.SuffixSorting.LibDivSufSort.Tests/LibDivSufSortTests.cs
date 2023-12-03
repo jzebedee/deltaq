@@ -35,8 +35,6 @@ public class LibDivSufSortTests : IDisposable
         var buf = new byte[size];
         rand.NextBytes(buf);
         buf.CopyTo(owner.Span);
-#else
-        rand.NextBytes(owner.Span);
 #endif
 
         return owner;
@@ -80,7 +78,7 @@ public class LibDivSufSortTests : IDisposable
 
     public static IEnumerable<object[]> FuzzFiles
         => FuzzFilesInner.Select(fuzzFile => new object[] {
-#if NETCOREAPP3_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             Path.Join(FuzzFilesBasePath, fuzzFile)
 #else
             Path.Combine(FuzzFilesBasePath, fuzzFile)
