@@ -233,17 +233,24 @@ public static class Diff
     private static int CompareBytes(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         => left.SequenceCompareTo(right);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int MatchLength(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData)
+#if NET7_0_OR_GREATER
+        => oldData.CommonPrefixLength(newData);
+#else
     {
         int i;
         for (i = 0; i < oldData.Length && i < newData.Length; i++)
         {
             if (oldData[i] != newData[i])
+            {
                 break;
+        }
         }
 
         return i;
     }
+#endif
 
     private static int Search(ReadOnlySpan<int> I, ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, int start, int end, out int pos)
     {
